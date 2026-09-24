@@ -15,6 +15,16 @@ export const auth = betterAuth({
     emailAndPassword: {
         enabled: true,
         requireEmailVerification: true,
+        revokeSessionsOnPasswordReset: true,
+        // `url` checks the token, then redirects to the client's `redirectTo`
+        // (`/reset-password`) with the token in the query string.
+        sendResetPassword: async ({ user, url }) => {
+            await sendEmail({
+                to: user.email,
+                subject: 'Reimposta la password di My command center',
+                text: `Hai chiesto di reimpostare la password di My command center. Apri questo link per sceglierne una nuova:\n\n${url}\n\nIl link è valido per un'ora. Se non hai fatto tu questa richiesta, puoi ignorare questo messaggio: la password attuale resta valida.`,
+            });
+        },
     },
     emailVerification: {
         sendOnSignUp: true,
