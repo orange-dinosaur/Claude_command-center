@@ -7,6 +7,7 @@ import {
 } from 'expo-router';
 
 import { Colors } from '@/constants/theme';
+import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 function navigationTheme(scheme: 'light' | 'dark'): Theme {
@@ -23,6 +24,7 @@ function navigationTheme(scheme: 'light' | 'dark'): Theme {
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
+    useAuthGuard();
 
     return (
         <ThemeProvider value={navigationTheme(colorScheme)}>
