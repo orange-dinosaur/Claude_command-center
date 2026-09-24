@@ -5,7 +5,16 @@
  * match what its Drizzle adapter expects.
  */
 
-import { boolean, index, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import {
+    boolean,
+    index,
+    integer,
+    jsonb,
+    pgTable,
+    text,
+    timestamp,
+    unique,
+} from 'drizzle-orm/pg-core';
 
 export const user = pgTable('user', {
     id: text('id').primaryKey(),
@@ -99,3 +108,51 @@ export const visionBoard = pgTable('vision_board', {
         .$onUpdate(() => new Date())
         .notNull(),
 });
+
+/**
+ * One month of the monthly closeout. `answers` maps a question key to its
+ * text; the questions themselves live in code, so rewording one never touches
+ * what was written.
+ */
+export const closeoutMonth = pgTable(
+    'closeout_month',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        year: integer('year').notNull(),
+        /** 1 to 12. */
+        month: integer('month').notNull(),
+        answers: jsonb('answers')
+            .$type<Record<string, string>>()
+            .default({})
+            .notNull(),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+        updatedAt: timestamp('updated_at')
+            .defaultNow()
+            .$onUpdate(() => new Date())
+            .notNull(),
+    },
+    (table) => [unique().on(table.userId, table.year, table.month)]
+);
+
+/**
+ * One line of a month's closeout checklist. Every month has its own copy, so
+ * editing this month's list leaves earlier months as they were.
+ */
+export const closeoutItem = pgTable(
+    'closeout_item',
+    {
+        id: text('id').primaryKey(),
+        monthId: text('month_id')
+            .notNull()
+            .references(() => closeoutMonth.id, { onDelete: 'cascade' }),
+        area: text('area').notNull(),
+        text: text('text').notNull(),
+        done: boolean('done').default(false).notNull(),
+        /** Insertion order. An area sits where its first item does. */
+        position: integer('position').notNull(),
+    },
+    (table) => [index('closeout_item_month_id_idx').on(table.monthId)]
+);
