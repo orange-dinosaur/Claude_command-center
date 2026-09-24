@@ -56,7 +56,8 @@ export function ScreenHeader({ title, backTo }: ScreenHeaderProps) {
 const styles = StyleSheet.create({
     container: {
         paddingHorizontal: Spacing.four,
-        paddingTop: Spacing.three,
+        // Clears the blur iOS draws under the status bar in a home screen app.
+        paddingTop: Spacing.five,
         paddingBottom: Spacing.three,
         gap: Spacing.two,
     },

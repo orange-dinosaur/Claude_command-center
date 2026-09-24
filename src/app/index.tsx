@@ -54,7 +54,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: Spacing.four,
-        paddingVertical: Spacing.three,
+        // Clears the blur iOS draws under the status bar in a home screen app.
+        paddingTop: Spacing.five,
+        paddingBottom: Spacing.three,
     },
     pressed: {
         opacity: 0.6,
