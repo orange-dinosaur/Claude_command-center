@@ -11,4 +11,7 @@ import { createAuthClient } from 'better-auth/react';
  */
 export const verificationCallbackURL = '/';
 
+/** Where the password reset link lands once its token has been checked. */
+export const resetPasswordURL = '/reset-password';
+
 export const authClient = createAuthClient();

@@ -1,4 +1,4 @@
-import { Link, router } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,6 +11,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 
 export default function LoginScreen() {
+    const { reset } = useLocalSearchParams<{ reset?: string }>();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -69,6 +70,12 @@ export default function LoginScreen() {
                 <View style={styles.content}>
                     <ThemedText type="title">Accedi</ThemedText>
 
+                    {reset && (
+                        <ThemedText themeColor="textMuted">
+                            Password aggiornata. Accedi con la nuova password.
+                        </ThemedText>
+                    )}
+
                     <View style={styles.form}>
                         <AuthField
                             label="Email"
@@ -114,6 +121,16 @@ export default function LoginScreen() {
                         pending={pending}
                     />
 
+                    <Link href="/forgot-password" asChild>
+                        <Pressable
+                            accessibilityRole="button"
+                            style={styles.forgot}>
+                            <ThemedText type="small" themeColor="accent">
+                                Password dimenticata?
+                            </ThemedText>
+                        </Pressable>
+                    </Link>
+
                     <View style={styles.footer}>
                         <ThemedText type="small" themeColor="textMuted">
                             Non hai un account?
@@ -144,6 +161,9 @@ const styles = StyleSheet.create({
     form: {
         gap: Spacing.three,
         paddingTop: Spacing.three,
+    },
+    forgot: {
+        alignSelf: 'center',
     },
     footer: {
         flexDirection: 'row',

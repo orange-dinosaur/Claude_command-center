@@ -12,7 +12,12 @@
 import { getSessionCookie } from 'better-auth/cookies';
 import type { MiddlewareFunction, MiddlewareSettings } from 'expo-server';
 
-const AUTH_SCREENS = ['/login', '/signup'];
+const AUTH_SCREENS = [
+    '/login',
+    '/signup',
+    '/forgot-password',
+    '/reset-password',
+];
 const APP_SCREENS = ['/', '/command-center', '/monthly-closeout'];
 
 /**

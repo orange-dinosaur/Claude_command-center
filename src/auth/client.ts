@@ -26,6 +26,9 @@ const baseURL =
  */
 export const verificationCallbackURL = Linking.createURL('/');
 
+/** Where the password reset link lands once its token has been checked. */
+export const resetPasswordURL = Linking.createURL('/reset-password');
+
 export const authClient = createAuthClient({
     baseURL,
     plugins: [
