@@ -18,7 +18,13 @@ const AUTH_SCREENS = [
     '/forgot-password',
     '/reset-password',
 ];
-const APP_SCREENS = ['/', '/command-center', '/monthly-closeout', '/salute'];
+const APP_SCREENS = [
+    '/',
+    '/command-center',
+    '/monthly-closeout',
+    '/salute',
+    '/media',
+];
 
 /**
  * Route groups stay in the URL as an optional segment, so `/(auth)/login`
@@ -30,6 +36,8 @@ const MONTH_PAGE = /^\/monthly-closeout\/[^/]+$/;
 
 const HEALTH_PAGE = /^\/salute\/.+$/;
 
+const MEDIA_PAGE = /^\/media\/.+$/;
+
 export const unstable_settings: MiddlewareSettings = {
     matcher: {
         methods: ['GET'],
@@ -39,6 +47,7 @@ export const unstable_settings: MiddlewareSettings = {
             GROUPED,
             MONTH_PAGE,
             HEALTH_PAGE,
+            MEDIA_PAGE,
         ],
     },
 };

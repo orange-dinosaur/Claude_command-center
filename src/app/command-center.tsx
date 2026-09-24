@@ -35,6 +35,15 @@ export default function CommandCenter() {
                             web: 'monitor_heart',
                         }}
                     />
+                    <ToolButton
+                        title="Media"
+                        href="/media"
+                        icon={{
+                            ios: 'books.vertical',
+                            android: 'local_library',
+                            web: 'local_library',
+                        }}
+                    />
                 </View>
                 <View style={styles.spacer} />
                 <Pressable
