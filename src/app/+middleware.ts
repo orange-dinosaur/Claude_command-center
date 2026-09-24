@@ -26,10 +26,12 @@ const APP_SCREENS = ['/', '/command-center', '/monthly-closeout'];
  */
 const GROUPED = /^\/\(auth\)\//;
 
+const MONTH_PAGE = /^\/monthly-closeout\/[^/]+$/;
+
 export const unstable_settings: MiddlewareSettings = {
     matcher: {
         methods: ['GET'],
-        patterns: [...AUTH_SCREENS, ...APP_SCREENS, GROUPED],
+        patterns: [...AUTH_SCREENS, ...APP_SCREENS, GROUPED, MONTH_PAGE],
     },
 };
 
