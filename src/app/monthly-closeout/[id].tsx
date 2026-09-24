@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MONTH_NAMES, monthLabel, nextMonth } from '@/closeout/months';
 import { PREPARE, RECAP } from '@/closeout/questions';
+import { CloseoutChecklist } from '@/components/closeout-checklist';
 import { CloseoutQuestions } from '@/components/closeout-questions';
 import { ScreenHeader } from '@/components/screen-header';
 import { TabBar } from '@/components/tab-bar';
@@ -29,7 +30,17 @@ export default function CloseoutMonth() {
     const theme = useTheme();
     const router = useRouter();
     const { id } = useLocalSearchParams<{ id: string }>();
-    const { month, busy, error, remove, saveAnswer } = useCloseoutMonth(id);
+    const {
+        month,
+        busy,
+        error,
+        remove,
+        saveAnswer,
+        itemError,
+        toggleItem,
+        removeItem,
+        addItem,
+    } = useCloseoutMonth(id);
     const [tab, setTab] = useState<Tab>('Recap');
     const [confirming, setConfirming] = useState(false);
 
@@ -83,6 +94,16 @@ export default function CloseoutMonth() {
                                     sections={tab === 'Recap' ? RECAP : PREPARE}
                                     answers={month.answers}
                                     onSave={saveAnswer}
+                                />
+                            )}
+
+                            {tab === 'Closeout' && (
+                                <CloseoutChecklist
+                                    items={month.items}
+                                    error={itemError}
+                                    onToggle={toggleItem}
+                                    onRemove={removeItem}
+                                    onAdd={addItem}
                                 />
                             )}
 
