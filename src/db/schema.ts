@@ -80,3 +80,22 @@ export const verification = pgTable(
     },
     (table) => [index('verification_identifier_idx').on(table.identifier)]
 );
+
+/**
+ * One image per user, shown on Home. `id` is what the image URL carries and
+ * is the only thing guarding the bytes, so it is random and replaced on every
+ * upload.
+ */
+export const visionBoard = pgTable('vision_board', {
+    userId: text('user_id')
+        .primaryKey()
+        .references(() => user.id, { onDelete: 'cascade' }),
+    id: text('id').notNull().unique(),
+    /** Base64, so no part of this needs a binary column type. */
+    data: text('data').notNull(),
+    contentType: text('content_type').notNull(),
+    updatedAt: timestamp('updated_at')
+        .defaultNow()
+        .$onUpdate(() => new Date())
+        .notNull(),
+});
