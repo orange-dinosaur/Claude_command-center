@@ -5,8 +5,11 @@
  * match what its Drizzle adapter expects.
  */
 
+import { sql } from 'drizzle-orm';
 import {
     boolean,
+    check,
+    date,
     index,
     integer,
     jsonb,
@@ -155,4 +158,54 @@ export const closeoutItem = pgTable(
         position: integer('position').notNull(),
     },
     (table) => [index('closeout_item_month_id_idx').on(table.monthId)]
+);
+
+/**
+ * One kind of check-up, such as Dentista, with the date of its last visit. A
+ * new visit overwrites the date; there is no history.
+ */
+export const checkup = pgTable(
+    'checkup',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        name: text('name').notNull(),
+        lastDate: date('last_date'),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+        updatedAt: timestamp('updated_at')
+            .defaultNow()
+            .$onUpdate(() => new Date())
+            .notNull(),
+    },
+    (table) => [unique().on(table.userId, table.name)]
+);
+
+/** A medicine taken repeatedly. Ongoing until its end date has passed. */
+export const medicine = pgTable(
+    'medicine',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        name: text('name').notNull(),
+        /** Free text, such as "2 volte al giorno". */
+        frequency: text('frequency'),
+        startDate: date('start_date'),
+        endDate: date('end_date'),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+        updatedAt: timestamp('updated_at')
+            .defaultNow()
+            .$onUpdate(() => new Date())
+            .notNull(),
+    },
+    (table) => [
+        index('medicine_user_id_idx').on(table.userId),
+        check(
+            'medicine_end_after_start',
+            sql`${table.endDate} >= ${table.startDate}`
+        ),
+    ]
 );
