@@ -54,6 +54,6 @@ const styles = StyleSheet.create({
         opacity: 0.6,
     },
     title: {
-        fontWeight: 600,
+        fontFamily: 'Karla_600SemiBold',
     },
 });

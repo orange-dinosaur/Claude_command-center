@@ -30,20 +30,22 @@ export function ThemedText({
 
 const styles = StyleSheet.create({
     default: {
+        fontFamily: 'Karla_400Regular',
         fontSize: 16,
         lineHeight: 24,
     },
     title: {
-        fontSize: 32,
-        lineHeight: 38,
-        fontWeight: 700,
+        fontFamily: 'CormorantGaramond_600SemiBold',
+        fontSize: 36,
+        lineHeight: 40,
     },
     subtitle: {
-        fontSize: 20,
-        lineHeight: 26,
-        fontWeight: 600,
+        fontFamily: 'CormorantGaramond_600SemiBold',
+        fontSize: 26,
+        lineHeight: 30,
     },
     small: {
+        fontFamily: 'Karla_400Regular',
         fontSize: 14,
         lineHeight: 20,
     },

@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     tick: {
-        fontWeight: '700',
+        fontFamily: 'Karla_700Bold',
         lineHeight: 16,
     },
     rowText: {

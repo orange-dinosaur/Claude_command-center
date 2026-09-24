@@ -4,6 +4,8 @@
     "version": "1.0.0",
     "dependencies": {
         "@better-auth/expo": "1.7.5",
+        "@expo-google-fonts/cormorant-garamond": "^0.4.1",
+        "@expo-google-fonts/karla": "^0.4.2",
         "@expo/ui": "~57.0.19",
         "better-auth": "1.7.5",
         "drizzle-orm": "^0.45.3",

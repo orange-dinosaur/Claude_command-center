@@ -152,6 +152,6 @@ const styles = StyleSheet.create({
         marginTop: Spacing.two,
     },
     buttonText: {
-        fontWeight: 600,
+        fontFamily: 'Karla_600SemiBold',
     },
 });

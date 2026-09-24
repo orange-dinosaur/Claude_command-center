@@ -6,6 +6,8 @@
       "name": "scaffold",
       "dependencies": {
         "@better-auth/expo": "1.7.5",
+        "@expo-google-fonts/cormorant-garamond": "^0.4.1",
+        "@expo-google-fonts/karla": "^0.4.2",
         "@expo/ui": "~57.0.19",
         "better-auth": "1.7.5",
         "drizzle-orm": "^0.45.3",
@@ -299,6 +301,10 @@
     "@eslint/object-schema": ["@eslint/object-schema@2.1.7", "", {}, "sha512-VtAOaymWVfZcmZbp6E2mympDIHvyjXs/12LqWYjVw6qjrfF+VK+fyG33kChz3nnK+SU5/NeHOqrTEHS8sXO3OA=="],
 
     "@eslint/plugin-kit": ["@eslint/plugin-kit@0.4.1", "", { "dependencies": { "@eslint/core": "^0.17.0", "levn": "^0.4.1" } }, "sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA=="],
+
+    "@expo-google-fonts/cormorant-garamond": ["@expo-google-fonts/cormorant-garamond@0.4.1", "", {}, "sha512-e8J4Cn13K1txygamg50n3odLUsYP7Ck28XOGobMi7uDsWvFmp/jgK0qcALqJTlmi9NczSWUNdERxcLauHCBa/Q=="],
+
+    "@expo-google-fonts/karla": ["@expo-google-fonts/karla@0.4.2", "", {}, "sha512-a99ezH+aon+ya8XR4tJX+npPP5nis6DhIIbvqhYDQgoVVWp0jebKrBFOXFzzBonkxE8YAltrTS9DdXHW4n3LAw=="],
 
     "@expo-google-fonts/material-symbols": ["@expo-google-fonts/material-symbols@0.4.48", "", {}, "sha512-aZztj44PyA/sj3TXSwwpLJwqMlTUJ49okbZJYURzEcuERxMQB0KbX7RrLBi8WJnuWz5HFOLlTRxORrJfNnUPNQ=="],
 

@@ -63,6 +63,6 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     label: {
-        fontWeight: '600',
+        fontFamily: 'Karla_600SemiBold',
     },
 });
