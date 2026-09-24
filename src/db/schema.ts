@@ -209,3 +209,54 @@ export const medicine = pgTable(
         ),
     ]
 );
+
+/**
+ * A book, a film, or one season of a series. Author and format apply only to
+ * books, season only to series; the API enforces that.
+ */
+export const title = pgTable(
+    'title',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        kind: text('kind').$type<'book' | 'film' | 'series'>().notNull(),
+        name: text('name').notNull(),
+        author: text('author'),
+        format: text('format').$type<
+            'rigida' | 'flessibile' | 'ebook' | 'audiolibro' | 'biblioteca'
+        >(),
+        season: integer('season'),
+        status: text('status')
+            .$type<'todo' | 'doing' | 'done'>()
+            .default('todo')
+            .notNull(),
+        startDate: date('start_date'),
+        endDate: date('end_date'),
+        /** Half stars, 1 to 10. */
+        rating: integer('rating'),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+        updatedAt: timestamp('updated_at')
+            .defaultNow()
+            .$onUpdate(() => new Date())
+            .notNull(),
+    },
+    (table) => [
+        index('title_user_id_kind_idx').on(table.userId, table.kind),
+        check('title_kind', sql`${table.kind} in ('book', 'film', 'series')`),
+        check(
+            'title_status',
+            sql`${table.status} in ('todo', 'doing', 'done')`
+        ),
+        check(
+            'title_format',
+            sql`${table.format} in ('rigida', 'flessibile', 'ebook', 'audiolibro', 'biblioteca')`
+        ),
+        check('title_rating', sql`${table.rating} between 1 and 10`),
+        check(
+            'title_end_after_start',
+            sql`${table.endDate} >= ${table.startDate}`
+        ),
+    ]
+);
