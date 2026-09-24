@@ -50,22 +50,9 @@ export default function Health() {
                     />
                 ) : tab === 'Visite' ? (
                     <ScrollView contentContainerStyle={styles.list}>
-                        <Pressable
+                        <AddButton
                             onPress={() => router.push('/salute/visita')}
-                            accessibilityRole="button"
-                            style={({ pressed }) => [
-                                styles.addButton,
-                                { backgroundColor: theme.accent },
-                                pressed && styles.pressed,
-                            ]}>
-                            <ThemedText
-                                style={[
-                                    styles.buttonText,
-                                    { color: theme.onAccent },
-                                ]}>
-                                Aggiungi
-                            </ThemedText>
-                        </Pressable>
+                        />
                         {health.checkups.length === 0 && (
                             <Empty>Ancora nessuna visita.</Empty>
                         )}
@@ -100,6 +87,9 @@ export default function Health() {
                     </ScrollView>
                 ) : (
                     <ScrollView contentContainerStyle={styles.list}>
+                        <AddButton
+                            onPress={() => router.push('/salute/farmaco')}
+                        />
                         {health.ongoing.length === 0 &&
                             health.ended.length === 0 && (
                                 <Empty>Ancora nessun farmaco.</Empty>
@@ -122,12 +112,43 @@ export default function Health() {
     );
 }
 
-function MedicineRow({ medicine }: { medicine: Medicine }) {
+function AddButton({ onPress }: { onPress: () => void }) {
     const theme = useTheme();
 
     return (
-        <View
-            style={[styles.row, { backgroundColor: theme.backgroundElement }]}>
+        <Pressable
+            onPress={onPress}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+                styles.addButton,
+                { backgroundColor: theme.accent },
+                pressed && styles.pressed,
+            ]}>
+            <ThemedText style={[styles.buttonText, { color: theme.onAccent }]}>
+                Aggiungi
+            </ThemedText>
+        </Pressable>
+    );
+}
+
+function MedicineRow({ medicine }: { medicine: Medicine }) {
+    const theme = useTheme();
+    const router = useRouter();
+
+    return (
+        <Pressable
+            onPress={() =>
+                router.push({
+                    pathname: '/salute/farmaco',
+                    params: { id: medicine.id },
+                })
+            }
+            accessibilityRole="button"
+            style={({ pressed }) => [
+                styles.row,
+                { backgroundColor: theme.backgroundElement },
+                pressed && styles.pressed,
+            ]}>
             <View style={styles.grow}>
                 <ThemedText>{medicine.name}</ThemedText>
                 {medicine.frequency && (
@@ -148,7 +169,7 @@ function MedicineRow({ medicine }: { medicine: Medicine }) {
                     </ThemedText>
                 )}
             </View>
-        </View>
+        </Pressable>
     );
 }
 
