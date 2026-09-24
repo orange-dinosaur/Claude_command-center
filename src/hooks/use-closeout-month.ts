@@ -66,5 +66,28 @@ export function useCloseoutMonth(id: string) {
         }
     };
 
-    return { month, busy, error, remove };
+    /**
+     * Kept in local state before the request, so a field that unmounts and
+     * mounts again (a tab switch) shows what was typed. Resolves to false
+     * when the save failed.
+     */
+    const saveAnswer = async (key: string, value: string) => {
+        setMonth((current) =>
+            current
+                ? { ...current, answers: { ...current.answers, [key]: value } }
+                : current
+        );
+        try {
+            const res = await apiFetch(`/api/closeout/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key, value }),
+            });
+            return res.ok;
+        } catch {
+            return false;
+        }
+    };
+
+    return { month, busy, error, remove, saveAnswer };
 }

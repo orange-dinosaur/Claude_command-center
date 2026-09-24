@@ -11,6 +11,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MONTH_NAMES, monthLabel, nextMonth } from '@/closeout/months';
+import { PREPARE, RECAP } from '@/closeout/questions';
+import { CloseoutQuestions } from '@/components/closeout-questions';
 import { ScreenHeader } from '@/components/screen-header';
 import { TabBar } from '@/components/tab-bar';
 import { ThemedText } from '@/components/themed-text';
@@ -27,7 +29,7 @@ export default function CloseoutMonth() {
     const theme = useTheme();
     const router = useRouter();
     const { id } = useLocalSearchParams<{ id: string }>();
-    const { month, busy, error, remove } = useCloseoutMonth(id);
+    const { month, busy, error, remove, saveAnswer } = useCloseoutMonth(id);
     const [tab, setTab] = useState<Tab>('Recap');
     const [confirming, setConfirming] = useState(false);
 
@@ -62,7 +64,9 @@ export default function CloseoutMonth() {
                 ) : (
                     <>
                         <TabBar tabs={TABS} value={tab} onChange={setTab} />
-                        <ScrollView contentContainerStyle={styles.body}>
+                        <ScrollView
+                            contentContainerStyle={styles.body}
+                            keyboardShouldPersistTaps="handled">
                             {tab === 'Prepare' && preparing && (
                                 <ThemedText themeColor="textMuted">
                                     Per{' '}
@@ -71,6 +75,15 @@ export default function CloseoutMonth() {
                                     ].toLowerCase()}{' '}
                                     {preparing.year}
                                 </ThemedText>
+                            )}
+
+                            {tab !== 'Closeout' && (
+                                <CloseoutQuestions
+                                    key={tab}
+                                    sections={tab === 'Recap' ? RECAP : PREPARE}
+                                    answers={month.answers}
+                                    onSave={saveAnswer}
+                                />
                             )}
 
                             <View style={styles.spacer} />
