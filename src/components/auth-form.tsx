@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import {
     ActivityIndicator,
+    Image,
     Pressable,
     StyleSheet,
     TextInput,
@@ -9,13 +11,36 @@ import {
 
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
+
+const MARK = {
+    light: require('@/assets/images/logo-mark-light.png'),
+    dark: require('@/assets/images/logo-mark-dark.png'),
+};
+
+/** The logo mark and the screen title at the top of every auth screen. */
+export function AuthTitle({ children }: { children: string }) {
+    const scheme = useColorScheme();
+
+    return (
+        <View>
+            <Image source={MARK[scheme]} style={styles.mark} alt="" />
+            <ThemedText type="title" style={styles.title}>
+                {children}
+            </ThemedText>
+        </View>
+    );
+}
 
 export function AuthField({
     label,
+    onFocus,
+    onBlur,
     ...input
 }: TextInputProps & { label: string }) {
     const theme = useTheme();
+    const [focused, setFocused] = useState(false);
 
     return (
         <View style={styles.field}>
@@ -29,9 +54,22 @@ export function AuthField({
                         color: theme.text,
                         backgroundColor: theme.backgroundElement,
                     },
+                    focused && {
+                        outlineWidth: 2,
+                        outlineStyle: 'solid',
+                        outlineColor: theme.accent,
+                    },
                 ]}
                 placeholderTextColor={theme.textMuted}
                 accessibilityLabel={label}
+                onFocus={(e) => {
+                    setFocused(true);
+                    onFocus?.(e);
+                }}
+                onBlur={(e) => {
+                    setFocused(false);
+                    onBlur?.(e);
+                }}
                 {...input}
             />
         </View>
@@ -66,7 +104,7 @@ export function SubmitButton({
                 },
             ]}>
             {pending ? (
-                <ActivityIndicator color={theme.background} />
+                <ActivityIndicator color={theme.onAccent} />
             ) : (
                 <ThemedText
                     style={[styles.buttonText, { color: theme.onAccent }]}>
@@ -87,6 +125,16 @@ export function ErrorText({ children }: { children: string | null }) {
 }
 
 const styles = StyleSheet.create({
+    mark: {
+        width: 56,
+        height: 56,
+        // The design's 8 below the mark plus the 16 gap between blocks.
+        marginBottom: Spacing.four,
+    },
+    title: {
+        fontSize: 40,
+        lineHeight: 44,
+    },
     field: {
         gap: Spacing.one,
     },

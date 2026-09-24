@@ -5,7 +5,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { authClient, verificationCallbackURL } from '@/auth/client';
 import { errorMessage } from '@/auth/messages';
-import { AuthField, ErrorText, SubmitButton } from '@/components/auth-form';
+import {
+    AuthField,
+    AuthTitle,
+    ErrorText,
+    SubmitButton,
+} from '@/components/auth-form';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -86,9 +91,7 @@ export default function SignupScreen() {
             <SafeAreaView style={styles.container}>
                 {registered ? (
                     <View style={styles.content}>
-                        <ThemedText type="title">
-                            Controlla la tua email
-                        </ThemedText>
+                        <AuthTitle>Controlla la tua email</AuthTitle>
                         {/* Sign-up succeeds even if the mail failed, so offer to resend. */}
                         <ThemedText themeColor="textMuted">
                             Ti abbiamo mandato un link a {email.trim()}. Aprilo
@@ -113,7 +116,7 @@ export default function SignupScreen() {
                     </View>
                 ) : (
                     <View style={styles.content}>
-                        <ThemedText type="title">Registrati</ThemedText>
+                        <AuthTitle>Registrati</AuthTitle>
 
                         <View style={styles.form}>
                             <AuthField

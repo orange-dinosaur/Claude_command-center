@@ -5,7 +5,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { authClient } from '@/auth/client';
 import { errorMessage } from '@/auth/messages';
-import { AuthField, ErrorText, SubmitButton } from '@/components/auth-form';
+import {
+    AuthField,
+    AuthTitle,
+    ErrorText,
+    SubmitButton,
+} from '@/components/auth-form';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -52,7 +57,7 @@ export default function ResetPasswordScreen() {
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.container}>
                 <View style={styles.content}>
-                    <ThemedText type="title">Nuova password</ThemedText>
+                    <AuthTitle>Nuova password</AuthTitle>
 
                     {usable && (
                         <AuthField
