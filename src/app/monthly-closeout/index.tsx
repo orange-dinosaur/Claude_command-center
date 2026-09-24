@@ -65,8 +65,7 @@ export default function MonthlyCloseout() {
                         pressed && styles.pressed,
                     ]}>
                     <ThemedText
-                        type="subtitle"
-                        style={{ color: theme.onAccent }}>
+                        style={[styles.buttonText, { color: theme.onAccent }]}>
                         Nuovo mese
                     </ThemedText>
                 </Pressable>
@@ -106,7 +105,9 @@ export default function MonthlyCloseout() {
                                     },
                                     pressed && styles.pressed,
                                 ]}>
-                                <ThemedText type="subtitle">
+                                <ThemedText
+                                    type="subtitle"
+                                    style={styles.monthName}>
                                     {monthLabel(m.year, m.month)}
                                 </ThemedText>
                                 <ThemedText themeColor="textMuted">
@@ -145,7 +146,9 @@ export default function MonthlyCloseout() {
                                     styles.sheetButton,
                                     pressed && styles.pressed,
                                 ]}>
-                                <ThemedText themeColor="accent" type="subtitle">
+                                <ThemedText
+                                    themeColor="accent"
+                                    style={styles.buttonText}>
                                     {picked
                                         ? `Crea ${monthLabel(picked.year, picked.month)}`
                                         : ''}
@@ -244,6 +247,15 @@ const styles = StyleSheet.create({
         paddingVertical: Spacing.three,
         borderRadius: 14,
         alignItems: 'center',
+    },
+    buttonText: {
+        fontFamily: 'Karla_600SemiBold',
+        fontSize: 18,
+        lineHeight: 24,
+    },
+    monthName: {
+        fontSize: 24,
+        lineHeight: 28,
     },
     message: {
         paddingHorizontal: Spacing.four,

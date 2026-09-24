@@ -18,7 +18,9 @@ export default function Home() {
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.container}>
                 <View style={styles.dateRow}>
-                    <ThemedText type="subtitle">{today}</ThemedText>
+                    <ThemedText type="subtitle" style={styles.date}>
+                        {today}
+                    </ThemedText>
                     <Link href="/command-center" asChild>
                         <Pressable
                             accessibilityLabel="Command center"
@@ -57,6 +59,10 @@ const styles = StyleSheet.create({
         // Clears the blur iOS draws under the status bar in a home screen app.
         paddingTop: Spacing.five,
         paddingBottom: Spacing.three,
+    },
+    date: {
+        fontSize: 28,
+        lineHeight: 32,
     },
     pressed: {
         opacity: 0.6,
