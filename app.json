@@ -38,7 +38,15 @@
                     "imageWidth": 76
                 }
             ],
-            "expo-secure-store"
+            "expo-secure-store",
+            [
+                "expo-image-picker",
+                {
+                    "photosPermission": "My command center usa le tue foto per scegliere la vision board.",
+                    "cameraPermission": false,
+                    "microphonePermission": false
+                }
+            ]
         ],
         "experiments": {
             "typedRoutes": true,

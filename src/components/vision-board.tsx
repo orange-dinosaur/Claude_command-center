@@ -1,0 +1,216 @@
+import { Image } from 'expo-image';
+import { useState } from 'react';
+import {
+    ActivityIndicator,
+    Modal,
+    Platform,
+    Pressable,
+    StyleSheet,
+    View,
+    type ViewStyle,
+} from 'react-native';
+
+import { apiUrl } from '@/auth/client';
+import { ThemedText } from '@/components/themed-text';
+import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { useVisionBoard } from '@/hooks/use-vision-board';
+
+/**
+ * Safari shows its own save/share menu on a long-pressed image. Both
+ * properties are inherited, so setting them here reaches the <img>.
+ */
+const noCallout = Platform.select({
+    web: { WebkitTouchCallout: 'none', userSelect: 'none' } as ViewStyle,
+});
+
+export function VisionBoard() {
+    const theme = useTheme();
+    const { image, busy, error, choose, remove } = useVisionBoard();
+    const [menu, setMenu] = useState<'closed' | 'actions' | 'confirm'>(
+        'closed'
+    );
+
+    const close = () => setMenu('closed');
+
+    if (image === undefined) {
+        return (
+            <View style={styles.center}>
+                <ActivityIndicator color={theme.textMuted} />
+            </View>
+        );
+    }
+
+    return (
+        <View style={styles.container}>
+            {image ? (
+                <Pressable
+                    onLongPress={() => setMenu('actions')}
+                    accessibilityLabel="Vision board. Tieni premuto per modificarla."
+                    style={[styles.fill, noCallout]}>
+                    <Image
+                        source={{ uri: apiUrl(image) }}
+                        contentFit="contain"
+                        style={styles.fill}
+                        accessibilityIgnoresInvertColors
+                    />
+                </Pressable>
+            ) : (
+                <Pressable
+                    onPress={choose}
+                    disabled={busy}
+                    accessibilityRole="button"
+                    style={({ pressed }) => [
+                        styles.empty,
+                        { borderColor: theme.textMuted },
+                        pressed && styles.pressed,
+                    ]}>
+                    <ThemedText themeColor="textMuted">
+                        Carica la tua vision board
+                    </ThemedText>
+                </Pressable>
+            )}
+
+            {busy && (
+                <View style={styles.overlay}>
+                    <ActivityIndicator color={theme.accent} size="large" />
+                </View>
+            )}
+
+            {error && (
+                <ThemedText
+                    type="small"
+                    themeColor="danger"
+                    style={styles.error}>
+                    {error}
+                </ThemedText>
+            )}
+
+            <Modal
+                visible={menu !== 'closed'}
+                transparent
+                animationType="fade"
+                onRequestClose={close}>
+                <Pressable style={styles.backdrop} onPress={close}>
+                    <View
+                        style={[
+                            styles.sheet,
+                            { backgroundColor: theme.backgroundElement },
+                        ]}>
+                        {menu === 'actions' ? (
+                            <>
+                                <SheetButton
+                                    title="Sostituisci"
+                                    onPress={() => {
+                                        close();
+                                        choose();
+                                    }}
+                                />
+                                <SheetButton
+                                    title="Rimuovi"
+                                    danger
+                                    onPress={() => setMenu('confirm')}
+                                />
+                            </>
+                        ) : (
+                            <>
+                                <ThemedText
+                                    type="subtitle"
+                                    style={styles.sheetTitle}>
+                                    Rimuovere la vision board?
+                                </ThemedText>
+                                <SheetButton
+                                    title="Rimuovi"
+                                    danger
+                                    onPress={() => {
+                                        close();
+                                        remove();
+                                    }}
+                                />
+                            </>
+                        )}
+                        <SheetButton title="Annulla" onPress={close} />
+                    </View>
+                </Pressable>
+            </Modal>
+        </View>
+    );
+}
+
+function SheetButton({
+    title,
+    onPress,
+    danger,
+}: {
+    title: string;
+    onPress: () => void;
+    danger?: boolean;
+}) {
+    return (
+        <Pressable
+            onPress={onPress}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+                styles.sheetButton,
+                pressed && styles.pressed,
+            ]}>
+            <ThemedText themeColor={danger ? 'danger' : 'accent'}>
+                {title}
+            </ThemedText>
+        </Pressable>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        paddingHorizontal: Spacing.four,
+        paddingBottom: Spacing.four,
+    },
+    center: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    fill: {
+        flex: 1,
+    },
+    empty: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderStyle: 'dashed',
+        borderRadius: 20,
+    },
+    pressed: {
+        opacity: 0.6,
+    },
+    overlay: {
+        ...StyleSheet.absoluteFill,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    error: {
+        paddingTop: Spacing.two,
+        textAlign: 'center',
+    },
+    backdrop: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        padding: Spacing.three,
+    },
+    sheet: {
+        borderRadius: 20,
+        paddingVertical: Spacing.two,
+    },
+    sheetTitle: {
+        textAlign: 'center',
+        paddingVertical: Spacing.three,
+    },
+    sheetButton: {
+        alignItems: 'center',
+        paddingVertical: Spacing.three,
+    },
+});

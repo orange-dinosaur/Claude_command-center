@@ -39,3 +39,23 @@ export const authClient = createAuthClient({
         }),
     ],
 });
+
+/** API paths as absolute URLs, which native needs to load or fetch them. */
+export function apiUrl(path: string): string {
+    return `${baseURL ?? ''}${path}`;
+}
+
+/**
+ * Calls an API route as the signed-in user. Native has no cookie jar, so the
+ * session cookie the Expo plugin stored is attached by hand.
+ */
+export async function apiFetch(
+    path: string,
+    init?: RequestInit
+): Promise<Response> {
+    const cookie = await authClient.getCookie();
+    return fetch(apiUrl(path), {
+        ...init,
+        headers: { ...init?.headers, cookie },
+    });
+}

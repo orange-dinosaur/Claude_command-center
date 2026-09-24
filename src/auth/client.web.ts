@@ -15,3 +15,13 @@ export const verificationCallbackURL = '/';
 export const resetPasswordURL = '/reset-password';
 
 export const authClient = createAuthClient();
+
+/** Same-origin, so a path is already a URL the browser can use. */
+export function apiUrl(path: string): string {
+    return path;
+}
+
+/** The browser attaches the session cookie itself. */
+export function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+    return fetch(path, init);
+}

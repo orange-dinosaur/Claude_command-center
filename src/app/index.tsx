@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { VisionBoard } from '@/components/vision-board';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useToday } from '@/hooks/use-today';
@@ -38,7 +39,7 @@ export default function Home() {
                         </Pressable>
                     </Link>
                 </View>
-                <View style={styles.visionBoard} />
+                <VisionBoard />
             </SafeAreaView>
         </ThemedView>
     );
@@ -57,8 +58,5 @@ const styles = StyleSheet.create({
     },
     pressed: {
         opacity: 0.6,
-    },
-    visionBoard: {
-        flex: 1,
     },
 });
