@@ -1,38 +1,29 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import {
-    ActivityIndicator,
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiFetch } from '@/auth/client';
 import { DateField } from '@/components/date-field';
+import { FormActions } from '@/components/form-actions';
 import { ScreenHeader } from '@/components/screen-header';
+import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import type { Checkup } from '@/hooks/use-health';
-import { useFocusRing } from '@/hooks/use-focus-ring';
 import { useTheme } from '@/hooks/use-theme';
 
 /** Adds a check-up, or edits the one in `?id=`. */
 export default function CheckupPage() {
     const theme = useTheme();
     const router = useRouter();
-    const focus = useFocusRing();
     const { id } = useLocalSearchParams<{ id?: string }>();
     const [name, setName] = useState('');
     const [lastDate, setLastDate] = useState<string | null>(null);
     const [loading, setLoading] = useState(Boolean(id));
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [confirming, setConfirming] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -93,7 +84,6 @@ export default function CheckupPage() {
     };
 
     const remove = async () => {
-        setConfirming(false);
         setBusy(true);
         setError(null);
         try {
@@ -124,30 +114,12 @@ export default function CheckupPage() {
                     />
                 ) : (
                     <ScrollView contentContainerStyle={styles.body}>
-                        <View style={styles.fieldGroup}>
-                            <ThemedText type="small" themeColor="textMuted">
-                                Visita
-                            </ThemedText>
-                            <TextInput
-                                value={name}
-                                onChangeText={setName}
-                                onFocus={focus.onFocus}
-                                onBlur={focus.onBlur}
-                                placeholder="Dentista"
-                                placeholderTextColor={theme.textMuted}
-                                maxLength={200}
-                                accessibilityLabel="Visita"
-                                style={[
-                                    styles.input,
-                                    {
-                                        color: theme.text,
-                                        backgroundColor:
-                                            theme.backgroundElement,
-                                    },
-                                    focus.ring,
-                                ]}
-                            />
-                        </View>
+                        <TextField
+                            label="Visita"
+                            value={name}
+                            onChange={setName}
+                            placeholder="Dentista"
+                        />
                         <View style={styles.fieldGroup}>
                             <ThemedText type="small" themeColor="textMuted">
                                 Ultima visita
@@ -159,95 +131,15 @@ export default function CheckupPage() {
                             />
                         </View>
 
-                        <View style={styles.spacer} />
-
-                        {error && (
-                            <ThemedText
-                                type="small"
-                                themeColor="danger"
-                                style={styles.center}>
-                                {error}
-                            </ThemedText>
-                        )}
-                        <Pressable
-                            onPress={save}
-                            disabled={busy}
-                            accessibilityRole="button"
-                            style={({ pressed }) => [
-                                styles.saveButton,
-                                { backgroundColor: theme.accent },
-                                pressed && styles.pressed,
-                            ]}>
-                            <ThemedText
-                                style={[
-                                    styles.buttonText,
-                                    { color: theme.onAccent },
-                                ]}>
-                                Salva
-                            </ThemedText>
-                        </Pressable>
-                        {id && (
-                            <Pressable
-                                onPress={() => setConfirming(true)}
-                                disabled={busy}
-                                accessibilityRole="button"
-                                style={({ pressed }) => [
-                                    styles.deleteButton,
-                                    pressed && styles.pressed,
-                                ]}>
-                                <ThemedText themeColor="danger">
-                                    Elimina
-                                </ThemedText>
-                            </Pressable>
-                        )}
+                        <FormActions
+                            error={error}
+                            busy={busy}
+                            onSave={save}
+                            onDelete={id ? remove : undefined}
+                            name={name}
+                        />
                     </ScrollView>
                 )}
-
-                <Modal
-                    visible={confirming}
-                    transparent
-                    animationType="fade"
-                    onRequestClose={() => setConfirming(false)}>
-                    <Pressable
-                        style={styles.backdrop}
-                        onPress={() => setConfirming(false)}>
-                        <View
-                            style={[
-                                styles.sheet,
-                                { backgroundColor: theme.backgroundElement },
-                            ]}>
-                            <ThemedText
-                                type="subtitle"
-                                style={styles.sheetTitle}>
-                                Eliminare {name}?
-                            </ThemedText>
-                            <Pressable
-                                onPress={remove}
-                                accessibilityRole="button"
-                                style={({ pressed }) => [
-                                    styles.sheetButton,
-                                    pressed && styles.pressed,
-                                ]}>
-                                <ThemedText themeColor="danger">
-                                    Elimina
-                                </ThemedText>
-                            </Pressable>
-                            <Pressable
-                                onPress={() => setConfirming(false)}
-                                accessibilityRole="button"
-                                style={({ pressed }) => [
-                                    styles.sheetButton,
-                                    {
-                                        borderTopWidth: 1,
-                                        borderTopColor: theme.border,
-                                    },
-                                    pressed && styles.pressed,
-                                ]}>
-                                <ThemedText>Annulla</ThemedText>
-                            </Pressable>
-                        </View>
-                    </Pressable>
-                </Modal>
             </SafeAreaView>
         </ThemedView>
     );
@@ -267,56 +159,5 @@ const styles = StyleSheet.create({
     },
     fieldGroup: {
         gap: Spacing.one,
-    },
-    input: {
-        fontSize: 16,
-        // Matches the text line height so it lines up with the date field.
-        lineHeight: 24,
-        borderRadius: 12,
-        paddingHorizontal: Spacing.three,
-        paddingVertical: Spacing.two,
-    },
-    spacer: {
-        flex: 1,
-        minHeight: Spacing.six,
-    },
-    center: {
-        textAlign: 'center',
-    },
-    saveButton: {
-        paddingVertical: Spacing.three,
-        borderRadius: 14,
-        alignItems: 'center',
-    },
-    buttonText: {
-        fontFamily: 'Karla_600SemiBold',
-        fontSize: 18,
-        lineHeight: 24,
-    },
-    deleteButton: {
-        alignSelf: 'center',
-        padding: Spacing.three,
-    },
-    pressed: {
-        opacity: 0.6,
-    },
-    backdrop: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        padding: Spacing.three,
-    },
-    sheet: {
-        borderRadius: 20,
-        paddingVertical: Spacing.two,
-    },
-    sheetTitle: {
-        textAlign: 'center',
-        paddingTop: Spacing.three,
-        paddingBottom: Spacing.one,
-    },
-    sheetButton: {
-        alignItems: 'center',
-        paddingVertical: Spacing.three,
     },
 });
