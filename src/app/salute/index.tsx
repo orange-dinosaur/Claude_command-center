@@ -1,5 +1,12 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import {
+    ActivityIndicator,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/screen-header';
@@ -17,6 +24,7 @@ type Tab = (typeof TABS)[number];
 
 export default function Health() {
     const theme = useTheme();
+    const router = useRouter();
     const { health, error } = useHealth();
     const [tab, setTab] = useState<Tab>('Visite');
 
@@ -42,18 +50,42 @@ export default function Health() {
                     />
                 ) : tab === 'Visite' ? (
                     <ScrollView contentContainerStyle={styles.list}>
+                        <Pressable
+                            onPress={() => router.push('/salute/visita')}
+                            accessibilityRole="button"
+                            style={({ pressed }) => [
+                                styles.addButton,
+                                { backgroundColor: theme.accent },
+                                pressed && styles.pressed,
+                            ]}>
+                            <ThemedText
+                                style={[
+                                    styles.buttonText,
+                                    { color: theme.onAccent },
+                                ]}>
+                                Aggiungi
+                            </ThemedText>
+                        </Pressable>
                         {health.checkups.length === 0 && (
                             <Empty>Ancora nessuna visita.</Empty>
                         )}
                         {health.checkups.map((c) => (
-                            <View
+                            <Pressable
                                 key={c.id}
-                                style={[
+                                onPress={() =>
+                                    router.push({
+                                        pathname: '/salute/visita',
+                                        params: { id: c.id },
+                                    })
+                                }
+                                accessibilityRole="button"
+                                style={({ pressed }) => [
                                     styles.row,
                                     {
                                         backgroundColor:
                                             theme.backgroundElement,
                                     },
+                                    pressed && styles.pressed,
                                 ]}>
                                 <ThemedText style={styles.grow}>
                                     {c.name}
@@ -63,7 +95,7 @@ export default function Health() {
                                         ? formatDay(c.lastDate)
                                         : 'Nessuna data'}
                                 </ThemedText>
-                            </View>
+                            </Pressable>
                         ))}
                     </ScrollView>
                 ) : (
@@ -140,6 +172,20 @@ const styles = StyleSheet.create({
     list: {
         padding: Spacing.four,
         gap: Spacing.two,
+    },
+    addButton: {
+        paddingVertical: Spacing.three,
+        borderRadius: 14,
+        alignItems: 'center',
+        marginBottom: Spacing.two,
+    },
+    buttonText: {
+        fontFamily: 'Karla_600SemiBold',
+        fontSize: 18,
+        lineHeight: 24,
+    },
+    pressed: {
+        opacity: 0.6,
     },
     section: {
         marginTop: Spacing.three,
