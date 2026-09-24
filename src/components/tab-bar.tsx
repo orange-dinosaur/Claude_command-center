@@ -1,4 +1,10 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import {
+    Pressable,
+    StyleSheet,
+    View,
+    type StyleProp,
+    type ViewStyle,
+} from 'react-native';
 
 import { ThemedText } from './themed-text';
 
@@ -9,6 +15,7 @@ interface TabBarProps<T extends string> {
     tabs: readonly T[];
     value: T;
     onChange: (tab: T) => void;
+    style?: StyleProp<ViewStyle>;
 }
 
 /** A row of equal segments, one of them selected. */
@@ -16,13 +23,18 @@ export function TabBar<T extends string>({
     tabs,
     value,
     onChange,
+    style,
 }: TabBarProps<T>) {
     const theme = useTheme();
 
     return (
         <View
             accessibilityRole="tablist"
-            style={[styles.bar, { backgroundColor: theme.backgroundElement }]}>
+            style={[
+                styles.bar,
+                { backgroundColor: theme.backgroundElement },
+                style,
+            ]}>
             {tabs.map((tab) => {
                 const selected = tab === value;
                 return (

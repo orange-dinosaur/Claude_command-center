@@ -1,4 +1,5 @@
 import { SymbolView } from 'expo-symbols';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
     ActivityIndicator,
@@ -10,17 +11,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/screen-header';
+import { Stars } from '@/components/stars';
 import { TabBar } from '@/components/tab-bar';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import {
-    useTitles,
-    type Kind,
-    type Status,
-    type Title,
-} from '@/hooks/use-titles';
+import { useTitles, type Kind, type Title } from '@/hooks/use-titles';
+import { STATUS_LABELS } from '@/media/labels';
 
 const TABS = ['Libri', 'Film', 'Serie'] as const;
 
@@ -32,14 +30,6 @@ const KIND: Record<Tab, Kind> = {
     Serie: 'series',
 };
 
-const READ = { doing: 'In lettura', todo: 'Da leggere', done: 'Letti' };
-const WATCH = { doing: 'In visione', todo: 'Da vedere', done: 'Visti' };
-const LABELS: Record<Kind, Record<Status, string>> = {
-    book: READ,
-    film: WATCH,
-    series: WATCH,
-};
-
 const EMPTY: Record<Kind, string> = {
     book: 'Ancora nessun libro.',
     film: 'Ancora nessun film.',
@@ -48,6 +38,7 @@ const EMPTY: Record<Kind, string> = {
 
 export default function Media() {
     const theme = useTheme();
+    const router = useRouter();
     const { titles, error } = useTitles();
     const [tab, setTab] = useState<Tab>('Libri');
     // Closed sections, keyed like "book-todo", open once tapped.
@@ -78,6 +69,27 @@ export default function Media() {
                     />
                 ) : (
                     <ScrollView contentContainerStyle={styles.list}>
+                        <Pressable
+                            onPress={() =>
+                                router.push({
+                                    pathname: '/media/titolo',
+                                    params: { kind },
+                                })
+                            }
+                            accessibilityRole="button"
+                            style={({ pressed }) => [
+                                styles.addButton,
+                                { backgroundColor: theme.accent },
+                                pressed && styles.pressed,
+                            ]}>
+                            <ThemedText
+                                style={[
+                                    styles.buttonText,
+                                    { color: theme.onAccent },
+                                ]}>
+                                Aggiungi
+                            </ThemedText>
+                        </Pressable>
                         {sections.doing.length +
                             sections.todo.length +
                             sections.done.length ===
@@ -97,7 +109,7 @@ export default function Media() {
                                 <View key={status} style={styles.section}>
                                     {status === 'doing' ? (
                                         <ThemedText type="subtitle">
-                                            {LABELS[kind][status]}
+                                            {STATUS_LABELS[kind][status]}
                                         </ThemedText>
                                     ) : (
                                         <Pressable
@@ -118,7 +130,7 @@ export default function Media() {
                                             <ThemedText
                                                 type="subtitle"
                                                 style={styles.grow}>
-                                                {LABELS[kind][status]}
+                                                {STATUS_LABELS[kind][status]}
                                             </ThemedText>
                                             <ThemedText themeColor="textMuted">
                                                 {rows.length}
@@ -160,10 +172,22 @@ export default function Media() {
 
 function TitleRow({ title }: { title: Title }) {
     const theme = useTheme();
+    const router = useRouter();
 
     return (
-        <View
-            style={[styles.row, { backgroundColor: theme.backgroundElement }]}>
+        <Pressable
+            onPress={() =>
+                router.push({
+                    pathname: '/media/titolo',
+                    params: { kind: title.kind, id: title.id },
+                })
+            }
+            accessibilityRole="button"
+            style={({ pressed }) => [
+                styles.row,
+                { backgroundColor: theme.backgroundElement },
+                pressed && styles.pressed,
+            ]}>
             <View style={styles.grow}>
                 <ThemedText>
                     {title.kind === 'series'
@@ -177,45 +201,7 @@ function TitleRow({ title }: { title: Title }) {
                 )}
             </View>
             {title.rating !== null && <Stars rating={title.rating} />}
-        </View>
-    );
-}
-
-/**
- * Five stars for a rating in half stars, 1 to 10. Each is a faint star with
- * an accent one on top, clipped to the filled part. The web symbol font has
- * no filled star, so these are plain characters.
- */
-function Stars({ rating }: { rating: number }) {
-    const theme = useTheme();
-
-    return (
-        <View
-            style={styles.stars}
-            accessible
-            accessibilityLabel={`${String(rating / 2).replace('.', ',')} stelle su 5`}>
-            {[1, 2, 3, 4, 5].map((star) => {
-                const filled = Math.min(Math.max(rating - star * 2 + 2, 0), 2);
-                return (
-                    <View key={star}>
-                        <ThemedText
-                            style={[styles.star, { color: theme.border }]}>
-                            ★
-                        </ThemedText>
-                        <View
-                            style={[
-                                styles.starFill,
-                                { width: `${filled * 50}%` },
-                            ]}>
-                            <ThemedText
-                                style={[styles.star, { color: theme.accent }]}>
-                                ★
-                            </ThemedText>
-                        </View>
-                    </View>
-                );
-            })}
-        </View>
+        </Pressable>
     );
 }
 
@@ -254,18 +240,14 @@ const styles = StyleSheet.create({
     grow: {
         flex: 1,
     },
-    stars: {
-        flexDirection: 'row',
+    addButton: {
+        paddingVertical: Spacing.three,
+        borderRadius: 14,
+        alignItems: 'center',
     },
-    star: {
+    buttonText: {
+        fontFamily: 'Karla_600SemiBold',
         fontSize: 18,
-        lineHeight: 22,
-    },
-    starFill: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        bottom: 0,
-        overflow: 'hidden',
+        lineHeight: 24,
     },
 });

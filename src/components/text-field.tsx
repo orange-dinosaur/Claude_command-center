@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { ThemedText } from './themed-text';
 
@@ -11,6 +11,7 @@ interface TextFieldProps {
     value: string;
     onChange: (value: string) => void;
     placeholder: string;
+    keyboardType?: TextInputProps['keyboardType'];
 }
 
 /** A one-line text input with a small muted label above it. */
@@ -19,6 +20,7 @@ export function TextField({
     value,
     onChange,
     placeholder,
+    keyboardType,
 }: TextFieldProps) {
     const theme = useTheme();
     const focus = useFocusRing();
@@ -35,6 +37,7 @@ export function TextField({
                 onBlur={focus.onBlur}
                 placeholder={placeholder}
                 placeholderTextColor={theme.textMuted}
+                keyboardType={keyboardType}
                 maxLength={200}
                 accessibilityLabel={label}
                 style={[
