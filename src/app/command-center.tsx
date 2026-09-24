@@ -26,6 +26,15 @@ export default function CommandCenter() {
                             web: 'calendar_month',
                         }}
                     />
+                    <ToolButton
+                        title="Salute"
+                        href="/salute"
+                        icon={{
+                            ios: 'heart.text.square',
+                            android: 'monitor_heart',
+                            web: 'monitor_heart',
+                        }}
+                    />
                 </View>
                 <View style={styles.spacer} />
                 <Pressable
