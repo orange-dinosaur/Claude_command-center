@@ -1,2 +1,5 @@
 # Working notes, not part of the project
 .notes/
+
+# macOS
+.DS_Store
