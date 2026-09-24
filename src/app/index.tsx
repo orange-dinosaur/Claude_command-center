@@ -1,17 +1,29 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { ScreenHeader } from '@/components/screen-header';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Spacing } from '@/constants/theme';
 
 export default function Index() {
     return (
-        <View style={styles.container}>
-            <Text>My command center</Text>
-        </View>
+        <ThemedView style={styles.container}>
+            <SafeAreaView style={styles.container}>
+                <ScreenHeader title="My command center" />
+                <ThemedText themeColor="textMuted" style={styles.body}>
+                    Segnaposto
+                </ThemedText>
+            </SafeAreaView>
+        </ThemedView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
+    },
+    body: {
+        paddingHorizontal: Spacing.four,
     },
 });
