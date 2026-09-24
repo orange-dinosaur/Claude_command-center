@@ -26,6 +26,18 @@ export default function Root({ children }: PropsWithChildren) {
                     content="black-translucent"
                 />
 
+                {/* iOS paints the status bar in this colour, so it follows the theme. */}
+                <meta
+                    name="theme-color"
+                    media="(prefers-color-scheme: light)"
+                    content={Colors.light.background}
+                />
+                <meta
+                    name="theme-color"
+                    media="(prefers-color-scheme: dark)"
+                    content={Colors.dark.background}
+                />
+
                 <link rel="manifest" href="/manifest.json" />
                 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
