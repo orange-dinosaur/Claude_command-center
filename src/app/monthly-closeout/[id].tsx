@@ -172,11 +172,13 @@ export default function CloseoutMonth() {
                                 accessibilityRole="button"
                                 style={({ pressed }) => [
                                     styles.sheetButton,
+                                    {
+                                        borderTopWidth: 1,
+                                        borderTopColor: theme.border,
+                                    },
                                     pressed && styles.pressed,
                                 ]}>
-                                <ThemedText themeColor="accent">
-                                    Annulla
-                                </ThemedText>
+                                <ThemedText>Annulla</ThemedText>
                             </Pressable>
                         </View>
                     </Pressable>

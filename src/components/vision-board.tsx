@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import {
     ActivityIndicator,
@@ -12,7 +13,7 @@ import {
 
 import { apiUrl } from '@/auth/client';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Spacing, type ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useVisionBoard } from '@/hooks/use-vision-board';
 
@@ -65,6 +66,16 @@ export function VisionBoard() {
                         { borderColor: theme.textMuted },
                         pressed && styles.pressed,
                     ]}>
+                    <SymbolView
+                        name={{
+                            ios: 'photo.badge.plus',
+                            android: 'add_photo_alternate',
+                            web: 'add_photo_alternate',
+                        }}
+                        tintColor={theme.accent}
+                        size={32}
+                        style={styles.emptyIcon}
+                    />
                     <ThemedText themeColor="textMuted">
                         Carica la tua vision board
                     </ThemedText>
@@ -101,6 +112,7 @@ export function VisionBoard() {
                             <>
                                 <SheetButton
                                     title="Sostituisci"
+                                    first
                                     onPress={() => {
                                         close();
                                         choose();
@@ -108,7 +120,7 @@ export function VisionBoard() {
                                 />
                                 <SheetButton
                                     title="Rimuovi"
-                                    danger
+                                    color="danger"
                                     onPress={() => setMenu('confirm')}
                                 />
                             </>
@@ -121,7 +133,8 @@ export function VisionBoard() {
                                 </ThemedText>
                                 <SheetButton
                                     title="Rimuovi"
-                                    danger
+                                    color="danger"
+                                    first
                                     onPress={() => {
                                         close();
                                         remove();
@@ -129,7 +142,11 @@ export function VisionBoard() {
                                 />
                             </>
                         )}
-                        <SheetButton title="Annulla" onPress={close} />
+                        <SheetButton
+                            title="Annulla"
+                            color="text"
+                            onPress={close}
+                        />
                     </View>
                 </Pressable>
             </Modal>
@@ -140,23 +157,29 @@ export function VisionBoard() {
 function SheetButton({
     title,
     onPress,
-    danger,
+    color = 'accent',
+    first,
 }: {
     title: string;
     onPress: () => void;
-    danger?: boolean;
+    color?: ThemeColor;
+    first?: boolean;
 }) {
+    const theme = useTheme();
+
     return (
         <Pressable
             onPress={onPress}
             accessibilityRole="button"
             style={({ pressed }) => [
                 styles.sheetButton,
+                !first && {
+                    borderTopWidth: 1,
+                    borderTopColor: theme.border,
+                },
                 pressed && styles.pressed,
             ]}>
-            <ThemedText themeColor={danger ? 'danger' : 'accent'}>
-                {title}
-            </ThemedText>
+            <ThemedText themeColor={color}>{title}</ThemedText>
         </Pressable>
     );
 }
@@ -182,6 +205,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderStyle: 'dashed',
         borderRadius: 20,
+    },
+    emptyIcon: {
+        marginBottom: Spacing.two,
     },
     pressed: {
         opacity: 0.6,
