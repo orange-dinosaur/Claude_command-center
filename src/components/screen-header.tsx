@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -9,25 +9,26 @@ import { useTheme } from '@/hooks/use-theme';
 
 interface ScreenHeaderProps {
     title: string;
-    showBack?: boolean;
+    /** Where the back arrow leads when there is no history to go back to. */
+    backTo?: Href;
 }
 
 /**
- * Back falls back to Home because a screen can be opened straight from the
- * address bar, where there is no history to go back to.
+ * A screen can be opened straight from the address bar, so back needs a
+ * fixed destination as well as the history.
  */
-export function ScreenHeader({ title, showBack = false }: ScreenHeaderProps) {
+export function ScreenHeader({ title, backTo }: ScreenHeaderProps) {
     const theme = useTheme();
     const router = useRouter();
 
     return (
         <View style={styles.container}>
-            {showBack && (
+            {backTo && (
                 <Pressable
                     onPress={() =>
                         router.canGoBack()
                             ? router.back()
-                            : router.navigate('/')
+                            : router.navigate(backTo)
                     }
                     accessibilityLabel="Indietro"
                     accessibilityRole="button"
