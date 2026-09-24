@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
     ActivityIndicator,
     Image,
@@ -12,6 +11,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useFocusRing } from '@/hooks/use-focus-ring';
 import { useTheme } from '@/hooks/use-theme';
 
 const MARK = {
@@ -40,7 +40,7 @@ export function AuthField({
     ...input
 }: TextInputProps & { label: string }) {
     const theme = useTheme();
-    const [focused, setFocused] = useState(false);
+    const focus = useFocusRing();
 
     return (
         <View style={styles.field}>
@@ -54,20 +54,16 @@ export function AuthField({
                         color: theme.text,
                         backgroundColor: theme.backgroundElement,
                     },
-                    focused && {
-                        outlineWidth: 2,
-                        outlineStyle: 'solid',
-                        outlineColor: theme.accent,
-                    },
+                    focus.ring,
                 ]}
                 placeholderTextColor={theme.textMuted}
                 accessibilityLabel={label}
                 onFocus={(e) => {
-                    setFocused(true);
+                    focus.onFocus();
                     onFocus?.(e);
                 }}
                 onBlur={(e) => {
-                    setFocused(false);
+                    focus.onBlur();
                     onBlur?.(e);
                 }}
                 {...input}

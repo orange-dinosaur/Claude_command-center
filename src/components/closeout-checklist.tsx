@@ -10,6 +10,7 @@ import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import type { ChecklistItem } from '@/hooks/use-closeout-month';
+import { useFocusRing } from '@/hooks/use-focus-ring';
 import { useTheme } from '@/hooks/use-theme';
 
 const MAX_AREA = 40;
@@ -245,13 +246,18 @@ function Field({
     maxLength: number;
 }) {
     const theme = useTheme();
+    const focus = useFocusRing();
 
     return (
         <TextInput
             value={value}
             onChangeText={onChangeText}
             onSubmitEditing={onSubmit}
-            onBlur={onBlur}
+            onFocus={focus.onFocus}
+            onBlur={() => {
+                focus.onBlur();
+                onBlur();
+            }}
             placeholder={placeholder}
             placeholderTextColor={theme.textMuted}
             accessibilityLabel={placeholder}
@@ -268,6 +274,7 @@ function Field({
                     color: theme.text,
                     backgroundColor: theme.backgroundElement,
                 },
+                focus.ring,
             ]}
         />
     );

@@ -10,6 +10,7 @@ import { AppState, StyleSheet, TextInput, View } from 'react-native';
 import type { Section } from '@/closeout/questions';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
+import { useFocusRing } from '@/hooks/use-focus-ring';
 import { useTheme } from '@/hooks/use-theme';
 
 const SAVE_DELAY = 800;
@@ -88,6 +89,7 @@ function AnswerField({
     multiline?: boolean;
 }) {
     const theme = useTheme();
+    const focus = useFocusRing();
     const [text, setText] = useState(initial);
     const [status, setStatus] = useState<Status>('idle');
     // A multiline field does not grow with its text on web by itself.
@@ -148,7 +150,11 @@ function AnswerField({
             <TextInput
                 value={text}
                 onChangeText={onChangeText}
-                onBlur={save}
+                onFocus={focus.onFocus}
+                onBlur={() => {
+                    focus.onBlur();
+                    save();
+                }}
                 multiline={multiline}
                 onContentSizeChange={(e) =>
                     setHeight(
@@ -163,6 +169,7 @@ function AnswerField({
                         color: theme.text,
                         backgroundColor: theme.backgroundElement,
                     },
+                    focus.ring,
                 ]}
             />
             {status !== 'idle' && (
