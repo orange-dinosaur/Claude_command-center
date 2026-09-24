@@ -1,5 +1,5 @@
 /**
- * Request body checks shared by the check-up and medicine API routes.
+ * Request body checks shared by the check-up, medicine and title API routes.
  * Server-side only.
  */
 
