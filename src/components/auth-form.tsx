@@ -69,7 +69,7 @@ export function SubmitButton({
                 <ActivityIndicator color={theme.background} />
             ) : (
                 <ThemedText
-                    style={[styles.buttonText, { color: theme.background }]}>
+                    style={[styles.buttonText, { color: theme.onAccent }]}>
                     {title}
                 </ThemedText>
             )}

@@ -38,7 +38,7 @@ export function TabBar<T extends string>({
                         <ThemedText
                             style={[
                                 styles.label,
-                                selected && { color: theme.backgroundElement },
+                                selected && { color: theme.onAccent },
                             ]}>
                             {tab}
                         </ThemedText>

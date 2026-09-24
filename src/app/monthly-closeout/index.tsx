@@ -66,7 +66,7 @@ export default function MonthlyCloseout() {
                     ]}>
                     <ThemedText
                         type="subtitle"
-                        style={{ color: theme.backgroundElement }}>
+                        style={{ color: theme.onAccent }}>
                         Nuovo mese
                     </ThemedText>
                 </Pressable>
@@ -221,7 +221,7 @@ function MonthPicker({
                                 type="small"
                                 style={
                                     selected && {
-                                        color: theme.backgroundElement,
+                                        color: theme.onAccent,
                                     }
                                 }>
                                 {name.slice(0, 3)}

@@ -145,10 +145,7 @@ function Row({
                     {item.done && (
                         <ThemedText
                             type="small"
-                            style={[
-                                styles.tick,
-                                { color: theme.backgroundElement },
-                            ]}>
+                            style={[styles.tick, { color: theme.onAccent }]}>
                             ✓
                         </ThemedText>
                     )}
