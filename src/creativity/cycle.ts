@@ -34,6 +34,21 @@ export const MIDPOINT_LABELS = {
     midpointSimplify: 'Cosa devo semplificare per le prossime sei settimane?',
 } as const;
 
+/** Under the heading "Three shifts I noticed". */
+export const CLOSING_SHIFT_LABELS = {
+    closingShift1: '1',
+    closingShift2: '2',
+    closingShift3: '3',
+} as const;
+
+export const CLOSING_LABELS = {
+    closingPractice: 'La mia pratica più utile',
+    closingDiscovery: 'La mia scoperta più sorprendente',
+    closingMade: 'Qualcosa che ho creato, tentato o ripreso',
+    closingBelief: 'Una convinzione che lascio andare',
+    closingPromise: 'Una promessa per la mia prossima stagione creativa',
+} as const;
+
 /** The answers written in the cycle form, in the order they are shown. */
 export const ANSWER_LABELS = { ...INTENT_LABELS, ...OPENING_LABELS };
 

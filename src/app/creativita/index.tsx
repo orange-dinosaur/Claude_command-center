@@ -197,6 +197,21 @@ function CycleView({ cycle, past }: { cycle: CycleWithWeeks; past: boolean }) {
                         </Pressable>
                     );
                 })}
+                <Pressable
+                    onPress={() =>
+                        router.push({
+                            pathname: '/creativita/revisione',
+                            params: { cycle: cycle.id },
+                        })
+                    }
+                    accessibilityRole="button"
+                    style={({ pressed }) => [
+                        styles.row,
+                        { backgroundColor: theme.backgroundElement },
+                        pressed && styles.pressed,
+                    ]}>
+                    <ThemedText>Closing review</ThemedText>
+                </Pressable>
             </View>
 
             {!past && (
