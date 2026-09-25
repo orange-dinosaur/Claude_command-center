@@ -1,7 +1,7 @@
 /**
  * Text fields for some of a cycle's answers, one per entry of `labels`. Each
- * saves when it loses focus, only if changed; a refused save puts the text
- * back.
+ * saves when it loses focus, only if changed; a refused save keeps the text,
+ * so leaving the field again retries.
  */
 
 import { useState } from 'react';
@@ -46,7 +46,6 @@ export function CycleAnswers<K extends AnswerKey>({
             if (!res.ok) throw new Error();
             setSaved((s) => ({ ...s, [key]: text }));
         } catch {
-            setTexts((t) => ({ ...t, [key]: saved[key] }));
             setError('Non riesco a salvare. Riprova.');
         }
     };
