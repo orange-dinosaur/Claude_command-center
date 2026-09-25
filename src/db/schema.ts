@@ -18,6 +18,7 @@ import {
     text,
     timestamp,
     unique,
+    uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('user', {
@@ -357,5 +358,58 @@ export const creativeWeek = pgTable(
             sql`cardinality(${table.dailyPages}) = 7`
         ),
         check('creative_week_energy', sql`${table.energy} between 1 and 10`),
+    ]
+);
+
+/** A kind of workout, such as Corsa. Names are unique per user, ignoring case. */
+export const workoutType = pgTable(
+    'workout_type',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        name: text('name').notNull(),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+        updatedAt: timestamp('updated_at')
+            .defaultNow()
+            .$onUpdate(() => new Date())
+            .notNull(),
+    },
+    (table) => [
+        uniqueIndex('workout_type_user_id_name_idx').on(
+            table.userId,
+            sql`lower(${table.name})`
+        ),
+    ]
+);
+
+/**
+ * One recorded workout. A type in use cannot be deleted. The foreign key is
+ * "no action" rather than "restrict" so deleting a user can still cascade
+ * through both tables.
+ */
+export const workout = pgTable(
+    'workout',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        typeId: text('type_id')
+            .notNull()
+            .references(() => workoutType.id, { onDelete: 'no action' }),
+        date: date('date').notNull(),
+        minutes: integer('minutes'),
+        note: text('note'),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+        updatedAt: timestamp('updated_at')
+            .defaultNow()
+            .$onUpdate(() => new Date())
+            .notNull(),
+    },
+    (table) => [
+        index('workout_user_id_date_idx').on(table.userId, table.date),
+        check('workout_minutes', sql`${table.minutes} between 1 and 600`),
     ]
 );
