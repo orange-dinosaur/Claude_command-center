@@ -15,6 +15,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { formatDay } from '@/dates';
+import { CheckupForm } from '@/health/checkup-form';
+import { MedicineForm } from '@/health/medicine-form';
 import { useHealth, type Medicine } from '@/hooks/use-health';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
@@ -34,7 +36,7 @@ export default function Health() {
         visita?: string;
         farmaco?: string;
     }>();
-    const { health, error } = useHealth();
+    const { health, error, reload } = useHealth();
 
     const tab: Tab =
         params.farmaco || params.tab === 'farmaci' ? 'Farmaci' : 'Visite';
@@ -62,6 +64,13 @@ export default function Health() {
                 params: id ? { id } : undefined,
             });
         }
+    };
+
+    // After a save the record stays selected; after a delete the panel
+    // returns to the empty form.
+    const saved = (kind: Kind, id?: string) => {
+        reload();
+        open(kind, id);
     };
 
     const tabBar = (
@@ -177,7 +186,28 @@ export default function Health() {
                     </View>
                     {list}
                 </View>
-                <View style={styles.grow} />
+                <View style={styles.grow}>
+                    {/* The key starts a fresh form whenever the selection changes. */}
+                    {tab === 'Visite' ? (
+                        <CheckupForm
+                            key={params.visita ?? 'new'}
+                            id={params.visita}
+                            title={params.visita ? 'Visita' : 'Nuova visita'}
+                            onSaved={(id) => saved('visita', id)}
+                            onDeleted={() => saved('visita')}
+                            style={styles.panel}
+                        />
+                    ) : (
+                        <MedicineForm
+                            key={params.farmaco ?? 'new'}
+                            id={params.farmaco}
+                            title={params.farmaco ? 'Farmaco' : 'Nuovo farmaco'}
+                            onSaved={(id) => saved('farmaco', id)}
+                            onDeleted={() => saved('farmaco')}
+                            style={styles.panel}
+                        />
+                    )}
+                </View>
             </ThemedView>
         );
     }
@@ -373,6 +403,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: Spacing.three,
         paddingVertical: Spacing.three,
         borderRadius: 14,
+    },
+    panel: {
+        paddingVertical: 32,
+        paddingHorizontal: 40,
+        // 560 of content plus the padding.
+        maxWidth: 640,
     },
     grow: {
         flex: 1,

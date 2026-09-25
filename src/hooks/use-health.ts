@@ -35,6 +35,8 @@ export function useHealth() {
     // undefined while loading the first time.
     const [health, setHealth] = useState<Health | undefined>(undefined);
     const [error, setError] = useState<string | null>(null);
+    // Bumped by `reload` for pages that change the data without losing focus.
+    const [version, setVersion] = useState(0);
 
     useFocusEffect(
         useCallback(() => {
@@ -59,8 +61,12 @@ export function useHealth() {
             return () => {
                 cancelled = true;
             };
-        }, [])
+            // version is listed only so that reload() fetches again.
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [version])
     );
 
-    return { health, error };
+    const reload = useCallback(() => setVersion((v) => v + 1), []);
+
+    return { health, error, reload };
 }
