@@ -14,6 +14,7 @@ import {
     integer,
     jsonb,
     pgTable,
+    primaryKey,
     text,
     timestamp,
     unique,
@@ -258,5 +259,83 @@ export const title = pgTable(
             'title_end_after_start',
             sql`${table.endDate} >= ${table.startDate}`
         ),
+    ]
+);
+
+/**
+ * One 12-week run of the creativity workbook. It ends 83 days after its
+ * Monday start, or on the day it was interrupted.
+ */
+export const creativeCycle = pgTable(
+    'creative_cycle',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        startDate: date('start_date').notNull(),
+        interruptedOn: date('interrupted_on'),
+        intentPractice: text('intent_practice'),
+        intentFeeling: text('intent_feeling'),
+        intentProject: text('intent_project'),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+        updatedAt: timestamp('updated_at')
+            .defaultNow()
+            .$onUpdate(() => new Date())
+            .notNull(),
+    },
+    (table) => [
+        unique().on(table.userId, table.startDate),
+        check(
+            'creative_cycle_monday',
+            sql`extract(isodow from ${table.startDate}) = 1`
+        ),
+        check(
+            'creative_cycle_interrupted_within',
+            sql`${table.interruptedOn} between ${table.startDate} and ${table.startDate} + 83`
+        ),
+    ]
+);
+
+/**
+ * What the user recorded in one week of a cycle. The row appears the first
+ * time something in that week is saved.
+ */
+export const creativeWeek = pgTable(
+    'creative_week',
+    {
+        cycleId: text('cycle_id')
+            .notNull()
+            .references(() => creativeCycle.id, { onDelete: 'cascade' }),
+        /** 1 to 12. */
+        week: integer('week').notNull(),
+        /** Monday to Sunday. */
+        dailyPages: boolean('daily_pages')
+            .array()
+            .default([false, false, false, false, false, false, false])
+            .notNull(),
+        outing: boolean('outing').default(false).notNull(),
+        tinyAction: boolean('tiny_action').default(false).notNull(),
+        /** By position in the week's theme. */
+        evidence: boolean('evidence').array().default([]).notNull(),
+        /** Half dots, 1 to 10. */
+        energy: integer('energy'),
+        notes: text('notes'),
+        carryForward: text('carry_forward'),
+        reviewed: boolean('reviewed').default(false).notNull(),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+        updatedAt: timestamp('updated_at')
+            .defaultNow()
+            .$onUpdate(() => new Date())
+            .notNull(),
+    },
+    (table) => [
+        primaryKey({ columns: [table.cycleId, table.week] }),
+        check('creative_week_week', sql`${table.week} between 1 and 12`),
+        check(
+            'creative_week_daily_pages',
+            sql`cardinality(${table.dailyPages}) = 7`
+        ),
+        check('creative_week_energy', sql`${table.energy} between 1 and 10`),
     ]
 );
