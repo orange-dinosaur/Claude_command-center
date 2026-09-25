@@ -10,7 +10,7 @@ import { THEMES } from './themes';
 
 import { db } from '@/db';
 import { creativeCycle, creativeWeek } from '@/db/schema';
-import { parseDate } from '@/health/input';
+import { parseDate } from '@/http';
 
 type Cycle = typeof creativeCycle.$inferSelect;
 

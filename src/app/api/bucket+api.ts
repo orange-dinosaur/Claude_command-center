@@ -14,6 +14,7 @@ import { listIdFor } from '@/bucket/list';
 import { nextSeason, type Season, seasonKey, seasonOf } from '@/bucket/season';
 import { db } from '@/db';
 import { bucketItem, bucketSeason } from '@/db/schema';
+import { badRequest } from '@/http';
 
 function currentSeason(request: Request): Season | null {
     const today = new URL(request.url).searchParams.get('today') ?? '';
@@ -21,8 +22,7 @@ function currentSeason(request: Request): Season | null {
     return seasonOf(today);
 }
 
-const invalidToday = () =>
-    Response.json({ error: 'Invalid today' }, { status: 400 });
+const invalidToday = () => badRequest('Invalid today');
 
 /** Creates the season if it is missing and returns its id. */
 async function ensureSeason(listId: string, season: Season): Promise<string> {

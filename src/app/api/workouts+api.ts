@@ -8,7 +8,7 @@ import { desc, eq } from 'drizzle-orm';
 import { getSessionUser, unauthorized } from '@/auth/session';
 import { db } from '@/db';
 import { workout, workoutType } from '@/db/schema';
-import { badRequest, readBody } from '@/health/input';
+import { badRequest, readBody } from '@/http';
 import { parseWorkoutFields, workoutColumns } from '@/sport/input';
 
 export async function GET(request: Request): Promise<Response> {

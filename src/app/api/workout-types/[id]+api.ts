@@ -11,13 +11,14 @@ import { db } from '@/db';
 import { workoutType } from '@/db/schema';
 import {
     badRequest,
+    conflict,
     FOREIGN_KEY_VIOLATION,
     notFound,
     parseName,
     pgCode,
     readBody,
     UNIQUE_VIOLATION,
-} from '@/health/input';
+} from '@/http';
 import { workoutTypeColumns } from '@/sport/input';
 
 const owned = (id: string, userId: string) =>
@@ -45,7 +46,7 @@ export async function PATCH(
         return updated ? Response.json(updated) : notFound();
     } catch (error) {
         if (pgCode(error) === UNIQUE_VIOLATION) {
-            return Response.json({ error: 'Name in use' }, { status: 409 });
+            return conflict('Name in use');
         }
         throw error;
     }
@@ -68,7 +69,7 @@ export async function DELETE(
             : notFound();
     } catch (error) {
         if (pgCode(error) === FOREIGN_KEY_VIOLATION) {
-            return Response.json({ error: 'Type in use' }, { status: 409 });
+            return conflict('Type in use');
         }
         throw error;
     }

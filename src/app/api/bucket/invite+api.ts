@@ -12,7 +12,7 @@
 import { and, eq, inArray, or, sql } from 'drizzle-orm';
 
 import { getSessionUser, unauthorized } from '@/auth/session';
-import { listIdFor, notFound, partnerOf } from '@/bucket/list';
+import { listIdFor, partnerOf } from '@/bucket/list';
 import { db } from '@/db';
 import {
     bucketInvite,
@@ -22,17 +22,7 @@ import {
     bucketSeason,
     user,
 } from '@/db/schema';
-
-const conflict = (error: string) => Response.json({ error }, { status: 409 });
-const badRequest = (error: string) => Response.json({ error }, { status: 400 });
-
-async function readBody(request: Request): Promise<Record<string, unknown>> {
-    try {
-        return await request.json();
-    } catch {
-        return {};
-    }
-}
+import { badRequest, conflict, notFound, readBody } from '@/http';
 
 export async function GET(request: Request): Promise<Response> {
     const account = await getSessionUser(request);
@@ -65,7 +55,8 @@ export async function POST(request: Request): Promise<Response> {
     if (!account) return unauthorized();
 
     const action = new URL(request.url).searchParams.get('action');
-    const body = await readBody(request);
+    // Unlink has no body, so a missing one is not an error here.
+    const body = (await readBody(request)) ?? {};
 
     if (action === 'accept' || action === 'decline') {
         if (typeof body.id !== 'string') return badRequest('Invalid id');

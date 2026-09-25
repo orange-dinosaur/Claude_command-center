@@ -13,6 +13,7 @@ import { eq } from 'drizzle-orm';
 import { getSessionUser, unauthorized } from '@/auth/session';
 import { db } from '@/db';
 import { visionBoard } from '@/db/schema';
+import { badRequest, readBody } from '@/http';
 
 const MAX_BYTES = 1_000_000;
 
@@ -37,26 +38,16 @@ export async function POST(request: Request): Promise<Response> {
     const account = await getSessionUser(request);
     if (!account) return unauthorized();
 
-    let body: { data?: unknown; contentType?: unknown };
-    try {
-        body = await request.json();
-    } catch {
-        return Response.json({ error: 'Invalid body' }, { status: 400 });
-    }
+    const body = await readBody(request);
+    if (!body) return badRequest('Invalid body');
 
     const { data, contentType } = body;
 
     if (typeof data !== 'string' || !data) {
-        return Response.json(
-            { error: 'An image is required' },
-            { status: 400 }
-        );
+        return badRequest('An image is required');
     }
     if (typeof contentType !== 'string' || !TYPES.includes(contentType)) {
-        return Response.json(
-            { error: 'That kind of image is not supported' },
-            { status: 400 }
-        );
+        return badRequest('That kind of image is not supported');
     }
     // Base64 carries four characters for every three bytes.
     if (Math.ceil((data.length * 3) / 4) > MAX_BYTES) {
@@ -66,10 +57,7 @@ export async function POST(request: Request): Promise<Response> {
         );
     }
     if (!/^[A-Za-z0-9+/]+={0,2}$/.test(data)) {
-        return Response.json(
-            { error: 'That image is not readable' },
-            { status: 400 }
-        );
+        return badRequest('That image is not readable');
     }
 
     const id = crypto.randomUUID();

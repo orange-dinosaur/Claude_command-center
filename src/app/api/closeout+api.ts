@@ -12,6 +12,7 @@ import { getSessionUser, unauthorized } from '@/auth/session';
 import { CHECKLIST_TEMPLATE } from '@/closeout/checklist-template';
 import { db } from '@/db';
 import { closeoutItem, closeoutMonth } from '@/db/schema';
+import { badRequest, readBody } from '@/http';
 
 export async function GET(request: Request): Promise<Response> {
     const account = await getSessionUser(request);
@@ -38,12 +39,8 @@ export async function POST(request: Request): Promise<Response> {
     const account = await getSessionUser(request);
     if (!account) return unauthorized();
 
-    let body: { year?: unknown; month?: unknown };
-    try {
-        body = await request.json();
-    } catch {
-        return Response.json({ error: 'Invalid body' }, { status: 400 });
-    }
+    const body = await readBody(request);
+    if (!body) return badRequest('Invalid body');
 
     const { year, month } = body;
 
@@ -52,14 +49,14 @@ export async function POST(request: Request): Promise<Response> {
         (year as number) < 2000 ||
         (year as number) > 2100
     ) {
-        return Response.json({ error: 'Invalid year' }, { status: 400 });
+        return badRequest('Invalid year');
     }
     if (
         !Number.isInteger(month) ||
         (month as number) < 1 ||
         (month as number) > 12
     ) {
-        return Response.json({ error: 'Invalid month' }, { status: 400 });
+        return badRequest('Invalid month');
     }
 
     const wanted = { year: year as number, month: month as number };

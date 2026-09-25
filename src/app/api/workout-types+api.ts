@@ -11,11 +11,12 @@ import { db } from '@/db';
 import { workout, workoutType } from '@/db/schema';
 import {
     badRequest,
+    conflict,
     parseName,
     pgCode,
     readBody,
     UNIQUE_VIOLATION,
-} from '@/health/input';
+} from '@/http';
 import { workoutTypeColumns } from '@/sport/input';
 
 export async function GET(request: Request): Promise<Response> {
@@ -51,7 +52,7 @@ export async function POST(request: Request): Promise<Response> {
         return Response.json(created, { status: 201 });
     } catch (error) {
         if (pgCode(error) === UNIQUE_VIOLATION) {
-            return Response.json({ error: 'Name in use' }, { status: 409 });
+            return conflict('Name in use');
         }
         throw error;
     }

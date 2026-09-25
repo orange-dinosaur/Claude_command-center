@@ -8,7 +8,7 @@ import { and, eq } from 'drizzle-orm';
 import { getSessionUser, unauthorized } from '@/auth/session';
 import { db } from '@/db';
 import { workout } from '@/db/schema';
-import { badRequest, notFound, readBody } from '@/health/input';
+import { badRequest, notFound, readBody } from '@/http';
 import { parseWorkoutFields, workoutColumns } from '@/sport/input';
 
 const owned = (id: string, userId: string) =>

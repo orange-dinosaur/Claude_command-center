@@ -15,7 +15,7 @@ import {
 import { addDays } from '@/dates';
 import { db } from '@/db';
 import { creativeCycle } from '@/db/schema';
-import { badRequest, readBody } from '@/health/input';
+import { badRequest, readBody } from '@/http';
 
 export async function GET(request: Request): Promise<Response> {
     const account = await getSessionUser(request);

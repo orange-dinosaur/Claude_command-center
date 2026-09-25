@@ -18,7 +18,7 @@ import {
     parseOptionalText,
     pgCode,
     readBody,
-} from '@/health/input';
+} from '@/http';
 
 const columns = {
     id: medicine.id,

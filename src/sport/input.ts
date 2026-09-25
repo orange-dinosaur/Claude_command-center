@@ -6,7 +6,7 @@ import { and, eq } from 'drizzle-orm';
 
 import { db } from '@/db';
 import { workout, workoutType } from '@/db/schema';
-import { parseDate, parseOptionalText } from '@/health/input';
+import { parseDate, parseOptionalText } from '@/http';
 
 export const workoutTypeColumns = {
     id: workoutType.id,

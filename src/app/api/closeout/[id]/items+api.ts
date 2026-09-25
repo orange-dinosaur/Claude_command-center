@@ -8,15 +8,9 @@ import { and, eq, sql } from 'drizzle-orm';
 import { getSessionUser, unauthorized } from '@/auth/session';
 import { db } from '@/db';
 import { closeoutItem, closeoutMonth } from '@/db/schema';
+import { badRequest, notFound, parseName, readBody } from '@/http';
 
 const MAX_AREA = 40;
-const MAX_TEXT = 200;
-
-const clean = (value: unknown, max: number) => {
-    if (typeof value !== 'string') return null;
-    const trimmed = value.trim();
-    return trimmed && trimmed.length <= max ? trimmed : null;
-};
 
 export async function POST(
     request: Request,
@@ -25,21 +19,13 @@ export async function POST(
     const account = await getSessionUser(request);
     if (!account) return unauthorized();
 
-    let body: { area?: unknown; text?: unknown };
-    try {
-        body = await request.json();
-    } catch {
-        return Response.json({ error: 'Invalid body' }, { status: 400 });
-    }
+    const body = await readBody(request);
+    if (!body) return badRequest('Invalid body');
 
-    const area = clean(body.area, MAX_AREA);
-    if (!area) {
-        return Response.json({ error: 'Invalid area' }, { status: 400 });
-    }
-    const text = clean(body.text, MAX_TEXT);
-    if (!text) {
-        return Response.json({ error: 'Invalid text' }, { status: 400 });
-    }
+    const area = parseName(body.area, MAX_AREA);
+    if (!area) return badRequest('Invalid area');
+    const text = parseName(body.text);
+    if (!text) return badRequest('Invalid text');
 
     const [month] = await db
         .select({ id: closeoutMonth.id })
@@ -47,7 +33,7 @@ export async function POST(
         .where(
             and(eq(closeoutMonth.id, id), eq(closeoutMonth.userId, account.id))
         );
-    if (!month) return Response.json({ error: 'Not found' }, { status: 404 });
+    if (!month) return notFound();
 
     const [item] = await db
         .insert(closeoutItem)

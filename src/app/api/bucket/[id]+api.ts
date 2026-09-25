@@ -7,9 +7,10 @@
 import { and, asc, eq, sql } from 'drizzle-orm';
 
 import { getSessionUser, unauthorized } from '@/auth/session';
-import { cleanText, listIdFor, notFound } from '@/bucket/list';
+import { listIdFor } from '@/bucket/list';
 import { db } from '@/db';
 import { bucketItem, bucketSeason, user } from '@/db/schema';
+import { badRequest, notFound, parseName, readBody } from '@/http';
 
 async function findSeason(id: string, userId: string) {
     const listId = await listIdFor(userId);
@@ -60,14 +61,10 @@ export async function POST(
     const account = await getSessionUser(request);
     if (!account) return unauthorized();
 
-    let body: { text?: unknown };
-    try {
-        body = await request.json();
-    } catch {
-        return Response.json({ error: 'Invalid body' }, { status: 400 });
-    }
-    const text = cleanText(body.text);
-    if (!text) return Response.json({ error: 'Invalid text' }, { status: 400 });
+    const body = await readBody(request);
+    if (!body) return badRequest('Invalid body');
+    const text = parseName(body.text);
+    if (!text) return badRequest('Invalid text');
 
     if (!(await findSeason(id, account.id))) return notFound();
 

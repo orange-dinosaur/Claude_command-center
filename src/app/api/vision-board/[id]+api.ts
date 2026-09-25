@@ -10,6 +10,7 @@ import { eq } from 'drizzle-orm';
 
 import { db } from '@/db';
 import { visionBoard } from '@/db/schema';
+import { notFound } from '@/http';
 
 export async function GET(
     request: Request,
@@ -24,7 +25,7 @@ export async function GET(
         .where(eq(visionBoard.id, id))
         .limit(1);
 
-    if (!board) return new Response('Not found', { status: 404 });
+    if (!board) return notFound();
 
     const bytes = Buffer.from(board.data, 'base64');
 

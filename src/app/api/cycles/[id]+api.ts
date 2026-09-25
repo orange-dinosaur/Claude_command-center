@@ -18,7 +18,7 @@ import {
 import { addDays, daysBetween } from '@/dates';
 import { db } from '@/db';
 import { creativeCycle, creativeWeek } from '@/db/schema';
-import { badRequest, notFound, parseDate, readBody } from '@/health/input';
+import { badRequest, notFound, parseDate, readBody } from '@/http';
 
 const owned = (id: string, userId: string) =>
     and(eq(creativeCycle.id, id), eq(creativeCycle.userId, userId));

@@ -3,7 +3,7 @@
  */
 
 import { title } from '@/db/schema';
-import { parseDate, parseName, parseOptionalText } from '@/health/input';
+import { parseDate, parseName, parseOptionalText } from '@/http';
 
 type Title = typeof title.$inferSelect;
 export type Kind = Title['kind'];

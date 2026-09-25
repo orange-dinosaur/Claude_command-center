@@ -14,7 +14,7 @@ import {
     notFound,
     pgCode,
     readBody,
-} from '@/health/input';
+} from '@/http';
 import { parseTitleFields, titleColumns } from '@/media/input';
 
 const owned = (id: string, userId: string) =>

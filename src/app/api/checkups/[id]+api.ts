@@ -10,13 +10,14 @@ import { db } from '@/db';
 import { checkup } from '@/db/schema';
 import {
     badRequest,
+    conflict,
     notFound,
     parseDate,
     parseName,
     pgCode,
     readBody,
     UNIQUE_VIOLATION,
-} from '@/health/input';
+} from '@/http';
 
 const owned = (id: string, userId: string) =>
     and(eq(checkup.id, id), eq(checkup.userId, userId));
@@ -56,7 +57,7 @@ export async function PATCH(
         return updated ? Response.json(updated) : notFound();
     } catch (error) {
         if (pgCode(error) === UNIQUE_VIOLATION) {
-            return Response.json({ error: 'Name in use' }, { status: 409 });
+            return conflict('Name in use');
         }
         throw error;
     }

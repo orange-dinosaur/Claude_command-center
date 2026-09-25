@@ -6,9 +6,10 @@
 import { and, eq, inArray } from 'drizzle-orm';
 
 import { getSessionUser, unauthorized } from '@/auth/session';
-import { cleanText, listIdFor, notFound } from '@/bucket/list';
+import { listIdFor } from '@/bucket/list';
 import { db } from '@/db';
 import { bucketItem, bucketSeason } from '@/db/schema';
+import { badRequest, notFound, parseDate, parseName, readBody } from '@/http';
 
 async function inCallersList(id: string, userId: string) {
     const listId = await listIdFor(userId);
@@ -24,11 +25,6 @@ async function inCallersList(id: string, userId: string) {
     );
 }
 
-const isDay = (value: unknown): value is string =>
-    typeof value === 'string' &&
-    /^\d{4}-\d{2}-\d{2}$/.test(value) &&
-    !Number.isNaN(Date.parse(value));
-
 export async function PATCH(
     request: Request,
     { id }: Record<string, string>
@@ -36,30 +32,21 @@ export async function PATCH(
     const account = await getSessionUser(request);
     if (!account) return unauthorized();
 
-    let body: { text?: unknown; doneOn?: unknown };
-    try {
-        body = await request.json();
-    } catch {
-        return Response.json({ error: 'Invalid body' }, { status: 400 });
-    }
+    const body = await readBody(request);
+    if (!body) return badRequest('Invalid body');
 
     const changes: { text?: string; doneOn?: string | null } = {};
     if ('text' in body) {
-        const text = cleanText(body.text);
-        if (!text) {
-            return Response.json({ error: 'Invalid text' }, { status: 400 });
-        }
+        const text = parseName(body.text);
+        if (!text) return badRequest('Invalid text');
         changes.text = text;
     }
     if ('doneOn' in body) {
-        if (body.doneOn !== null && !isDay(body.doneOn)) {
-            return Response.json({ error: 'Invalid doneOn' }, { status: 400 });
-        }
-        changes.doneOn = body.doneOn;
+        const doneOn = parseDate(body.doneOn);
+        if (doneOn === undefined) return badRequest('Invalid doneOn');
+        changes.doneOn = doneOn;
     }
-    if (!Object.keys(changes).length) {
-        return Response.json({ error: 'Nothing to change' }, { status: 400 });
-    }
+    if (!Object.keys(changes).length) return badRequest('Nothing to change');
 
     const [updated] = await db
         .update(bucketItem)

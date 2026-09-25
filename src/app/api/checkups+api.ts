@@ -10,12 +10,13 @@ import { db } from '@/db';
 import { checkup } from '@/db/schema';
 import {
     badRequest,
+    conflict,
     parseDate,
     parseName,
     pgCode,
     readBody,
     UNIQUE_VIOLATION,
-} from '@/health/input';
+} from '@/http';
 
 const checkupColumns = {
     id: checkup.id,
@@ -61,7 +62,7 @@ export async function POST(request: Request): Promise<Response> {
         return Response.json(created, { status: 201 });
     } catch (error) {
         if (pgCode(error) === UNIQUE_VIOLATION) {
-            return Response.json({ error: 'Name in use' }, { status: 409 });
+            return conflict('Name in use');
         }
         throw error;
     }

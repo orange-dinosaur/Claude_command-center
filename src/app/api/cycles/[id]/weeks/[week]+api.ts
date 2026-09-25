@@ -10,7 +10,7 @@ import { weeksBegun } from '@/creativity/cycle';
 import { parseWeekFields, weekColumns } from '@/creativity/input';
 import { db } from '@/db';
 import { creativeCycle, creativeWeek } from '@/db/schema';
-import { badRequest, notFound, readBody } from '@/health/input';
+import { badRequest, notFound, readBody } from '@/http';
 
 export async function PATCH(
     request: Request,

@@ -7,18 +7,6 @@ import { and, eq, ne } from 'drizzle-orm';
 import { db } from '@/db';
 import { bucketList, bucketListMember, user } from '@/db/schema';
 
-const MAX_TEXT = 200;
-
-/** Trimmed item text, or null when it is empty or too long. */
-export function cleanText(value: unknown): string | null {
-    if (typeof value !== 'string') return null;
-    const trimmed = value.trim();
-    return trimmed && trimmed.length <= MAX_TEXT ? trimmed : null;
-}
-
-export const notFound = () =>
-    Response.json({ error: 'Not found' }, { status: 404 });
-
 /**
  * The caller's list id. An account's first list takes the account's id, so
  * two concurrent first requests create the same list instead of two.

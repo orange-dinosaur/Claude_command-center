@@ -17,7 +17,7 @@ import {
     parseOptionalText,
     pgCode,
     readBody,
-} from '@/health/input';
+} from '@/http';
 
 const owned = (id: string, userId: string) =>
     and(eq(medicine.id, id), eq(medicine.userId, userId));

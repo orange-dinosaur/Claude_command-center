@@ -1,6 +1,6 @@
 /**
- * Request body checks shared by the check-up, medicine and title API routes.
- * Server-side only.
+ * Responses and request body checks shared by the API routes. Server-side
+ * only.
  */
 
 const MAX_TEXT = 200;
@@ -10,6 +10,9 @@ export const notFound = () =>
 
 export const badRequest = (error: string) =>
     Response.json({ error }, { status: 400 });
+
+export const conflict = (error: string) =>
+    Response.json({ error }, { status: 409 });
 
 export async function readBody(
     request: Request
@@ -24,11 +27,11 @@ export async function readBody(
     }
 }
 
-/** A required name: trimmed, not empty, capped. */
-export function parseName(value: unknown): string | undefined {
+/** Required text: trimmed, not empty, capped. */
+export function parseName(value: unknown, max = MAX_TEXT): string | undefined {
     if (typeof value !== 'string') return undefined;
     const name = value.trim();
-    return name && name.length <= MAX_TEXT ? name : undefined;
+    return name && name.length <= max ? name : undefined;
 }
 
 /** Optional text: `null` or empty clears it. */

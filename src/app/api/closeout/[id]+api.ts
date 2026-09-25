@@ -10,10 +10,9 @@ import { getSessionUser, unauthorized } from '@/auth/session';
 import { ANSWER_KEYS } from '@/closeout/questions';
 import { db } from '@/db';
 import { closeoutItem, closeoutMonth } from '@/db/schema';
+import { badRequest, notFound, readBody } from '@/http';
 
 const MAX_ANSWER = 5000;
-
-const notFound = () => Response.json({ error: 'Not found' }, { status: 404 });
 
 const owned = (id: string, userId: string) =>
     and(eq(closeoutMonth.id, id), eq(closeoutMonth.userId, userId));
@@ -58,20 +57,16 @@ export async function PATCH(
     const account = await getSessionUser(request);
     if (!account) return unauthorized();
 
-    let body: { key?: unknown; value?: unknown };
-    try {
-        body = await request.json();
-    } catch {
-        return Response.json({ error: 'Invalid body' }, { status: 400 });
-    }
+    const body = await readBody(request);
+    if (!body) return badRequest('Invalid body');
 
     const { key, value } = body;
 
     if (typeof key !== 'string' || !ANSWER_KEYS.has(key)) {
-        return Response.json({ error: 'Unknown question' }, { status: 400 });
+        return badRequest('Unknown question');
     }
     if (typeof value !== 'string' || value.length > MAX_ANSWER) {
-        return Response.json({ error: 'Invalid answer' }, { status: 400 });
+        return badRequest('Invalid answer');
     }
 
     // Merged in the database, so two fields saving at once cannot overwrite
