@@ -16,6 +16,7 @@ import {
     overlapsAnother,
     parseCycleFields,
     weekColumns,
+    weeksBegun,
 } from '@/creativity/input';
 import { db } from '@/db';
 import { creativeCycle, creativeWeek } from '@/db/schema';
@@ -77,7 +78,7 @@ export async function PATCH(
         if (!day || offset < 0 || offset > CYCLE_LAST_DAY) {
             return badRequest('Invalid interrupt date');
         }
-        const weeksBegun = Math.floor(offset / 7) + 1;
+        const kept = weeksBegun(existing.startDate, day);
 
         const updated = await db.transaction(async (tx) => {
             await tx
@@ -85,7 +86,7 @@ export async function PATCH(
                 .where(
                     and(
                         eq(creativeWeek.cycleId, id),
-                        gt(creativeWeek.week, weeksBegun)
+                        gt(creativeWeek.week, kept)
                     )
                 );
             const [cycle] = await tx

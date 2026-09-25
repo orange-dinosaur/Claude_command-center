@@ -5,6 +5,8 @@
 
 import { and, eq, ne, sql } from 'drizzle-orm';
 
+import { THEMES } from './themes';
+
 import { db } from '@/db';
 import { creativeCycle, creativeWeek } from '@/db/schema';
 import { parseDate } from '@/health/input';
@@ -59,7 +61,11 @@ export const addDays = (day: string, days: number) =>
 const isMonday = (day: string) =>
     new Date(`${day}T00:00:00Z`).getUTCDay() === 1;
 
-/** An intention answer: `null` or empty clears it. */
+/** How many weeks an interrupted cycle keeps: those begun by that day. */
+export const weeksBegun = (startDate: string, interruptedOn: string) =>
+    Math.floor(daysBetween(startDate, interruptedOn) / 7) + 1;
+
+/** Free text such as an intention answer: `null` or empty clears it. */
 function parseAnswer(value: unknown): string | null | undefined {
     if (value === null) return null;
     if (typeof value !== 'string' || value.length > MAX_ANSWER) {
@@ -99,6 +105,78 @@ export function parseCycleFields(
         const answer = parseAnswer(body[key]);
         if (answer === undefined) return `Invalid ${key}`;
         fields[key] = answer;
+    }
+
+    return fields;
+}
+
+type Week = typeof creativeWeek.$inferSelect;
+
+export type WeekFields = Partial<
+    Pick<
+        Week,
+        | 'dailyPages'
+        | 'outing'
+        | 'tinyAction'
+        | 'evidence'
+        | 'energy'
+        | 'notes'
+        | 'carryForward'
+        | 'reviewed'
+    >
+>;
+
+const isBooleans = (value: unknown): value is boolean[] =>
+    Array.isArray(value) && value.every((v) => typeof v === 'boolean');
+
+/**
+ * The fields of week `week` present in `body`, or an error message. Keys that
+ * are missing are left out.
+ */
+export function parseWeekFields(
+    body: Record<string, unknown>,
+    week: number
+): WeekFields | string {
+    const fields: WeekFields = {};
+
+    if ('dailyPages' in body) {
+        if (!isBooleans(body.dailyPages) || body.dailyPages.length !== 7) {
+            return 'Invalid dailyPages';
+        }
+        fields.dailyPages = body.dailyPages;
+    }
+
+    if ('evidence' in body) {
+        const count = THEMES[week - 1].evidence.length;
+        if (!isBooleans(body.evidence) || body.evidence.length > count) {
+            return 'Invalid evidence';
+        }
+        fields.evidence = body.evidence;
+    }
+
+    for (const key of ['outing', 'tinyAction', 'reviewed'] as const) {
+        if (!(key in body)) continue;
+        if (typeof body[key] !== 'boolean') return `Invalid ${key}`;
+        fields[key] = body[key];
+    }
+
+    if ('energy' in body) {
+        const energy = body.energy;
+        const valid =
+            energy === null ||
+            (typeof energy === 'number' &&
+                Number.isInteger(energy) &&
+                energy >= 1 &&
+                energy <= 10);
+        if (!valid) return 'Invalid energy';
+        fields.energy = energy;
+    }
+
+    for (const key of ['notes', 'carryForward'] as const) {
+        if (!(key in body)) continue;
+        const text = parseAnswer(body[key]);
+        if (text === undefined) return `Invalid ${key}`;
+        fields[key] = text;
     }
 
     return fields;
