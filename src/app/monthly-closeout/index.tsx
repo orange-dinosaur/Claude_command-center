@@ -2,7 +2,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
     ActivityIndicator,
-    Modal,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -12,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MONTH_NAMES, monthLabel, nextMonth } from '@/closeout/months';
 import { ScreenHeader } from '@/components/screen-header';
+import { Sheet } from '@/components/sheet';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -118,54 +118,38 @@ export default function MonthlyCloseout() {
                     </ScrollView>
                 )}
 
-                <Modal
+                <Sheet
                     visible={picked !== null}
-                    transparent
-                    animationType="fade"
-                    onRequestClose={() => setPicked(null)}>
+                    onClose={() => setPicked(null)}>
+                    {picked && (
+                        <MonthPicker value={picked} onChange={setPicked} />
+                    )}
                     <Pressable
-                        style={styles.backdrop}
-                        onPress={() => setPicked(null)}>
-                        {/* Taps inside the sheet must not close it. */}
-                        <Pressable
-                            style={[
-                                styles.sheet,
-                                { backgroundColor: theme.backgroundElement },
-                            ]}>
-                            {picked && (
-                                <MonthPicker
-                                    value={picked}
-                                    onChange={setPicked}
-                                />
-                            )}
-                            <Pressable
-                                onPress={confirm}
-                                disabled={busy}
-                                accessibilityRole="button"
-                                style={({ pressed }) => [
-                                    styles.sheetButton,
-                                    pressed && styles.pressed,
-                                ]}>
-                                <ThemedText
-                                    themeColor="accent"
-                                    style={styles.buttonText}>
-                                    {picked
-                                        ? `Crea ${monthLabel(picked.year, picked.month)}`
-                                        : ''}
-                                </ThemedText>
-                            </Pressable>
-                            <Pressable
-                                onPress={() => setPicked(null)}
-                                accessibilityRole="button"
-                                style={({ pressed }) => [
-                                    styles.sheetButton,
-                                    pressed && styles.pressed,
-                                ]}>
-                                <ThemedText>Annulla</ThemedText>
-                            </Pressable>
-                        </Pressable>
+                        onPress={confirm}
+                        disabled={busy}
+                        accessibilityRole="button"
+                        style={({ pressed }) => [
+                            styles.sheetButton,
+                            pressed && styles.pressed,
+                        ]}>
+                        <ThemedText
+                            themeColor="accent"
+                            style={styles.buttonText}>
+                            {picked
+                                ? `Crea ${monthLabel(picked.year, picked.month)}`
+                                : ''}
+                        </ThemedText>
                     </Pressable>
-                </Modal>
+                    <Pressable
+                        onPress={() => setPicked(null)}
+                        accessibilityRole="button"
+                        style={({ pressed }) => [
+                            styles.sheetButton,
+                            pressed && styles.pressed,
+                        ]}>
+                        <ThemedText>Annulla</ThemedText>
+                    </Pressable>
+                </Sheet>
             </SafeAreaView>
         </ThemedView>
     );
@@ -275,16 +259,6 @@ const styles = StyleSheet.create({
     },
     pressed: {
         opacity: 0.6,
-    },
-    backdrop: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        padding: Spacing.three,
-    },
-    sheet: {
-        borderRadius: 20,
-        paddingVertical: Spacing.two,
     },
     sheetButton: {
         alignItems: 'center',

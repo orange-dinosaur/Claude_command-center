@@ -2,7 +2,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
     ActivityIndicator,
-    Modal,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -15,6 +14,7 @@ import { PREPARE, RECAP } from '@/closeout/questions';
 import { CloseoutChecklist } from '@/components/closeout-checklist';
 import { CloseoutQuestions } from '@/components/closeout-questions';
 import { ScreenHeader } from '@/components/screen-header';
+import { Sheet } from '@/components/sheet';
 import { TabBar } from '@/components/tab-bar';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -133,56 +133,38 @@ export default function CloseoutMonth() {
                     </>
                 )}
 
-                <Modal
+                <Sheet
                     visible={confirming}
-                    transparent
-                    animationType="fade"
-                    onRequestClose={() => setConfirming(false)}>
+                    onClose={() => setConfirming(false)}>
+                    <ThemedText type="subtitle" style={styles.sheetTitle}>
+                        Eliminare {label}?
+                    </ThemedText>
+                    <ThemedText themeColor="textMuted" style={styles.center}>
+                        Risposte e checklist andranno perse.
+                    </ThemedText>
                     <Pressable
-                        style={styles.backdrop}
-                        onPress={() => setConfirming(false)}>
-                        <View
-                            style={[
-                                styles.sheet,
-                                { backgroundColor: theme.backgroundElement },
-                            ]}>
-                            <ThemedText
-                                type="subtitle"
-                                style={styles.sheetTitle}>
-                                Eliminare {label}?
-                            </ThemedText>
-                            <ThemedText
-                                themeColor="textMuted"
-                                style={styles.center}>
-                                Risposte e checklist andranno perse.
-                            </ThemedText>
-                            <Pressable
-                                onPress={confirmDelete}
-                                accessibilityRole="button"
-                                style={({ pressed }) => [
-                                    styles.sheetButton,
-                                    pressed && styles.pressed,
-                                ]}>
-                                <ThemedText themeColor="danger">
-                                    Elimina
-                                </ThemedText>
-                            </Pressable>
-                            <Pressable
-                                onPress={() => setConfirming(false)}
-                                accessibilityRole="button"
-                                style={({ pressed }) => [
-                                    styles.sheetButton,
-                                    {
-                                        borderTopWidth: 1,
-                                        borderTopColor: theme.border,
-                                    },
-                                    pressed && styles.pressed,
-                                ]}>
-                                <ThemedText>Annulla</ThemedText>
-                            </Pressable>
-                        </View>
+                        onPress={confirmDelete}
+                        accessibilityRole="button"
+                        style={({ pressed }) => [
+                            styles.sheetButton,
+                            pressed && styles.pressed,
+                        ]}>
+                        <ThemedText themeColor="danger">Elimina</ThemedText>
                     </Pressable>
-                </Modal>
+                    <Pressable
+                        onPress={() => setConfirming(false)}
+                        accessibilityRole="button"
+                        style={({ pressed }) => [
+                            styles.sheetButton,
+                            {
+                                borderTopWidth: 1,
+                                borderTopColor: theme.border,
+                            },
+                            pressed && styles.pressed,
+                        ]}>
+                        <ThemedText>Annulla</ThemedText>
+                    </Pressable>
+                </Sheet>
             </SafeAreaView>
         </ThemedView>
     );
@@ -215,16 +197,6 @@ const styles = StyleSheet.create({
     },
     pressed: {
         opacity: 0.6,
-    },
-    backdrop: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        padding: Spacing.three,
-    },
-    sheet: {
-        borderRadius: 20,
-        paddingVertical: Spacing.two,
     },
     sheetTitle: {
         textAlign: 'center',

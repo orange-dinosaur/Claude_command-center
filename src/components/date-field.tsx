@@ -4,8 +4,9 @@
  */
 
 import { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Sheet } from './sheet';
 import { ThemedText } from './themed-text';
 
 import { MONTH_NAMES, nextMonth } from '@/closeout/months';
@@ -66,50 +67,34 @@ export function DateField({
                 </ThemedText>
             </Pressable>
 
-            <Modal
+            <Sheet
                 visible={view !== null}
-                transparent
-                animationType="fade"
-                onRequestClose={() => setView(null)}>
-                <Pressable
-                    style={styles.backdrop}
-                    onPress={() => setView(null)}>
-                    {/* Taps inside the sheet must not close it. */}
-                    <Pressable
-                        style={[
-                            styles.sheet,
-                            { backgroundColor: theme.backgroundElement },
-                        ]}>
-                        {view && (
-                            <Calendar
-                                view={view}
-                                onView={setView}
-                                value={value}
-                                pickingYear={pickingYear}
-                                onPickingYear={setPickingYear}
-                                onPick={pick}
-                                mondaysOnly={mondaysOnly}
-                                pastOnly={pastOnly}
-                            />
-                        )}
-                        {!mondaysOnly && (
-                            <SheetButton
-                                onPress={() => pick(todayDay())}
-                                accent>
-                                Oggi
-                            </SheetButton>
-                        )}
-                        {!mondaysOnly && !pastOnly && (
-                            <SheetButton onPress={() => pick(null)} accent>
-                                Nessuna data
-                            </SheetButton>
-                        )}
-                        <SheetButton onPress={() => setView(null)}>
-                            Annulla
-                        </SheetButton>
-                    </Pressable>
-                </Pressable>
-            </Modal>
+                onClose={() => setView(null)}
+                style={styles.sheet}>
+                {view && (
+                    <Calendar
+                        view={view}
+                        onView={setView}
+                        value={value}
+                        pickingYear={pickingYear}
+                        onPickingYear={setPickingYear}
+                        onPick={pick}
+                        mondaysOnly={mondaysOnly}
+                        pastOnly={pastOnly}
+                    />
+                )}
+                {!mondaysOnly && (
+                    <SheetButton onPress={() => pick(todayDay())} accent>
+                        Oggi
+                    </SheetButton>
+                )}
+                {!mondaysOnly && !pastOnly && (
+                    <SheetButton onPress={() => pick(null)} accent>
+                        Nessuna data
+                    </SheetButton>
+                )}
+                <SheetButton onPress={() => setView(null)}>Annulla</SheetButton>
+            </Sheet>
         </>
     );
 }
@@ -312,15 +297,8 @@ const styles = StyleSheet.create({
     pressed: {
         opacity: 0.6,
     },
-    backdrop: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        padding: Spacing.three,
-    },
     sheet: {
-        borderRadius: 20,
-        paddingTop: Spacing.two,
+        paddingBottom: 0,
     },
     sheetButton: {
         alignItems: 'center',

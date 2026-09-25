@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
+import { Sheet } from './sheet';
 import { ThemedText } from './themed-text';
 
 import { Spacing } from '@/constants/theme';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
 
 interface FormActionsProps {
@@ -32,6 +34,7 @@ export function FormActions({
     extra,
 }: FormActionsProps) {
     const theme = useTheme();
+    const isDesktop = useIsDesktop();
     const [confirming, setConfirming] = useState<'delete' | 'extra' | null>(
         null
     );
@@ -50,101 +53,94 @@ export function FormActions({
 
     return (
         <>
-            <View style={styles.spacer} />
+            {!isDesktop && <View style={styles.spacer} />}
 
             {error && (
                 <ThemedText
                     type="small"
                     themeColor="danger"
-                    style={styles.center}>
+                    style={!isDesktop && styles.center}>
                     {error}
                 </ThemedText>
             )}
-            <Pressable
-                onPress={onSave}
-                disabled={busy}
-                accessibilityRole="button"
-                style={({ pressed }) => [
-                    styles.saveButton,
-                    { backgroundColor: theme.accent },
-                    pressed && styles.pressed,
-                ]}>
-                <ThemedText
-                    style={[styles.buttonText, { color: theme.onAccent }]}>
-                    Salva
-                </ThemedText>
-            </Pressable>
-            {extra && (
+            <View style={isDesktop ? styles.row : styles.column}>
                 <Pressable
-                    onPress={() => setConfirming('extra')}
+                    onPress={onSave}
                     disabled={busy}
                     accessibilityRole="button"
                     style={({ pressed }) => [
-                        styles.deleteButton,
+                        styles.saveButton,
+                        isDesktop && styles.saveDesktop,
+                        { backgroundColor: theme.accent },
                         pressed && styles.pressed,
                     ]}>
-                    <ThemedText themeColor="danger">{extra.label}</ThemedText>
+                    <ThemedText
+                        style={[styles.buttonText, { color: theme.onAccent }]}>
+                        Salva
+                    </ThemedText>
                 </Pressable>
-            )}
-            {onDelete && (
-                <Pressable
-                    onPress={() => setConfirming('delete')}
-                    disabled={busy}
-                    accessibilityRole="button"
-                    style={({ pressed }) => [
-                        styles.deleteButton,
-                        pressed && styles.pressed,
-                    ]}>
-                    <ThemedText themeColor="danger">Elimina</ThemedText>
-                </Pressable>
-            )}
-
-            <Modal
-                visible={confirming !== null}
-                transparent
-                animationType="fade"
-                onRequestClose={() => setConfirming(null)}>
-                <Pressable
-                    style={styles.backdrop}
-                    onPress={() => setConfirming(null)}>
-                    <View
-                        style={[
-                            styles.sheet,
-                            { backgroundColor: theme.backgroundElement },
+                {extra && (
+                    <Pressable
+                        onPress={() => setConfirming('extra')}
+                        disabled={busy}
+                        accessibilityRole="button"
+                        style={({ pressed }) => [
+                            styles.deleteButton,
+                            isDesktop && styles.link,
+                            pressed && styles.pressed,
                         ]}>
-                        <ThemedText type="subtitle" style={styles.sheetTitle}>
-                            {sheet.question}
+                        <ThemedText themeColor="danger">
+                            {extra.label}
                         </ThemedText>
-                        <Pressable
-                            onPress={() => {
-                                setConfirming(null);
-                                sheet.run?.();
-                            }}
-                            accessibilityRole="button"
-                            style={({ pressed }) => [
-                                styles.sheetButton,
-                                pressed && styles.pressed,
-                            ]}>
-                            <ThemedText themeColor="danger">
-                                {sheet.label}
-                            </ThemedText>
-                        </Pressable>
-                        <Pressable
-                            onPress={() => setConfirming(null)}
-                            accessibilityRole="button"
-                            style={({ pressed }) => [
-                                styles.sheetButton,
-                                {
-                                    borderTopWidth: 1,
-                                    borderTopColor: theme.border,
-                                },
-                                pressed && styles.pressed,
-                            ]}>
-                            <ThemedText>Annulla</ThemedText>
-                        </Pressable>
-                    </View>
+                    </Pressable>
+                )}
+                {onDelete && (
+                    <Pressable
+                        onPress={() => setConfirming('delete')}
+                        disabled={busy}
+                        accessibilityRole="button"
+                        style={({ pressed }) => [
+                            styles.deleteButton,
+                            isDesktop && styles.link,
+                            pressed && styles.pressed,
+                        ]}>
+                        <ThemedText themeColor="danger">Elimina</ThemedText>
+                    </Pressable>
+                )}
+            </View>
+
+            <Sheet
+                visible={confirming !== null}
+                onClose={() => setConfirming(null)}>
+                <ThemedText type="subtitle" style={styles.sheetTitle}>
+                    {sheet.question}
+                </ThemedText>
+                <Pressable
+                    onPress={() => {
+                        setConfirming(null);
+                        sheet.run?.();
+                    }}
+                    accessibilityRole="button"
+                    style={({ pressed }) => [
+                        styles.sheetButton,
+                        pressed && styles.pressed,
+                    ]}>
+                    <ThemedText themeColor="danger">{sheet.label}</ThemedText>
                 </Pressable>
-            </Modal>
+                <Pressable
+                    onPress={() => setConfirming(null)}
+                    accessibilityRole="button"
+                    style={({ pressed }) => [
+                        styles.sheetButton,
+                        {
+                            borderTopWidth: 1,
+                            borderTopColor: theme.border,
+                        },
+                        pressed && styles.pressed,
+                    ]}>
+                    <ThemedText>Annulla</ThemedText>
+                </Pressable>
+            </Sheet>
         </>
     );
 }
@@ -171,18 +167,25 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         padding: Spacing.three,
     },
+    // Same gap as the form bodies these actions end.
+    column: {
+        gap: Spacing.three,
+    },
+    // On desktop "Salva" and the links sit in one row, as in the detail panel.
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.four,
+        paddingTop: Spacing.five,
+    },
+    saveDesktop: {
+        paddingHorizontal: 48,
+    },
+    link: {
+        padding: 0,
+    },
     pressed: {
         opacity: 0.6,
-    },
-    backdrop: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        padding: Spacing.three,
-    },
-    sheet: {
-        borderRadius: 20,
-        paddingVertical: Spacing.two,
     },
     sheetTitle: {
         textAlign: 'center',

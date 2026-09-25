@@ -3,7 +3,6 @@ import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import {
     ActivityIndicator,
-    Modal,
     Platform,
     Pressable,
     StyleSheet,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 
 import { apiUrl } from '@/auth/client';
+import { Sheet } from '@/components/sheet';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing, type ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -97,59 +97,41 @@ export function VisionBoard() {
                 </ThemedText>
             )}
 
-            <Modal
-                visible={menu !== 'closed'}
-                transparent
-                animationType="fade"
-                onRequestClose={close}>
-                <Pressable style={styles.backdrop} onPress={close}>
-                    <View
-                        style={[
-                            styles.sheet,
-                            { backgroundColor: theme.backgroundElement },
-                        ]}>
-                        {menu === 'actions' ? (
-                            <>
-                                <SheetButton
-                                    title="Sostituisci"
-                                    first
-                                    onPress={() => {
-                                        close();
-                                        choose();
-                                    }}
-                                />
-                                <SheetButton
-                                    title="Rimuovi"
-                                    color="danger"
-                                    onPress={() => setMenu('confirm')}
-                                />
-                            </>
-                        ) : (
-                            <>
-                                <ThemedText
-                                    type="subtitle"
-                                    style={styles.sheetTitle}>
-                                    Rimuovere la vision board?
-                                </ThemedText>
-                                <SheetButton
-                                    title="Rimuovi"
-                                    color="danger"
-                                    first
-                                    onPress={() => {
-                                        close();
-                                        remove();
-                                    }}
-                                />
-                            </>
-                        )}
+            <Sheet visible={menu !== 'closed'} onClose={close}>
+                {menu === 'actions' ? (
+                    <>
                         <SheetButton
-                            title="Annulla"
-                            color="text"
-                            onPress={close}
+                            title="Sostituisci"
+                            first
+                            onPress={() => {
+                                close();
+                                choose();
+                            }}
                         />
-                    </View>
-                </Pressable>
-            </Modal>
+                        <SheetButton
+                            title="Rimuovi"
+                            color="danger"
+                            onPress={() => setMenu('confirm')}
+                        />
+                    </>
+                ) : (
+                    <>
+                        <ThemedText type="subtitle" style={styles.sheetTitle}>
+                            Rimuovere la vision board?
+                        </ThemedText>
+                        <SheetButton
+                            title="Rimuovi"
+                            color="danger"
+                            first
+                            onPress={() => {
+                                close();
+                                remove();
+                            }}
+                        />
+                    </>
+                )}
+                <SheetButton title="Annulla" color="text" onPress={close} />
+            </Sheet>
         </View>
     );
 }
@@ -220,16 +202,6 @@ const styles = StyleSheet.create({
     error: {
         paddingTop: Spacing.two,
         textAlign: 'center',
-    },
-    backdrop: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        padding: Spacing.three,
-    },
-    sheet: {
-        borderRadius: 20,
-        paddingVertical: Spacing.two,
     },
     sheetTitle: {
         textAlign: 'center',
