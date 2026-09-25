@@ -12,6 +12,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useFocusRing } from '@/hooks/use-focus-ring';
 import { useTheme } from '@/hooks/use-theme';
+import { useUnsaved } from '@/hooks/use-unsaved';
 
 const SAVE_DELAY = 800;
 const SAVED_VISIBLE = 1500;
@@ -28,8 +29,11 @@ export function CloseoutQuestions({
     answers: Record<string, string>;
     onSave: SaveAnswer;
 }) {
+    const unsaved = useUnsaved();
+
     return (
         <View style={styles.sections}>
+            {unsaved.sheet}
             {sections.map((section, i) => (
                 <View key={section.title ?? i} style={styles.section}>
                     {section.title && (
@@ -43,6 +47,7 @@ export function CloseoutQuestions({
                                     answerKey={question.keys[0]}
                                     initial={answers[question.keys[0]] ?? ''}
                                     onSave={onSave}
+                                    mark={unsaved.mark}
                                     label={question.text}
                                     multiline
                                 />
@@ -59,6 +64,7 @@ export function CloseoutQuestions({
                                                 answerKey={key}
                                                 initial={answers[key] ?? ''}
                                                 onSave={onSave}
+                                                mark={unsaved.mark}
                                                 label={`${question.text}, ${n + 1}`}
                                             />
                                         </View>
@@ -79,12 +85,14 @@ function AnswerField({
     answerKey,
     initial,
     onSave,
+    mark,
     label,
     multiline,
 }: {
     answerKey: string;
     initial: string;
     onSave: SaveAnswer;
+    mark: (key: string, unsaved: boolean) => void;
     label: string;
     multiline?: boolean;
 }) {
@@ -111,6 +119,7 @@ function AnswerField({
             if (await onSave(answerKey, value)) {
                 saved.current = value;
                 setStatus('saved');
+                mark(answerKey, false);
                 clearTimeout(savedTimer.current);
                 savedTimer.current = setTimeout(
                     () => setStatus('idle'),
@@ -118,6 +127,7 @@ function AnswerField({
                 );
             } else {
                 setStatus('failed');
+                mark(answerKey, true);
             }
         });
     };
@@ -169,6 +179,10 @@ function AnswerField({
                         color: theme.text,
                         backgroundColor: theme.backgroundElement,
                     },
+                    status === 'failed' && [
+                        styles.failed,
+                        { outlineColor: theme.danger },
+                    ],
                     focus.ring,
                 ]}
             />
@@ -218,5 +232,9 @@ const styles = StyleSheet.create({
     status: {
         alignSelf: 'flex-end',
         paddingTop: Spacing.one,
+    },
+    failed: {
+        outlineWidth: 2,
+        outlineStyle: 'solid',
     },
 });

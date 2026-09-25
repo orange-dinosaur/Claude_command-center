@@ -16,6 +16,8 @@ interface TextFieldProps {
     multiline?: boolean;
     onBlur?: () => void;
     autoFocus?: boolean;
+    /** The last save failed: a red outline and "Non salvato" under it. */
+    unsaved?: boolean;
 }
 
 /** A text input with a small muted label above it. */
@@ -28,6 +30,7 @@ export function TextField({
     multiline,
     onBlur,
     autoFocus,
+    unsaved,
 }: TextFieldProps) {
     const theme = useTheme();
     const focus = useFocusRing();
@@ -59,9 +62,15 @@ export function TextField({
                         color: theme.text,
                         backgroundColor: theme.backgroundElement,
                     },
+                    unsaved && [styles.unsaved, { outlineColor: theme.danger }],
                     focus.ring,
                 ]}
             />
+            {unsaved && (
+                <ThemedText type="small" themeColor="danger">
+                    Non salvato
+                </ThemedText>
+            )}
         </View>
     );
 }
@@ -81,5 +90,9 @@ const styles = StyleSheet.create({
     multiline: {
         minHeight: 72,
         textAlignVertical: 'top',
+    },
+    unsaved: {
+        outlineWidth: 2,
+        outlineStyle: 'solid',
     },
 });

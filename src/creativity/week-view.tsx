@@ -22,6 +22,7 @@ import { addDays, formatShortDay } from '@/dates';
 import type { CycleWithWeeks, Week } from '@/hooks/use-cycles';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
+import { useUnsaved } from '@/hooks/use-unsaved';
 
 const DAYS = [
     ['M', 'Monday'],
@@ -70,6 +71,7 @@ export function WeekView({
     const [notes, setNotes] = useState('');
     const [carry, setCarry] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const unsaved = useUnsaved();
 
     useEffect(() => {
         let cancelled = false;
@@ -109,15 +111,18 @@ export function WeekView({
             );
             if (!res.ok) throw new Error();
             onChanged?.();
+            return true;
         } catch {
             setWeek(before);
             setError('Non riesco a salvare. Riprova.');
+            return false;
         }
     };
 
-    const saveText = (key: 'notes' | 'carryForward', value: string) => {
+    const saveText = async (key: 'notes' | 'carryForward', value: string) => {
         const text = value.trim() || null;
-        if (text !== week[key]) save({ [key]: text });
+        const ok = text === week[key] || (await save({ [key]: text }));
+        unsaved.mark(key, !ok);
     };
 
     const t = THEMES[number - 1];
@@ -272,6 +277,7 @@ export function WeekView({
                 onBlur={() => saveText('notes', notes)}
                 placeholder=""
                 multiline
+                unsaved={unsaved.isUnsaved('notes')}
             />
             {isDesktop && midpoint}
             <TextField
@@ -281,6 +287,7 @@ export function WeekView({
                 onBlur={() => saveText('carryForward', carry)}
                 placeholder=""
                 multiline
+                unsaved={unsaved.isUnsaved('carryForward')}
             />
 
             <Check
@@ -297,6 +304,7 @@ export function WeekView({
                     {error}
                 </ThemedText>
             )}
+            {unsaved.sheet}
         </>
     );
 

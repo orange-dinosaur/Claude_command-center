@@ -1,15 +1,15 @@
 /**
  * Text fields for some of a cycle's answers, one per entry of `labels`. Each
- * saves when it loses focus, only if changed; a refused save keeps the text,
- * so leaving the field again retries.
+ * saves when it loses focus, only if changed; a refused save keeps the text
+ * and marks the field unsaved, so leaving the field again retries.
  */
 
 import { useState } from 'react';
 
 import { apiFetch } from '@/auth/client';
 import { TextField } from '@/components/text-field';
-import { ThemedText } from '@/components/themed-text';
 import type { Cycle } from '@/hooks/use-cycles';
+import { useUnsaved } from '@/hooks/use-unsaved';
 
 type AnswerKey = {
     [K in keyof Cycle]: Cycle[K] extends string | null ? K : never;
@@ -31,12 +31,11 @@ export function CycleAnswers<K extends AnswerKey>({
         ) as Record<K, string>;
     const [saved, setSaved] = useState(initial);
     const [texts, setTexts] = useState(initial);
-    const [error, setError] = useState<string | null>(null);
+    const unsaved = useUnsaved();
 
     const save = async (key: K) => {
         const text = texts[key].trim();
-        if (text === saved[key]) return;
-        setError(null);
+        if (text === saved[key]) return unsaved.mark(key, false);
         try {
             const res = await apiFetch(`/api/cycles/${cycle.id}`, {
                 method: 'PATCH',
@@ -45,8 +44,9 @@ export function CycleAnswers<K extends AnswerKey>({
             });
             if (!res.ok) throw new Error();
             setSaved((s) => ({ ...s, [key]: text }));
+            unsaved.mark(key, false);
         } catch {
-            setError('Non riesco a salvare. Riprova.');
+            unsaved.mark(key, true);
         }
     };
 
@@ -63,13 +63,10 @@ export function CycleAnswers<K extends AnswerKey>({
                     onBlur={() => save(key)}
                     placeholder=""
                     multiline={multiline}
+                    unsaved={unsaved.isUnsaved(key)}
                 />
             ))}
-            {error && (
-                <ThemedText type="small" themeColor="danger">
-                    {error}
-                </ThemedText>
-            )}
+            {unsaved.sheet}
         </>
     );
 }
