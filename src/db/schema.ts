@@ -181,7 +181,12 @@ export const checkup = pgTable(
             .$onUpdate(() => new Date())
             .notNull(),
     },
-    (table) => [unique().on(table.userId, table.name)]
+    (table) => [
+        uniqueIndex('checkup_user_id_name_idx').on(
+            table.userId,
+            sql`lower(${table.name})`
+        ),
+    ]
 );
 
 /** A medicine taken repeatedly. Ongoing until its end date has passed. */
