@@ -418,3 +418,78 @@ export const workout = pgTable(
         check('workout_minutes', sql`${table.minutes} between 1 and 600`),
     ]
 );
+
+/**
+ * A bucket list. It belongs to one account, or to two partners who share it,
+ * so its seasons hang off the list rather than off an account.
+ */
+export const bucketList = pgTable('bucket_list', {
+    id: text('id').primaryKey(),
+});
+
+/** The one list each account sees. */
+export const bucketListMember = pgTable(
+    'bucket_list_member',
+    {
+        userId: text('user_id')
+            .primaryKey()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        listId: text('list_id')
+            .notNull()
+            .references(() => bucketList.id, { onDelete: 'cascade' }),
+    },
+    (table) => [index('bucket_list_member_list_id_idx').on(table.listId)]
+);
+
+/** One season of one year. Winter is stored under the year of its December. */
+export const bucketSeason = pgTable(
+    'bucket_season',
+    {
+        id: text('id').primaryKey(),
+        listId: text('list_id')
+            .notNull()
+            .references(() => bucketList.id, { onDelete: 'cascade' }),
+        year: integer('year').notNull(),
+        season: text('season').notNull(),
+    },
+    (table) => [
+        unique().on(table.listId, table.year, table.season),
+        check(
+            'bucket_season_season',
+            sql`${table.season} in ('primavera', 'estate', 'autunno', 'inverno')`
+        ),
+    ]
+);
+
+/** One thing to do in a season. Done when `doneOn` is set. */
+export const bucketItem = pgTable(
+    'bucket_item',
+    {
+        id: text('id').primaryKey(),
+        seasonId: text('season_id')
+            .notNull()
+            .references(() => bucketSeason.id, { onDelete: 'cascade' }),
+        text: text('text').notNull(),
+        addedBy: text('added_by').references(() => user.id, {
+            onDelete: 'set null',
+        }),
+        doneOn: date('done_on'),
+        /** Insertion order. */
+        position: integer('position').notNull(),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+    },
+    (table) => [index('bucket_item_season_id_idx').on(table.seasonId)]
+);
+
+/** An invite to share a bucket list. An account sends one at a time. */
+export const bucketInvite = pgTable('bucket_invite', {
+    id: text('id').primaryKey(),
+    fromUserId: text('from_user_id')
+        .notNull()
+        .unique()
+        .references(() => user.id, { onDelete: 'cascade' }),
+    toUserId: text('to_user_id')
+        .notNull()
+        .references(() => user.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+});
