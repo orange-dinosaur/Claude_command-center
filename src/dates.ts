@@ -28,6 +28,21 @@ export function formatDay(day: string): string {
     return formatter.format(new Date(`${day}T00:00:00Z`));
 }
 
+const dayMonthFormatter = new Intl.DateTimeFormat('it-IT', {
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+});
+
+/** Two days as "31 agosto – 22 novembre 2026", with the year once if shared. */
+export function formatDayRange(from: string, to: string): string {
+    const start =
+        from.slice(0, 4) === to.slice(0, 4)
+            ? dayMonthFormatter.format(new Date(`${from}T00:00:00Z`))
+            : formatDay(from);
+    return `${start} – ${formatDay(to)}`;
+}
+
 /** A `YYYY-MM-DD` day as "3 mar". */
 export function formatShortDay(day: string): string {
     return shortFormatter.format(new Date(`${day}T00:00:00Z`));

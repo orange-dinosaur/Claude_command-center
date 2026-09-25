@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
     ActivityIndicator,
     Pressable,
@@ -13,35 +13,30 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import {
+    cycleState,
     INTENT_LABELS,
     weekOf,
     weeksBegun,
     weekStart,
 } from '@/creativity/cycle';
 import { THEMES } from '@/creativity/themes';
-import { addDays, formatDay, formatShortDay, todayDay } from '@/dates';
-import { useCurrentCycle, type CycleWithWeeks } from '@/hooks/use-cycles';
+import { addDays, formatDayRange, formatShortDay, todayDay } from '@/dates';
+import { useCycle, type CycleWithWeeks } from '@/hooks/use-cycles';
 import { useTheme } from '@/hooks/use-theme';
-
-function cycleState(cycle: CycleWithWeeks, today: string): string {
-    if (cycle.interruptedOn) {
-        const week = weeksBegun(cycle.startDate, cycle.interruptedOn);
-        return `Interrotto alla settimana ${week}`;
-    }
-    if (today < cycle.startDate)
-        return `Inizia il ${formatDay(cycle.startDate)}`;
-    if (today > cycle.endDate) return 'Concluso';
-    return 'In corso';
-}
 
 export default function Creativita() {
     const theme = useTheme();
-    const { cycle, error } = useCurrentCycle();
+    // With an id this shows a past cycle, opened from the list.
+    const { id } = useLocalSearchParams<{ id?: string }>();
+    const { cycle, error } = useCycle(id);
 
     return (
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.container}>
-                <ScreenHeader title="Creatività" backTo="/command-center" />
+                <ScreenHeader
+                    title="Creatività"
+                    backTo={id ? '/creativita/cicli' : '/command-center'}
+                />
 
                 {error && (
                     <ThemedText
@@ -58,16 +53,18 @@ export default function Creativita() {
                         style={styles.message}
                     />
                 ) : cycle === null ? (
-                    <View style={styles.list}>
-                        <NewCycleButton />
-                        <ThemedText
-                            themeColor="textMuted"
-                            style={styles.message}>
-                            Ancora nessun ciclo.
-                        </ThemedText>
-                    </View>
+                    !id && (
+                        <View style={styles.list}>
+                            <NewCycleButton />
+                            <ThemedText
+                                themeColor="textMuted"
+                                style={styles.message}>
+                                Ancora nessun ciclo.
+                            </ThemedText>
+                        </View>
+                    )
                 ) : (
-                    <CycleView cycle={cycle} />
+                    <CycleView cycle={cycle} past={!!id} />
                 )}
             </SafeAreaView>
         </ThemedView>
@@ -94,7 +91,7 @@ function NewCycleButton() {
     );
 }
 
-function CycleView({ cycle }: { cycle: CycleWithWeeks }) {
+function CycleView({ cycle, past }: { cycle: CycleWithWeeks; past: boolean }) {
     const theme = useTheme();
     const router = useRouter();
     const today = todayDay();
@@ -109,12 +106,12 @@ function CycleView({ cycle }: { cycle: CycleWithWeeks }) {
 
     return (
         <ScrollView contentContainerStyle={styles.list}>
-            {(cycle.interruptedOn || today > cycle.endDate) && (
+            {!past && (cycle.interruptedOn || today > cycle.endDate) && (
                 <NewCycleButton />
             )}
             <View>
                 <ThemedText type="subtitle">
-                    {formatDay(cycle.startDate)} – {formatDay(cycle.endDate)}
+                    {formatDayRange(cycle.startDate, cycle.endDate)}
                 </ThemedText>
                 <View style={styles.stateRow}>
                     <ThemedText themeColor="textMuted" style={styles.grow}>
@@ -198,6 +195,19 @@ function CycleView({ cycle }: { cycle: CycleWithWeeks }) {
                     );
                 })}
             </View>
+
+            {!past && (
+                <Pressable
+                    onPress={() => router.push('/creativita/cicli')}
+                    accessibilityRole="link"
+                    hitSlop={Spacing.two}
+                    style={({ pressed }) => [
+                        styles.pastLink,
+                        pressed && styles.pressed,
+                    ]}>
+                    <ThemedText themeColor="accent">Cicli passati</ThemedText>
+                </Pressable>
+            )}
         </ScrollView>
     );
 }
@@ -242,6 +252,10 @@ const styles = StyleSheet.create({
     },
     pressed: {
         opacity: 0.6,
+    },
+    pastLink: {
+        alignSelf: 'center',
+        marginTop: Spacing.two,
     },
     addButton: {
         paddingVertical: Spacing.three,

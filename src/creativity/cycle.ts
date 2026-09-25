@@ -2,7 +2,7 @@
  * Cycle arithmetic shared by the API and the screens.
  */
 
-import { addDays, daysBetween } from '@/dates';
+import { addDays, daysBetween, formatDay } from '@/dates';
 
 /** Days from a cycle's first Monday to its last Sunday. */
 export const CYCLE_LAST_DAY = 83;
@@ -28,3 +28,17 @@ export function weekOf(startDate: string, day: string): number | null {
 /** How many weeks an interrupted cycle keeps: those begun by that day. */
 export const weeksBegun = (startDate: string, interruptedOn: string) =>
     Math.floor(daysBetween(startDate, interruptedOn) / 7) + 1;
+
+export function cycleState(
+    cycle: { startDate: string; endDate: string; interruptedOn: string | null },
+    today: string
+): string {
+    if (cycle.interruptedOn) {
+        const week = weeksBegun(cycle.startDate, cycle.interruptedOn);
+        return `Interrotto alla settimana ${week}`;
+    }
+    if (today < cycle.startDate)
+        return `Inizia il ${formatDay(cycle.startDate)}`;
+    if (today > cycle.endDate) return 'Concluso';
+    return 'In corso';
+}

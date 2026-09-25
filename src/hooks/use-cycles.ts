@@ -1,7 +1,6 @@
 /**
- * The signed-in user's latest creativity cycle, with its saved weeks. Reloads
- * whenever the screen comes back into view, so edits made on another page
- * show up.
+ * The signed-in user's creativity cycles. Each hook reloads whenever the
+ * screen comes back into view, so edits made on another page show up.
  */
 
 import { useFocusEffect } from 'expo-router';
@@ -38,38 +37,60 @@ export type CycleWithWeeks = Cycle & { weeks: Week[] };
 
 const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
-export function useCurrentCycle() {
-    // undefined while loading the first time, null when there are no cycles.
-    const [cycle, setCycle] = useState<CycleWithWeeks | null | undefined>(
-        undefined
-    );
+// data is undefined while loading the first time, null when there is none.
+function useOnFocus<T>(load: () => Promise<T | null>, key?: string) {
+    const [data, setData] = useState<T | null | undefined>(undefined);
     const [error, setError] = useState<string | null>(null);
 
     useFocusEffect(
         useCallback(() => {
             let cancelled = false;
-            apiFetch('/api/cycles')
-                .then(json)
-                .then((cycles: Cycle[]) =>
-                    cycles.length
-                        ? apiFetch(`/api/cycles/${cycles[0].id}`).then(json)
-                        : null
-                )
-                .then((latest: CycleWithWeeks | null) => {
+            load()
+                .then((result) => {
                     if (cancelled) return;
-                    setCycle(latest);
+                    setData(result);
                     setError(null);
                 })
                 .catch(() => {
                     if (cancelled) return;
-                    setCycle((current) => current ?? null);
+                    setData((current) => current ?? null);
                     setError('Non riesco a caricare i dati.');
                 });
             return () => {
                 cancelled = true;
             };
-        }, [])
+            // load is a new closure each render; key says when it changes.
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [key])
     );
 
-    return { cycle, error };
+    return { data, error };
+}
+
+/** The cycle with this id, or the latest one when there is no id. */
+export function useCycle(id?: string) {
+    const { data, error } = useOnFocus<CycleWithWeeks>(
+        () =>
+            id
+                ? apiFetch(`/api/cycles/${id}`).then(json)
+                : apiFetch('/api/cycles')
+                      .then(json)
+                      .then((cycles: Cycle[]) =>
+                          cycles.length
+                              ? apiFetch(`/api/cycles/${cycles[0].id}`).then(
+                                    json
+                                )
+                              : null
+                      ),
+        id
+    );
+    return { cycle: data, error };
+}
+
+/** Every cycle, newest first, without weeks. */
+export function useCycles() {
+    const { data, error } = useOnFocus<Cycle[]>(() =>
+        apiFetch('/api/cycles').then(json)
+    );
+    return { cycles: data, error };
 }
