@@ -3,9 +3,10 @@
  * them, and deleting the month.
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { apiFetch } from '@/auth/client';
+import { useOnFocus } from '@/hooks/use-on-focus';
 
 export interface ChecklistItem {
     id: string;
@@ -24,31 +25,22 @@ export interface Month {
 
 export function useCloseoutMonth(id: string) {
     // undefined while loading, null when it does not exist.
-    const [month, setMonth] = useState<Month | null | undefined>(undefined);
-    const [busy, setBusy] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [itemError, setItemError] = useState<string | null>(null);
-
-    useEffect(() => {
-        let cancelled = false;
-        apiFetch(`/api/closeout/${id}`)
-            .then((res) => {
+    const {
+        data: month,
+        setData: setMonth,
+        error,
+        setError,
+    } = useOnFocus<Month>(
+        () =>
+            apiFetch(`/api/closeout/${id}`).then((res) => {
                 if (res.status === 404) return null;
                 return res.ok ? res.json() : Promise.reject();
-            })
-            .then((body: Month | null) => {
-                if (!cancelled) setMonth(body);
-            })
-            .catch(() => {
-                if (!cancelled) {
-                    setMonth(null);
-                    setError('Non riesco a caricare il mese.');
-                }
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, [id]);
+            }),
+        'Non riesco a caricare il mese.',
+        id
+    );
+    const [busy, setBusy] = useState(false);
+    const [itemError, setItemError] = useState<string | null>(null);
 
     /** Resolves to true once the month is gone. */
     const remove = async (): Promise<boolean> => {

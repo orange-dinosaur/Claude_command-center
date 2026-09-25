@@ -1,13 +1,11 @@
 /**
  * The signed-in user's closeout months, newest first, and creating one.
- * Reloads whenever the screen comes back into view, so the progress counts
- * follow what was ticked inside a month.
  */
 
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 import { apiFetch } from '@/auth/client';
+import { useOnFocus } from '@/hooks/use-on-focus';
 
 export interface MonthSummary {
     id: string;
@@ -18,37 +16,16 @@ export interface MonthSummary {
 }
 
 export function useCloseoutMonths() {
-    // undefined while loading the first time.
-    const [months, setMonths] = useState<MonthSummary[] | undefined>(undefined);
-    const [busy, setBusy] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    // Bumped by `reload` for pages that change the data without losing focus.
-    const [version, setVersion] = useState(0);
-
-    useFocusEffect(
-        useCallback(() => {
-            let cancelled = false;
+    const { data, error, setError, reload } = useOnFocus<MonthSummary[]>(
+        () =>
             apiFetch('/api/closeout')
                 .then((res) => (res.ok ? res.json() : Promise.reject()))
-                .then((body: { months: MonthSummary[] }) => {
-                    if (cancelled) return;
-                    setMonths(body.months);
-                    setError(null);
-                })
-                .catch(() => {
-                    if (cancelled) return;
-                    setMonths((current) => current ?? []);
-                    setError('Non riesco a caricare i mesi.');
-                });
-            return () => {
-                cancelled = true;
-            };
-            // version is listed only so that reload() fetches again.
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, [version])
+                .then((body: { months: MonthSummary[] }) => body.months),
+        'Non riesco a caricare i mesi.'
     );
-
-    const reload = useCallback(() => setVersion((v) => v + 1), []);
+    // undefined while loading the first time; a failed first load is empty.
+    const months = data === null ? [] : data;
+    const [busy, setBusy] = useState(false);
 
     /** Resolves to the month's id, new or existing, or null on failure. */
     const create = async (

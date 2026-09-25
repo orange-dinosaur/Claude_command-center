@@ -1,12 +1,9 @@
 /**
- * The signed-in user's workouts and workout types, reloaded whenever the
- * screen comes into focus, so lists are fresh after a form closes.
+ * The signed-in user's workouts and workout types.
  */
 
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-
 import { apiFetch } from '@/auth/client';
+import { useOnFocus } from '@/hooks/use-on-focus';
 
 export interface Workout {
     id: string;
@@ -18,37 +15,15 @@ export interface Workout {
     note: string | null;
 }
 
+const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
+
 export function useWorkouts() {
-    // undefined while loading the first time.
-    const [workouts, setWorkouts] = useState<Workout[] | undefined>(undefined);
-    const [error, setError] = useState<string | null>(null);
-    // Bumped by `reload` for pages that change the data without losing focus.
-    const [version, setVersion] = useState(0);
-
-    useFocusEffect(
-        useCallback(() => {
-            let cancelled = false;
-            apiFetch('/api/workouts')
-                .then((res) => (res.ok ? res.json() : Promise.reject()))
-                .then((list: Workout[]) => {
-                    if (cancelled) return;
-                    setWorkouts(list);
-                    setError(null);
-                })
-                .catch(() => {
-                    if (cancelled) return;
-                    setWorkouts((current) => current ?? []);
-                    setError('Non riesco a caricare i dati.');
-                });
-            return () => {
-                cancelled = true;
-            };
-            // version is listed only so that reload() fetches again.
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, [version])
+    const { data, error, reload } = useOnFocus<Workout[]>(
+        () => apiFetch('/api/workouts').then(json),
+        'Non riesco a caricare i dati.'
     );
-
-    const reload = useCallback(() => setVersion((v) => v + 1), []);
+    // undefined while loading the first time; a failed first load is empty.
+    const workouts = data === null ? [] : data;
 
     return { workouts, error, reload };
 }
@@ -61,30 +36,12 @@ export interface WorkoutType {
 }
 
 export function useWorkoutTypes() {
-    // undefined while loading the first time.
-    const [types, setTypes] = useState<WorkoutType[] | undefined>(undefined);
-    const [error, setError] = useState<string | null>(null);
-
-    useFocusEffect(
-        useCallback(() => {
-            let cancelled = false;
-            apiFetch('/api/workout-types')
-                .then((res) => (res.ok ? res.json() : Promise.reject()))
-                .then((list: WorkoutType[]) => {
-                    if (cancelled) return;
-                    setTypes(list);
-                    setError(null);
-                })
-                .catch(() => {
-                    if (cancelled) return;
-                    setTypes((current) => current ?? []);
-                    setError('Non riesco a caricare i tipi.');
-                });
-            return () => {
-                cancelled = true;
-            };
-        }, [])
+    const { data, setData, error } = useOnFocus<WorkoutType[]>(
+        () => apiFetch('/api/workout-types').then(json),
+        'Non riesco a caricare i tipi.'
     );
+    // undefined while loading the first time; a failed first load is empty.
+    const types = data === null ? [] : data;
 
-    return { types, setTypes, error };
+    return { types, setTypes: setData, error };
 }
