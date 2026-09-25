@@ -10,11 +10,13 @@ import {
     Stack,
     ThemeProvider,
     type Theme,
+    useSegments,
 } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
+import { Rail } from '@/components/rail';
 import { Colors } from '@/constants/theme';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -37,6 +39,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
     const colorScheme = useColorScheme();
     const isDesktop = useIsDesktop();
+    const segments = useSegments();
     useAuthGuard();
     const [fontsLoaded, fontError] = useFonts({
         CormorantGaramond_600SemiBold,
@@ -76,9 +79,37 @@ export default function RootLayout() {
     // On web the server HTML already carries the @font-face rules, so render right away.
     if (!fontsReady && Platform.OS !== 'web') return null;
 
+    // The Stack keeps the same place in the tree at every width, so crossing
+    // the breakpoint does not remount the navigation.
     return (
         <ThemeProvider value={navigationTheme(colorScheme)}>
-            <Stack screenOptions={{ headerShown: false }} />
+            <View style={styles.row}>
+                {isDesktop && segments[0] !== '(auth)' && <Rail />}
+                <View style={styles.main}>
+                    <Stack
+                        screenOptions={{
+                            headerShown: false,
+                            contentStyle: isDesktop ? styles.column : undefined,
+                        }}
+                    />
+                </View>
+            </View>
         </ThemeProvider>
     );
 }
+
+const styles = StyleSheet.create({
+    row: {
+        flex: 1,
+        flexDirection: 'row',
+    },
+    main: {
+        flex: 1,
+    },
+    // Pages without a desktop layout yet show as the phone page, centred.
+    column: {
+        width: '100%',
+        maxWidth: 640,
+        alignSelf: 'center',
+    },
+});

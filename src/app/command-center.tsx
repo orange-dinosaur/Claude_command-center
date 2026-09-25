@@ -1,3 +1,4 @@
+import { Redirect } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,10 +8,14 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ToolButton } from '@/components/tool-button';
 import { Spacing } from '@/constants/theme';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 
 export default function CommandCenter() {
     // The auth guard sees the session end and replaces this screen with login.
     const signOut = () => authClient.signOut();
+
+    // On desktop the rail holds the tools.
+    if (useIsDesktop()) return <Redirect href="/" />;
 
     return (
         <ThemedView style={styles.container}>

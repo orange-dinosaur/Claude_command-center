@@ -14,7 +14,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useFocusRing } from '@/hooks/use-focus-ring';
 import { useTheme } from '@/hooks/use-theme';
 
-const MARK = {
+export const MARK = {
     light: require('@/assets/images/logo-mark-light.png'),
     dark: require('@/assets/images/logo-mark-dark.png'),
 };
