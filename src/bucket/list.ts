@@ -2,10 +2,10 @@
  * Which bucket list an account sees.
  */
 
-import { eq } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 
 import { db } from '@/db';
-import { bucketList, bucketListMember } from '@/db/schema';
+import { bucketList, bucketListMember, user } from '@/db/schema';
 
 const MAX_TEXT = 200;
 
@@ -41,4 +41,22 @@ export async function listIdFor(userId: string): Promise<string> {
             .onConflictDoNothing();
     });
     return listIdFor(userId);
+}
+
+/** The other account on the caller's list, if any. */
+export async function partnerOf(
+    userId: string
+): Promise<{ id: string; name: string } | null> {
+    const listId = await listIdFor(userId);
+    const [partner] = await db
+        .select({ id: user.id, name: user.name })
+        .from(bucketListMember)
+        .innerJoin(user, eq(user.id, bucketListMember.userId))
+        .where(
+            and(
+                eq(bucketListMember.listId, listId),
+                ne(bucketListMember.userId, userId)
+            )
+        );
+    return partner ?? null;
 }
