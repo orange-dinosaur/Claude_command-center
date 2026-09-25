@@ -20,6 +20,14 @@ export const OPENING_LABELS = {
         'Cosa renderebbe questo percorso un successo anche se non producessi nulla di pubblico?',
 } as const;
 
+/** The setup checklist, in the order `setup` stores it. */
+export const SETUP_LABELS = [
+    'Ho scelto un orario fisso per le Daily Pages.',
+    "Ho messo in calendario un'uscita creativa settimanale.",
+    'Ho scelto un momento per la revisione settimanale e impostato un promemoria.',
+    'Ho preparato un quaderno, una pagina di note o un altro spazio dove raccogliere le idee.',
+];
+
 /** The answers written in the cycle form, in the order they are shown. */
 export const ANSWER_LABELS = { ...INTENT_LABELS, ...OPENING_LABELS };
 

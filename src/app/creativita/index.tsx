@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/screen-header';
+import { SetupChecklist } from '@/components/setup-checklist';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -140,6 +141,8 @@ function CycleView({ cycle, past }: { cycle: CycleWithWeeks; past: boolean }) {
                     <ThemedText>{cycle[key]}</ThemedText>
                 </View>
             ))}
+
+            <SetupChecklist key={`${cycle.id}:${cycle.setup}`} cycle={cycle} />
 
             <View style={styles.weeks}>
                 {THEMES.slice(0, weekCount).map((t, i) => {

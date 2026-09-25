@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiFetch } from '@/auth/client';
+import { Box, Check } from '@/components/check';
 import { ScreenHeader } from '@/components/screen-header';
 import { Stars } from '@/components/stars';
 import { TextField } from '@/components/text-field';
@@ -300,45 +301,6 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
     );
 }
 
-function Box({ checked }: { checked: boolean }) {
-    const theme = useTheme();
-    return (
-        <View
-            style={[
-                styles.box,
-                { borderColor: theme.accent },
-                checked && { backgroundColor: theme.accent },
-            ]}>
-            {checked && (
-                <ThemedText type="small" style={{ color: theme.onAccent }}>
-                    ✓
-                </ThemedText>
-            )}
-        </View>
-    );
-}
-
-function Check({
-    label,
-    checked,
-    onPress,
-}: {
-    label: string;
-    checked: boolean;
-    onPress: () => void;
-}) {
-    return (
-        <Pressable
-            onPress={onPress}
-            accessibilityRole="checkbox"
-            aria-checked={checked}
-            style={({ pressed }) => [styles.check, pressed && styles.pressed]}>
-            <Box checked={checked} />
-            <ThemedText style={styles.grow}>{label}</ThemedText>
-        </Pressable>
-    );
-}
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -368,25 +330,5 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: Spacing.one,
         padding: Spacing.one,
-    },
-    box: {
-        width: 26,
-        height: 26,
-        borderRadius: 6,
-        borderWidth: 2,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    check: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: Spacing.three,
-        paddingVertical: Spacing.one,
-    },
-    grow: {
-        flex: 1,
-    },
-    pressed: {
-        opacity: 0.6,
     },
 });
