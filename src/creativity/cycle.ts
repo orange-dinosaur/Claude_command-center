@@ -28,6 +28,12 @@ export const SETUP_LABELS = [
     'Ho preparato un quaderno, una pagina di note o un altro spazio dove raccogliere le idee.',
 ];
 
+export const MIDPOINT_LABELS = {
+    midpointShifted: 'Cosa è cambiato dalla settimana 1?',
+    midpointHelping: 'Quale pratica mi sta aiutando davvero?',
+    midpointSimplify: 'Cosa devo semplificare per le prossime sei settimane?',
+} as const;
+
 /** The answers written in the cycle form, in the order they are shown. */
 export const ANSWER_LABELS = { ...INTENT_LABELS, ...OPENING_LABELS };
 

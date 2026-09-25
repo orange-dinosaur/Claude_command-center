@@ -11,13 +11,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { apiFetch } from '@/auth/client';
 import { Box, Check } from '@/components/check';
+import { CycleAnswers } from '@/components/cycle-answers';
 import { ScreenHeader } from '@/components/screen-header';
 import { Stars } from '@/components/stars';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { weeksBegun, weekStart } from '@/creativity/cycle';
+import { MIDPOINT_LABELS, weeksBegun, weekStart } from '@/creativity/cycle';
 import { THEMES } from '@/creativity/themes';
 import { addDays, formatShortDay } from '@/dates';
 import type { CycleWithWeeks, Week } from '@/hooks/use-cycles';
@@ -189,6 +190,15 @@ export default function WeekScreen() {
                                 }
                             />
                         </Section>
+
+                        {number === 6 && (
+                            <Section title="Midpoint check-in">
+                                <CycleAnswers
+                                    cycle={cycle}
+                                    labels={MIDPOINT_LABELS}
+                                />
+                            </Section>
+                        )}
 
                         <Section title="Daily Pages · 25 minutes">
                             <View style={styles.days}>
