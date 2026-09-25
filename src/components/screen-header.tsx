@@ -12,7 +12,7 @@ interface ScreenHeaderProps {
     /** Where the back arrow leads when there is no history to go back to. */
     backTo?: Href;
     /** A text link at the right of the title. */
-    link?: { label: string; href: Href };
+    link?: { label: string } & ({ href: Href } | { onPress: () => void });
 }
 
 /**
@@ -56,8 +56,12 @@ export function ScreenHeader({ title, backTo, link }: ScreenHeaderProps) {
                         {title}
                     </ThemedText>
                     <Pressable
-                        onPress={() => router.push(link.href)}
-                        accessibilityRole="link"
+                        onPress={() =>
+                            'href' in link
+                                ? router.push(link.href)
+                                : link.onPress()
+                        }
+                        accessibilityRole={'href' in link ? 'link' : 'button'}
                         hitSlop={Spacing.two}
                         style={({ pressed }) => pressed && styles.pressed}>
                         <ThemedText style={{ color: theme.accent }}>

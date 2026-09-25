@@ -1,9 +1,11 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { nextSeason, seasonKey, seasonLabel, seasonOf } from '@/bucket/season';
 import { SeasonDetail } from '@/bucket/season-detail';
+import { IncomingInvites, SharePanel } from '@/bucket/share';
 import {
     AddButton,
     ListColumn,
@@ -17,6 +19,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { todayDay } from '@/dates';
 import { useBucketSeasons } from '@/hooks/use-bucket-seasons';
+import { useBucketSharing } from '@/hooks/use-bucket-sharing';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -51,12 +54,32 @@ export default function BucketList() {
         }
     };
 
+    // Linking or unlinking changes which seasons, and which ids, this account
+    // sees, so a selected season may be gone.
+    const sharing = useBucketSharing(() => {
+        reload();
+        if (isDesktop) router.setParams({ id: undefined });
+    });
+    const [sharingOpen, setSharingOpen] = useState(false);
+    const shareLink = {
+        label: 'Condividi',
+        onPress: () => setSharingOpen(true),
+    };
+
     const prepareButton = seasons && !hasNext && (
         <AddButton
             label={`Prepara ${seasonLabel(next)}`}
             onPress={prepare}
             disabled={busy}
             style={!isDesktop && styles.newSpacing}
+        />
+    );
+
+    const sharePanel = (
+        <SharePanel
+            visible={sharingOpen}
+            onClose={() => setSharingOpen(false)}
+            state={sharing}
         />
     );
 
@@ -113,7 +136,13 @@ export default function BucketList() {
                 <ListColumn
                     title="Bucket list"
                     width={280}
-                    header={prepareButton}>
+                    link={shareLink}
+                    header={
+                        <>
+                            <IncomingInvites state={sharing} />
+                            {prepareButton}
+                        </>
+                    }>
                     {list}
                 </ListColumn>
                 <View style={styles.container}>
@@ -127,6 +156,7 @@ export default function BucketList() {
                         />
                     )}
                 </View>
+                {sharePanel}
             </ThemedView>
         );
     }
@@ -134,9 +164,15 @@ export default function BucketList() {
     return (
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.container}>
-                <ScreenHeader title="Bucket list" backTo="/command-center" />
+                <ScreenHeader
+                    title="Bucket list"
+                    backTo="/command-center"
+                    link={shareLink}
+                />
+                <IncomingInvites state={sharing} style={styles.invites} />
                 {prepareButton}
                 {list}
+                {sharePanel}
             </SafeAreaView>
         </ThemedView>
     );
@@ -145,6 +181,10 @@ export default function BucketList() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    invites: {
+        paddingHorizontal: Spacing.four,
+        marginBottom: Spacing.three,
     },
     newSpacing: {
         marginHorizontal: Spacing.four,
