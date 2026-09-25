@@ -29,7 +29,43 @@ export const cycleColumns = {
     intentPractice: creativeCycle.intentPractice,
     intentFeeling: creativeCycle.intentFeeling,
     intentProject: creativeCycle.intentProject,
+    openingNourishing: creativeCycle.openingNourishing,
+    openingDraining: creativeCycle.openingDraining,
+    openingSuccess: creativeCycle.openingSuccess,
+    setup: creativeCycle.setup,
+    midpointShifted: creativeCycle.midpointShifted,
+    midpointHelping: creativeCycle.midpointHelping,
+    midpointSimplify: creativeCycle.midpointSimplify,
+    closingShift1: creativeCycle.closingShift1,
+    closingShift2: creativeCycle.closingShift2,
+    closingShift3: creativeCycle.closingShift3,
+    closingPractice: creativeCycle.closingPractice,
+    closingDiscovery: creativeCycle.closingDiscovery,
+    closingMade: creativeCycle.closingMade,
+    closingBelief: creativeCycle.closingBelief,
+    closingPromise: creativeCycle.closingPromise,
 };
+
+/** The cycle's free-text answers, from the form, week 6 and the closing review. */
+const ANSWER_KEYS = [
+    'intentPractice',
+    'intentFeeling',
+    'intentProject',
+    'openingNourishing',
+    'openingDraining',
+    'openingSuccess',
+    'midpointShifted',
+    'midpointHelping',
+    'midpointSimplify',
+    'closingShift1',
+    'closingShift2',
+    'closingShift3',
+    'closingPractice',
+    'closingDiscovery',
+    'closingMade',
+    'closingBelief',
+    'closingPromise',
+] as const;
 
 /** What the API returns for a week. */
 export const weekColumns = {
@@ -57,10 +93,7 @@ function parseAnswer(value: unknown): string | null | undefined {
 }
 
 export type CycleFields = Partial<
-    Pick<
-        Cycle,
-        'startDate' | 'intentPractice' | 'intentFeeling' | 'intentProject'
-    >
+    Pick<Cycle, 'startDate' | 'setup' | (typeof ANSWER_KEYS)[number]>
 >;
 
 /**
@@ -78,11 +111,14 @@ export function parseCycleFields(
         fields.startDate = start;
     }
 
-    for (const key of [
-        'intentPractice',
-        'intentFeeling',
-        'intentProject',
-    ] as const) {
+    if ('setup' in body) {
+        if (!isBooleans(body.setup) || body.setup.length !== 4) {
+            return 'Invalid setup';
+        }
+        fields.setup = body.setup;
+    }
+
+    for (const key of ANSWER_KEYS) {
         if (!(key in body)) continue;
         const answer = parseAnswer(body[key]);
         if (answer === undefined) return `Invalid ${key}`;
