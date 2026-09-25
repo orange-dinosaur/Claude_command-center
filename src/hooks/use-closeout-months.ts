@@ -16,7 +16,9 @@ export interface MonthSummary {
 }
 
 export function useCloseoutMonths() {
-    const { data, error, setError, reload } = useOnFocus<MonthSummary[]>(
+    const { data, setData, error, setError, reload } = useOnFocus<
+        MonthSummary[]
+    >(
         () =>
             apiFetch('/api/closeout')
                 .then((res) => (res.ok ? res.json() : Promise.reject()))
@@ -51,5 +53,9 @@ export function useCloseoutMonths() {
         }
     };
 
-    return { months, busy, error, create, reload };
+    /** Takes a deleted month off the list before the reload. */
+    const drop = (id: string) =>
+        setData((current) => current?.filter((m) => m.id !== id));
+
+    return { months, busy, error, create, reload, drop };
 }

@@ -34,7 +34,7 @@ export default function Sport() {
     const router = useRouter();
     const isDesktop = useIsDesktop();
     const params = useLocalSearchParams<{ id?: string; tipi?: string }>();
-    const { workouts, error, reload } = useWorkouts();
+    const { workouts, error, reload, drop } = useWorkouts();
     const today = todayDay();
     // Open months, keyed `YYYY-MM`; the current one starts open.
     const [open, setOpen] = useState<Record<string, boolean>>(() => ({
@@ -233,7 +233,10 @@ export default function Sport() {
                                 params.id ? 'Allenamento' : 'Nuovo allenamento'
                             }
                             onSaved={saved}
-                            onDeleted={() => saved()}
+                            onDeleted={() => {
+                                if (params.id) drop(params.id);
+                                saved();
+                            }}
                             style={listPage.panel}
                         />
                     )}

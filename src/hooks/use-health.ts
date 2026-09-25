@@ -29,7 +29,7 @@ interface Health {
 const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 export function useHealth() {
-    const { data, error, reload } = useOnFocus<Health>(
+    const { data, setData, error, reload } = useOnFocus<Health>(
         () =>
             Promise.all([
                 apiFetch('/api/checkups').then(json),
@@ -41,5 +41,17 @@ export function useHealth() {
     const health =
         data === null ? { checkups: [], ongoing: [], ended: [] } : data;
 
-    return { health, error, reload };
+    /** Takes a deleted checkup or medicine off the lists before the reload. */
+    const drop = (id: string) =>
+        setData((current) =>
+            current
+                ? {
+                      checkups: current.checkups.filter((c) => c.id !== id),
+                      ongoing: current.ongoing.filter((m) => m.id !== id),
+                      ended: current.ended.filter((m) => m.id !== id),
+                  }
+                : current
+        );
+
+    return { health, error, reload, drop };
 }

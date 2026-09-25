@@ -32,7 +32,7 @@ const empty = (): Sections => ({ doing: [], todo: [], done: [] });
 const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 export function useTitles() {
-    const { data, error, reload } = useOnFocus<Record<Kind, Sections>>(
+    const { data, setData, error, reload } = useOnFocus<Record<Kind, Sections>>(
         () =>
             Promise.all(
                 KINDS.map((kind) =>
@@ -47,5 +47,21 @@ export function useTitles() {
             ? { book: empty(), film: empty(), series: empty() }
             : data;
 
-    return { titles, error, reload };
+    /** Takes a deleted title off the lists before the reload. */
+    const drop = (id: string) =>
+        setData((current) => {
+            if (!current) return current;
+            const without = (sections: Sections): Sections => ({
+                doing: sections.doing.filter((t) => t.id !== id),
+                todo: sections.todo.filter((t) => t.id !== id),
+                done: sections.done.filter((t) => t.id !== id),
+            });
+            return {
+                book: without(current.book),
+                film: without(current.film),
+                series: without(current.series),
+            };
+        });
+
+    return { titles, error, reload, drop };
 }

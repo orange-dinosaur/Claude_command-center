@@ -54,7 +54,7 @@ const FAILURE = 'Non riesco a caricare i dati.';
 
 /** The cycle with this id, or the latest one when there is no id. */
 export function useCycle(id?: string) {
-    const { data, error, reload } = useOnFocus<CycleWithWeeks>(
+    const { data, setData, error, reload } = useOnFocus<CycleWithWeeks>(
         () =>
             id
                 ? apiFetch(`/api/cycles/${id}`).then(json)
@@ -70,7 +70,10 @@ export function useCycle(id?: string) {
         FAILURE,
         id
     );
-    return { cycle: data, error, reload };
+    /** Shows the loading state until the next cycle arrives. */
+    const clear = () => setData(undefined);
+
+    return { cycle: data, error, reload, clear };
 }
 
 /** Every cycle, newest first, without weeks. */

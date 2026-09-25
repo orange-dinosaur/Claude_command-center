@@ -32,7 +32,7 @@ export default function MonthlyCloseout() {
     const router = useRouter();
     const isDesktop = useIsDesktop();
     const params = useLocalSearchParams<{ id?: string }>();
-    const { months, busy, error, create, reload } = useCloseoutMonths();
+    const { months, busy, error, create, reload, drop } = useCloseoutMonths();
     const [picked, setPicked] = useState<{
         year: number;
         month: number;
@@ -176,6 +176,7 @@ export default function MonthlyCloseout() {
                             key={selected}
                             id={selected}
                             onDeleted={() => {
+                                drop(selected);
                                 reload();
                                 router.setParams({ id: undefined });
                             }}

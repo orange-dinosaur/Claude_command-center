@@ -18,14 +18,18 @@ export interface Workout {
 const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 export function useWorkouts() {
-    const { data, error, reload } = useOnFocus<Workout[]>(
+    const { data, setData, error, reload } = useOnFocus<Workout[]>(
         () => apiFetch('/api/workouts').then(json),
         'Non riesco a caricare i dati.'
     );
     // undefined while loading the first time; a failed first load is empty.
     const workouts = data === null ? [] : data;
 
-    return { workouts, error, reload };
+    /** Takes a deleted workout off the list before the reload. */
+    const drop = (id: string) =>
+        setData((current) => current?.filter((w) => w.id !== id));
+
+    return { workouts, error, reload, drop };
 }
 
 export interface WorkoutType {

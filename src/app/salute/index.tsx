@@ -36,7 +36,7 @@ export default function Health() {
         visita?: string;
         farmaco?: string;
     }>();
-    const { health, error, reload } = useHealth();
+    const { health, error, reload, drop } = useHealth();
 
     const tab: Tab =
         params.farmaco || params.tab === 'farmaci' ? 'Farmaci' : 'Visite';
@@ -196,7 +196,10 @@ export default function Health() {
                             id={params.visita}
                             title={params.visita ? 'Visita' : 'Nuova visita'}
                             onSaved={(id) => saved('visita', id)}
-                            onDeleted={() => saved('visita')}
+                            onDeleted={() => {
+                                if (params.visita) drop(params.visita);
+                                saved('visita');
+                            }}
                             style={listPage.panel}
                         />
                     ) : (
@@ -205,7 +208,10 @@ export default function Health() {
                             id={params.farmaco}
                             title={params.farmaco ? 'Farmaco' : 'Nuovo farmaco'}
                             onSaved={(id) => saved('farmaco', id)}
-                            onDeleted={() => saved('farmaco')}
+                            onDeleted={() => {
+                                if (params.farmaco) drop(params.farmaco);
+                                saved('farmaco');
+                            }}
                             style={listPage.panel}
                         />
                     )}

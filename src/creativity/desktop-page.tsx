@@ -79,7 +79,7 @@ export function DesktopCreativita() {
     const theme = useTheme();
     const router = useRouter();
     const params = useLocalSearchParams<Selection & { id?: string }>();
-    const { cycle, error, reload } = useCycle(params.id);
+    const { cycle, error, reload, clear } = useCycle(params.id);
     const { cycles, reload: reloadCycles } = useCycles();
     const today = todayDay();
 
@@ -193,6 +193,8 @@ export function DesktopCreativita() {
                         id={cycle.id}
                         title="Modifica ciclo"
                         onDone={(deleted) => {
+                            // Clearing drops the deleted cycle's weeks at once.
+                            if (deleted) clear();
                             refresh();
                             if (deleted) backToCurrent();
                             else show({});
