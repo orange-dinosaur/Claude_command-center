@@ -1,4 +1,11 @@
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import {
+    ActivityIndicator,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/screen-header';
@@ -51,9 +58,14 @@ export default function Creativita() {
                         style={styles.message}
                     />
                 ) : cycle === null ? (
-                    <ThemedText themeColor="textMuted" style={styles.message}>
-                        Ancora nessun ciclo.
-                    </ThemedText>
+                    <View style={styles.list}>
+                        <NewCycleButton />
+                        <ThemedText
+                            themeColor="textMuted"
+                            style={styles.message}>
+                            Ancora nessun ciclo.
+                        </ThemedText>
+                    </View>
                 ) : (
                     <CycleView cycle={cycle} />
                 )}
@@ -62,8 +74,29 @@ export default function Creativita() {
     );
 }
 
+function NewCycleButton() {
+    const theme = useTheme();
+    const router = useRouter();
+
+    return (
+        <Pressable
+            onPress={() => router.push('/creativita/ciclo')}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+                styles.addButton,
+                { backgroundColor: theme.accent },
+                pressed && styles.pressed,
+            ]}>
+            <ThemedText style={[styles.buttonText, { color: theme.onAccent }]}>
+                Nuovo ciclo
+            </ThemedText>
+        </Pressable>
+    );
+}
+
 function CycleView({ cycle }: { cycle: CycleWithWeeks }) {
     const theme = useTheme();
+    const router = useRouter();
     const today = todayDay();
 
     const weekCount = cycle.interruptedOn
@@ -76,13 +109,30 @@ function CycleView({ cycle }: { cycle: CycleWithWeeks }) {
 
     return (
         <ScrollView contentContainerStyle={styles.list}>
+            {(cycle.interruptedOn || today > cycle.endDate) && (
+                <NewCycleButton />
+            )}
             <View>
                 <ThemedText type="subtitle">
                     {formatDay(cycle.startDate)} – {formatDay(cycle.endDate)}
                 </ThemedText>
-                <ThemedText themeColor="textMuted">
-                    {cycleState(cycle, today)}
-                </ThemedText>
+                <View style={styles.stateRow}>
+                    <ThemedText themeColor="textMuted" style={styles.grow}>
+                        {cycleState(cycle, today)}
+                    </ThemedText>
+                    <Pressable
+                        onPress={() =>
+                            router.push({
+                                pathname: '/creativita/ciclo',
+                                params: { id: cycle.id },
+                            })
+                        }
+                        accessibilityRole="button"
+                        hitSlop={Spacing.two}
+                        style={({ pressed }) => pressed && styles.pressed}>
+                        <ThemedText themeColor="accent">Modifica</ThemedText>
+                    </Pressable>
+                </View>
             </View>
 
             {intents.map((key) => (
@@ -177,5 +227,22 @@ const styles = StyleSheet.create({
     check: {
         width: 18,
         textAlign: 'center',
+    },
+    stateRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    pressed: {
+        opacity: 0.6,
+    },
+    addButton: {
+        paddingVertical: Spacing.three,
+        borderRadius: 14,
+        alignItems: 'center',
+    },
+    buttonText: {
+        fontFamily: 'Karla_600SemiBold',
+        fontSize: 18,
+        lineHeight: 24,
     },
 });

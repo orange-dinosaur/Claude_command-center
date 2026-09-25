@@ -14,6 +14,8 @@ interface FormActionsProps {
     onDelete?: () => void;
     /** Shown in the confirmation, "Eliminare {name}?". */
     name: string;
+    /** Another destructive action above "Elimina", confirmed the same way. */
+    extra?: { label: string; question: string; onConfirm: () => void };
 }
 
 /**
@@ -27,9 +29,24 @@ export function FormActions({
     onSave,
     onDelete,
     name,
+    extra,
 }: FormActionsProps) {
     const theme = useTheme();
-    const [confirming, setConfirming] = useState(false);
+    const [confirming, setConfirming] = useState<'delete' | 'extra' | null>(
+        null
+    );
+    const sheet =
+        confirming === 'extra' && extra
+            ? {
+                  question: extra.question,
+                  label: extra.label,
+                  run: extra.onConfirm,
+              }
+            : {
+                  question: `Eliminare ${name}?`,
+                  label: 'Elimina',
+                  run: onDelete,
+              };
 
     return (
         <>
@@ -57,9 +74,21 @@ export function FormActions({
                     Salva
                 </ThemedText>
             </Pressable>
+            {extra && (
+                <Pressable
+                    onPress={() => setConfirming('extra')}
+                    disabled={busy}
+                    accessibilityRole="button"
+                    style={({ pressed }) => [
+                        styles.deleteButton,
+                        pressed && styles.pressed,
+                    ]}>
+                    <ThemedText themeColor="danger">{extra.label}</ThemedText>
+                </Pressable>
+            )}
             {onDelete && (
                 <Pressable
-                    onPress={() => setConfirming(true)}
+                    onPress={() => setConfirming('delete')}
                     disabled={busy}
                     accessibilityRole="button"
                     style={({ pressed }) => [
@@ -71,35 +100,37 @@ export function FormActions({
             )}
 
             <Modal
-                visible={confirming}
+                visible={confirming !== null}
                 transparent
                 animationType="fade"
-                onRequestClose={() => setConfirming(false)}>
+                onRequestClose={() => setConfirming(null)}>
                 <Pressable
                     style={styles.backdrop}
-                    onPress={() => setConfirming(false)}>
+                    onPress={() => setConfirming(null)}>
                     <View
                         style={[
                             styles.sheet,
                             { backgroundColor: theme.backgroundElement },
                         ]}>
                         <ThemedText type="subtitle" style={styles.sheetTitle}>
-                            Eliminare {name}?
+                            {sheet.question}
                         </ThemedText>
                         <Pressable
                             onPress={() => {
-                                setConfirming(false);
-                                onDelete?.();
+                                setConfirming(null);
+                                sheet.run?.();
                             }}
                             accessibilityRole="button"
                             style={({ pressed }) => [
                                 styles.sheetButton,
                                 pressed && styles.pressed,
                             ]}>
-                            <ThemedText themeColor="danger">Elimina</ThemedText>
+                            <ThemedText themeColor="danger">
+                                {sheet.label}
+                            </ThemedText>
                         </Pressable>
                         <Pressable
-                            onPress={() => setConfirming(false)}
+                            onPress={() => setConfirming(null)}
                             accessibilityRole="button"
                             style={({ pressed }) => [
                                 styles.sheetButton,

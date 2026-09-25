@@ -24,10 +24,13 @@ export function DateField({
     value,
     onChange,
     label,
+    mondaysOnly,
 }: {
     value: string | null;
     onChange: (value: string | null) => void;
     label: string;
+    /** Only Mondays can be picked, and the date cannot be cleared. */
+    mondaysOnly?: boolean;
 }) {
     const theme = useTheme();
     const [view, setView] = useState<Shown | null>(null);
@@ -82,14 +85,21 @@ export function DateField({
                                 pickingYear={pickingYear}
                                 onPickingYear={setPickingYear}
                                 onPick={pick}
+                                mondaysOnly={mondaysOnly}
                             />
                         )}
-                        <SheetButton onPress={() => pick(todayDay())} accent>
-                            Oggi
-                        </SheetButton>
-                        <SheetButton onPress={() => pick(null)} accent>
-                            Nessuna data
-                        </SheetButton>
+                        {!mondaysOnly && (
+                            <>
+                                <SheetButton
+                                    onPress={() => pick(todayDay())}
+                                    accent>
+                                    Oggi
+                                </SheetButton>
+                                <SheetButton onPress={() => pick(null)} accent>
+                                    Nessuna data
+                                </SheetButton>
+                            </>
+                        )}
                         <SheetButton onPress={() => setView(null)}>
                             Annulla
                         </SheetButton>
@@ -107,6 +117,7 @@ function Calendar({
     pickingYear,
     onPickingYear,
     onPick,
+    mondaysOnly,
 }: {
     view: Shown;
     onView: (view: Shown) => void;
@@ -114,6 +125,7 @@ function Calendar({
     pickingYear: boolean;
     onPickingYear: (picking: boolean) => void;
     onPick: (day: string) => void;
+    mondaysOnly?: boolean;
 }) {
     const theme = useTheme();
     const { year, month } = view;
@@ -224,17 +236,20 @@ function Calendar({
                 ))}
                 {days.map((day, i) => {
                     const selected = day === value;
+                    const disabled = mondaysOnly && (blanks + i) % 7 !== 0;
                     return (
                         <Pressable
                             key={day}
                             onPress={() => onPick(day)}
+                            disabled={disabled}
                             accessibilityRole="button"
                             accessibilityLabel={formatDay(day)}
-                            accessibilityState={{ selected }}
+                            accessibilityState={{ selected, disabled }}
                             style={[
                                 styles.dayCell,
                                 styles.day,
                                 selected && { backgroundColor: theme.accent },
+                                disabled && styles.disabled,
                             ]}>
                             <ThemedText
                                 themeColor={
@@ -328,6 +343,9 @@ const styles = StyleSheet.create({
     },
     day: {
         borderRadius: 20,
+    },
+    disabled: {
+        opacity: 0.3,
     },
     years: {
         maxHeight: 280,

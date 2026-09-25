@@ -12,15 +12,18 @@ interface TextFieldProps {
     onChange: (value: string) => void;
     placeholder: string;
     keyboardType?: TextInputProps['keyboardType'];
+    /** Several lines, up to 5000 characters instead of 200. */
+    multiline?: boolean;
 }
 
-/** A one-line text input with a small muted label above it. */
+/** A text input with a small muted label above it. */
 export function TextField({
     label,
     value,
     onChange,
     placeholder,
     keyboardType,
+    multiline,
 }: TextFieldProps) {
     const theme = useTheme();
     const focus = useFocusRing();
@@ -38,10 +41,12 @@ export function TextField({
                 placeholder={placeholder}
                 placeholderTextColor={theme.textMuted}
                 keyboardType={keyboardType}
-                maxLength={200}
+                multiline={multiline}
+                maxLength={multiline ? 5000 : 200}
                 accessibilityLabel={label}
                 style={[
                     styles.input,
+                    multiline && styles.multiline,
                     {
                         color: theme.text,
                         backgroundColor: theme.backgroundElement,
@@ -64,5 +69,9 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         paddingHorizontal: Spacing.three,
         paddingVertical: Spacing.two,
+    },
+    multiline: {
+        minHeight: 72,
+        textAlignVertical: 'top',
     },
 });
