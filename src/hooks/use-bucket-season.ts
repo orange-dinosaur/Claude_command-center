@@ -26,6 +26,7 @@ export function useBucketSeason(id: string, onChanged?: () => void) {
     // undefined while loading, null when missing.
     const {
         data: season,
+        setData: setSeason,
         error,
         setError,
         reload,
@@ -39,46 +40,78 @@ export function useBucketSeason(id: string, onChanged?: () => void) {
         id
     );
 
-    const send = async (path: string, init: RequestInit, failure: string) => {
+    const setItems = (change: (items: BucketItem[]) => BucketItem[]) =>
+        setSeason((current) =>
+            current ? { ...current, items: change(current.items) } : current
+        );
+
+    const add = async (text: string) => {
         setError(null);
         try {
-            const res = await apiFetch(path, {
-                ...init,
+            const res = await apiFetch(`/api/bucket/${id}`, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text }),
             });
             if (!res.ok) throw new Error();
             reload();
             onChanged?.();
             return true;
         } catch {
-            setError(failure);
+            setError('Non riesco ad aggiungere la voce.');
             return false;
         }
     };
 
-    const add = (text: string) =>
-        send(
-            `/api/bucket/${id}`,
-            { method: 'POST', body: JSON.stringify({ text }) },
-            'Non riesco ad aggiungere la voce.'
-        );
-
-    const update = (
+    /** Applies the change at once and rolls it back if the save fails. */
+    const update = async (
         item: BucketItem,
         changes: { text?: string; doneOn?: string | null }
-    ) =>
-        send(
-            `/api/bucket/items/${item.id}`,
-            { method: 'PATCH', body: JSON.stringify(changes) },
-            'Non riesco a salvare la voce.'
+    ) => {
+        setError(null);
+        setItems((items) =>
+            items.map((i) => (i.id === item.id ? { ...i, ...changes } : i))
         );
+        try {
+            const res = await apiFetch(`/api/bucket/items/${item.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(changes),
+            });
+            if (!res.ok) throw new Error();
+            onChanged?.();
+            return true;
+        } catch {
+            setItems((items) =>
+                items.map((i) => (i.id === item.id ? item : i))
+            );
+            setError('Non riesco a salvare la voce.');
+            return false;
+        }
+    };
 
-    const remove = (item: BucketItem) =>
-        send(
-            `/api/bucket/items/${item.id}`,
-            { method: 'DELETE' },
-            'Non riesco a eliminare la voce.'
-        );
+    /** Removes at once and puts the item back if the delete fails. */
+    const remove = async (item: BucketItem) => {
+        const index = season?.items.findIndex((i) => i.id === item.id) ?? -1;
+        setError(null);
+        setItems((items) => items.filter((i) => i.id !== item.id));
+        try {
+            const res = await apiFetch(`/api/bucket/items/${item.id}`, {
+                method: 'DELETE',
+            });
+            if (!res.ok && res.status !== 404) throw new Error();
+            onChanged?.();
+            return true;
+        } catch {
+            setItems((items) => [
+                ...items.slice(0, index),
+                item,
+                ...items.slice(index),
+            ]);
+            setError('Non riesco a eliminare la voce.');
+            return false;
+        }
+    };
 
     return { season, error, add, update, remove, reload };
 }
