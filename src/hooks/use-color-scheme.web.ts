@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { useColorScheme as useRNColorScheme } from 'react-native';
 
-import { SCHEME_KEY } from '@/constants/theme';
+import { Colors, SCHEME_KEY } from '@/constants/theme';
 
 type Scheme = 'light' | 'dark';
 
@@ -27,6 +27,12 @@ export function setColorScheme(scheme: Scheme) {
         localStorage.setItem(SCHEME_KEY, scheme);
     } catch {}
     document.documentElement.dataset.scheme = scheme;
+    // The iPhone status bar follows these, as set on load in +html.tsx.
+    document
+        .querySelectorAll('meta[name="theme-color"]')
+        .forEach((meta) =>
+            meta.setAttribute('content', Colors[scheme].background)
+        );
     listeners.forEach((listener) => listener());
 }
 

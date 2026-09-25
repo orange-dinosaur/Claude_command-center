@@ -22,18 +22,6 @@ import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { DESKTOP_MIN_WIDTH, useIsDesktop } from '@/hooks/use-is-desktop';
 
-// Routes with their own desktop layout; the rest get the centred column.
-const DESKTOP_PAGES = new Set([
-    'index',
-    '(auth)',
-    'salute/index',
-    'media/index',
-    'sport/index',
-    'monthly-closeout/index',
-    'creativita/index',
-    'bucket-list/index',
-]);
-
 function navigationTheme(scheme: 'light' | 'dark'): Theme {
     const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
     return {
@@ -98,15 +86,7 @@ export default function RootLayout() {
             <View style={styles.row}>
                 {isDesktop && segments[0] !== '(auth)' && <Rail />}
                 <View style={styles.main}>
-                    <Stack
-                        screenOptions={({ route }) => ({
-                            headerShown: false,
-                            contentStyle:
-                                isDesktop && !DESKTOP_PAGES.has(route.name)
-                                    ? styles.column
-                                    : undefined,
-                        })}
-                    />
+                    <Stack screenOptions={{ headerShown: false }} />
                 </View>
             </View>
         </ThemeProvider>
@@ -120,10 +100,5 @@ const styles = StyleSheet.create({
     },
     main: {
         flex: 1,
-    },
-    column: {
-        width: '100%',
-        maxWidth: 640,
-        alignSelf: 'center',
     },
 });

@@ -27,7 +27,8 @@ export default function Root({ children }: PropsWithChildren) {
                     content="black-translucent"
                 />
 
-                {/* iOS paints the status bar in this colour, so it follows the theme. */}
+                {/* iOS paints the status bar in this colour, so it follows the
+                    theme. A stored choice overwrites both in schemeScript. */}
                 <meta
                     name="theme-color"
                     media="(prefers-color-scheme: light)"
@@ -59,6 +60,12 @@ try {
     var scheme = localStorage.getItem('${SCHEME_KEY}');
     if (scheme === 'light' || scheme === 'dark') {
         document.documentElement.dataset.scheme = scheme;
+        var colour = scheme === 'dark'
+            ? '${Colors.dark.background}'
+            : '${Colors.light.background}';
+        document.querySelectorAll('meta[name="theme-color"]').forEach(function (meta) {
+            meta.setAttribute('content', colour);
+        });
     }
 } catch (e) {}
 `;
