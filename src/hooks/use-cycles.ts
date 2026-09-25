@@ -57,6 +57,8 @@ const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 function useOnFocus<T>(load: () => Promise<T | null>, key?: string) {
     const [data, setData] = useState<T | null | undefined>(undefined);
     const [error, setError] = useState<string | null>(null);
+    // Bumped by `reload` for pages that change the data without losing focus.
+    const [version, setVersion] = useState(0);
 
     useFocusEffect(
         useCallback(() => {
@@ -75,17 +77,20 @@ function useOnFocus<T>(load: () => Promise<T | null>, key?: string) {
             return () => {
                 cancelled = true;
             };
-            // load is a new closure each render; key says when it changes.
+            // load is a new closure each render; key says when it changes, and
+            // version is listed only so that reload() fetches again.
             // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, [key])
+        }, [key, version])
     );
 
-    return { data, error };
+    const reload = useCallback(() => setVersion((v) => v + 1), []);
+
+    return { data, error, reload };
 }
 
 /** The cycle with this id, or the latest one when there is no id. */
 export function useCycle(id?: string) {
-    const { data, error } = useOnFocus<CycleWithWeeks>(
+    const { data, error, reload } = useOnFocus<CycleWithWeeks>(
         () =>
             id
                 ? apiFetch(`/api/cycles/${id}`).then(json)
@@ -100,13 +105,13 @@ export function useCycle(id?: string) {
                       ),
         id
     );
-    return { cycle: data, error };
+    return { cycle: data, error, reload };
 }
 
 /** Every cycle, newest first, without weeks. */
 export function useCycles() {
-    const { data, error } = useOnFocus<Cycle[]>(() =>
+    const { data, error, reload } = useOnFocus<Cycle[]>(() =>
         apiFetch('/api/cycles').then(json)
     );
-    return { cycles: data, error };
+    return { cycles: data, error, reload };
 }

@@ -30,6 +30,7 @@ const DESKTOP_PAGES = new Set([
     'media/index',
     'sport/index',
     'monthly-closeout/index',
+    'creativita/index',
 ]);
 
 function navigationTheme(scheme: 'light' | 'dark'): Theme {

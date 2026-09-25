@@ -95,10 +95,12 @@ export function AddButton({
 export function ListRow({
     selected = false,
     onPress,
+    style,
     children,
 }: {
     selected?: boolean;
     onPress: () => void;
+    style?: StyleProp<ViewStyle>;
     children: ReactNode;
 }) {
     const theme = useTheme();
@@ -115,6 +117,7 @@ export function ListRow({
                         ? theme.accent
                         : theme.backgroundElement,
                 },
+                style,
                 pressed && styles.pressed,
             ]}>
             {children}

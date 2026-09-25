@@ -20,12 +20,18 @@ import {
     weeksBegun,
     weekStart,
 } from '@/creativity/cycle';
+import { DesktopCreativita } from '@/creativity/desktop-page';
 import { THEMES } from '@/creativity/themes';
 import { addDays, formatDayRange, formatShortDay, todayDay } from '@/dates';
 import { useCycle, type CycleWithWeeks } from '@/hooks/use-cycles';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function Creativita() {
+    return useIsDesktop() ? <DesktopCreativita /> : <PhoneCreativita />;
+}
+
+function PhoneCreativita() {
     const theme = useTheme();
     // With an id this shows a past cycle, opened from the list.
     const { id } = useLocalSearchParams<{ id?: string }>();
