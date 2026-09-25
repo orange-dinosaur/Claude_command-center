@@ -18,6 +18,7 @@ import { Platform } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { DESKTOP_MIN_WIDTH, useIsDesktop } from '@/hooks/use-is-desktop';
 
 function navigationTheme(scheme: 'light' | 'dark'): Theme {
     const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
@@ -35,6 +36,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
+    const isDesktop = useIsDesktop();
     useAuthGuard();
     const [fontsLoaded, fontError] = useFonts({
         CormorantGaramond_600SemiBold,
@@ -57,6 +59,15 @@ export default function RootLayout() {
             document.documentElement.dataset.schemeReady = '';
         }
     }, [colorScheme]);
+
+    // Lifts the wide-window hiding in +html.tsx once the layout matches the window.
+    useEffect(() => {
+        if (Platform.OS !== 'web') return;
+        const wide = matchMedia(`(min-width: ${DESKTOP_MIN_WIDTH}px)`).matches;
+        if (isDesktop === wide) {
+            document.documentElement.dataset.layoutReady = '';
+        }
+    }, [isDesktop]);
 
     // On web the server HTML already carries the @font-face rules, so render right away.
     if (!fontsReady && Platform.OS !== 'web') return null;

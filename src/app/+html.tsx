@@ -2,6 +2,7 @@ import { ScrollViewStyleReset } from 'expo-router/html';
 import { type PropsWithChildren } from 'react';
 
 import { Colors } from '@/constants/theme';
+import { DESKTOP_MIN_WIDTH } from '@/hooks/use-is-desktop';
 
 export default function Root({ children }: PropsWithChildren) {
     return (
@@ -64,6 +65,13 @@ body {
     /* The server renders light, so hide the page until the app has switched
        to dark. The animation reveals it anyway if that never happens. */
     html:not([data-scheme-ready]) #root {
+        visibility: hidden;
+        animation: reveal 0s 2s forwards;
+    }
+}
+/* Same for the phone layout the server renders on a wide window. */
+@media (min-width: ${DESKTOP_MIN_WIDTH}px) {
+    html:not([data-layout-ready]) #root {
         visibility: hidden;
         animation: reveal 0s 2s forwards;
     }
