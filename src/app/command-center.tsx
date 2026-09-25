@@ -67,6 +67,15 @@ export default function CommandCenter() {
                             web: 'directions_run',
                         }}
                     />
+                    <ToolButton
+                        title="Bucket list"
+                        href="/bucket-list"
+                        icon={{
+                            ios: 'sun.max',
+                            android: 'wb_sunny',
+                            web: 'wb_sunny',
+                        }}
+                    />
                 </View>
                 <View style={styles.spacer} />
                 <Pressable

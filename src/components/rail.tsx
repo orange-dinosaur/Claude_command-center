@@ -42,6 +42,12 @@ const items: { label: string; title: string; href: Href; icon: string }[] = [
         icon: 'palette',
     },
     { label: 'Sport', title: 'Sport', href: '/sport', icon: 'directions_run' },
+    {
+        label: 'Bucket list',
+        title: 'Bucket list',
+        href: '/bucket-list',
+        icon: 'wb_sunny',
+    },
 ];
 
 // react-native-web drops the `title` prop, so the tooltip goes on the DOM node.

@@ -3,7 +3,7 @@
  * `YYYY-MM-DD` day or `null` for no date.
  */
 
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Sheet } from './sheet';
@@ -27,10 +27,13 @@ export function DateField({
     label,
     mondaysOnly,
     pastOnly,
+    children,
 }: {
     value: string | null;
     onChange: (value: string | null) => void;
     label: string;
+    /** Shown instead of the field, for a date that opens from plain text. */
+    children?: ReactNode;
     /** Only Mondays can be picked, and the date cannot be cleared. */
     mondaysOnly?: boolean;
     /** Only today or earlier can be picked, and the date cannot be cleared. */
@@ -58,13 +61,15 @@ export function DateField({
                 accessibilityRole="button"
                 accessibilityLabel={label}
                 style={({ pressed }) => [
-                    styles.field,
-                    { backgroundColor: theme.backgroundElement },
+                    !children && styles.field,
+                    !children && { backgroundColor: theme.backgroundElement },
                     pressed && styles.pressed,
                 ]}>
-                <ThemedText themeColor={value ? 'text' : 'textMuted'}>
-                    {value ? formatDay(value) : 'Nessuna data'}
-                </ThemedText>
+                {children ?? (
+                    <ThemedText themeColor={value ? 'text' : 'textMuted'}>
+                        {value ? formatDay(value) : 'Nessuna data'}
+                    </ThemedText>
+                )}
             </Pressable>
 
             <Sheet
