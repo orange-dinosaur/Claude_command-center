@@ -1,3 +1,4 @@
+import { type ReactNode } from 'react';
 import {
     ActivityIndicator,
     Image,
@@ -7,11 +8,14 @@ import {
     View,
     type TextInputProps,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useFocusRing } from '@/hooks/use-focus-ring';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
 
 export const MARK = {
@@ -19,13 +23,37 @@ export const MARK = {
     dark: require('@/assets/images/logo-mark-dark.png'),
 };
 
-/** The logo mark and the screen title at the top of every auth screen. */
+/**
+ * The page around every auth form. On desktop the auth layout supplies the
+ * column, so the form only needs centring in it.
+ */
+export function AuthScreen({ children }: { children: ReactNode }) {
+    const isDesktop = useIsDesktop();
+
+    return (
+        <ThemedView style={styles.screen}>
+            <SafeAreaView style={[styles.screen, isDesktop && styles.centred]}>
+                <View style={[styles.content, isDesktop && styles.flush]}>
+                    {children}
+                </View>
+            </SafeAreaView>
+        </ThemedView>
+    );
+}
+
+/**
+ * The logo mark and the screen title at the top of every auth screen. On
+ * desktop the mark is in the side panel instead.
+ */
 export function AuthTitle({ children }: { children: string }) {
     const scheme = useColorScheme();
+    const isDesktop = useIsDesktop();
 
     return (
         <View>
-            <Image source={MARK[scheme]} style={styles.mark} alt="" />
+            {!isDesktop && (
+                <Image source={MARK[scheme]} style={styles.mark} alt="" />
+            )}
             <ThemedText type="title" style={styles.title}>
                 {children}
             </ThemedText>
@@ -35,18 +63,22 @@ export function AuthTitle({ children }: { children: string }) {
 
 export function AuthField({
     label,
+    labelAction,
     onFocus,
     onBlur,
     ...input
-}: TextInputProps & { label: string }) {
+}: TextInputProps & { label: string; labelAction?: ReactNode }) {
     const theme = useTheme();
     const focus = useFocusRing();
 
     return (
         <View style={styles.field}>
-            <ThemedText type="small" themeColor="textMuted">
-                {label}
-            </ThemedText>
+            <View style={styles.labelRow}>
+                <ThemedText type="small" themeColor="textMuted">
+                    {label}
+                </ThemedText>
+                {labelAction}
+            </View>
             <TextInput
                 style={[
                     styles.input,
@@ -121,6 +153,25 @@ export function ErrorText({ children }: { children: string | null }) {
 }
 
 const styles = StyleSheet.create({
+    screen: {
+        flex: 1,
+    },
+    centred: {
+        justifyContent: 'center',
+    },
+    content: {
+        paddingHorizontal: Spacing.four,
+        paddingTop: Spacing.six,
+        gap: Spacing.three,
+    },
+    flush: {
+        paddingHorizontal: 0,
+        paddingTop: 0,
+    },
+    labelRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
     mark: {
         width: 56,
         height: 56,

@@ -3,6 +3,7 @@ import { SymbolView } from 'expo-symbols';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DateBlock } from '@/components/date-block';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { VisionBoard } from '@/components/vision-board';
@@ -17,25 +18,9 @@ export default function Home() {
     const isDesktop = useIsDesktop();
 
     if (isDesktop) {
-        // "giovedì 24 settembre": one word each for weekday, day and month.
-        const [weekday, day, month] = today.split(' ');
         return (
             <ThemedView style={styles.container}>
-                <VisionBoard
-                    aside={
-                        <View>
-                            <ThemedText
-                                themeColor="textMuted"
-                                style={styles.weekday}>
-                                {weekday}
-                            </ThemedText>
-                            <ThemedText style={styles.day}>{day}</ThemedText>
-                            <ThemedText type="title" style={styles.month}>
-                                {month}
-                            </ThemedText>
-                        </View>
-                    }
-                />
+                <VisionBoard aside={<DateBlock />} />
             </ThemedView>
         );
     }
@@ -92,19 +77,5 @@ const styles = StyleSheet.create({
     },
     pressed: {
         opacity: 0.6,
-    },
-    weekday: {
-        fontFamily: 'Karla_500Medium',
-        fontSize: 14,
-        lineHeight: 20,
-        textTransform: 'capitalize',
-    },
-    day: {
-        fontFamily: 'CormorantGaramond_600SemiBold',
-        fontSize: 64,
-        lineHeight: 64,
-    },
-    month: {
-        textTransform: 'capitalize',
     },
 });

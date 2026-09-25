@@ -1,18 +1,17 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { authClient, verificationCallbackURL } from '@/auth/client';
 import { errorMessage } from '@/auth/messages';
 import {
     AuthField,
+    AuthScreen,
     AuthTitle,
     ErrorText,
     SubmitButton,
 } from '@/components/auth-form';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 
 export default function SignupScreen() {
@@ -87,90 +86,80 @@ export default function SignupScreen() {
     );
 
     return (
-        <ThemedView style={styles.container}>
-            <SafeAreaView style={styles.container}>
-                {registered ? (
-                    <View style={styles.content}>
-                        <AuthTitle>Controlla la tua email</AuthTitle>
-                        {/* Sign-up succeeds even if the mail failed, so offer to resend. */}
-                        <ThemedText themeColor="textMuted">
-                            Ti abbiamo mandato un link a {email.trim()}. Aprilo
-                            per confermare l&apos;account, poi accedi.
+        <AuthScreen>
+            {registered ? (
+                <>
+                    <AuthTitle>Controlla la tua email</AuthTitle>
+                    {/* Sign-up succeeds even if the mail failed, so offer to resend. */}
+                    <ThemedText themeColor="textMuted">
+                        Ti abbiamo mandato un link a {email.trim()}. Aprilo per
+                        confermare l&apos;account, poi accedi.
+                    </ThemedText>
+
+                    <ErrorText>{error}</ErrorText>
+
+                    {resent ? (
+                        <ThemedText type="small" themeColor="textMuted">
+                            Inviata di nuovo. Controlla la posta.
                         </ThemedText>
-
-                        <ErrorText>{error}</ErrorText>
-
-                        {resent ? (
-                            <ThemedText type="small" themeColor="textMuted">
-                                Inviata di nuovo. Controlla la posta.
-                            </ThemedText>
-                        ) : (
-                            <SubmitButton
-                                title="Invia di nuovo"
-                                onPress={resendVerification}
-                                pending={pending}
-                            />
-                        )}
-
-                        {loginLink('Hai già confermato?')}
-                    </View>
-                ) : (
-                    <View style={styles.content}>
-                        <AuthTitle>Registrati</AuthTitle>
-
-                        <View style={styles.form}>
-                            <AuthField
-                                label="Nome"
-                                value={name}
-                                onChangeText={setName}
-                                autoComplete="name"
-                            />
-                            <AuthField
-                                label="Email"
-                                value={email}
-                                onChangeText={setEmail}
-                                autoCapitalize="none"
-                                autoComplete="email"
-                                keyboardType="email-address"
-                            />
-                            <AuthField
-                                label="Password"
-                                placeholder="Almeno 8 caratteri"
-                                value={password}
-                                onChangeText={setPassword}
-                                autoCapitalize="none"
-                                autoComplete="new-password"
-                                secureTextEntry
-                                onSubmitEditing={signUp}
-                            />
-                        </View>
-
-                        <ErrorText>{error}</ErrorText>
-
+                    ) : (
                         <SubmitButton
-                            title="Registrati"
-                            onPress={signUp}
-                            disabled={!canSubmit}
+                            title="Invia di nuovo"
+                            onPress={resendVerification}
                             pending={pending}
                         />
+                    )}
 
-                        {loginLink('Hai già un account?')}
+                    {loginLink('Hai già confermato?')}
+                </>
+            ) : (
+                <>
+                    <AuthTitle>Registrati</AuthTitle>
+
+                    <View style={styles.form}>
+                        <AuthField
+                            label="Nome"
+                            value={name}
+                            onChangeText={setName}
+                            autoComplete="name"
+                        />
+                        <AuthField
+                            label="Email"
+                            value={email}
+                            onChangeText={setEmail}
+                            autoCapitalize="none"
+                            autoComplete="email"
+                            keyboardType="email-address"
+                        />
+                        <AuthField
+                            label="Password"
+                            placeholder="Almeno 8 caratteri"
+                            value={password}
+                            onChangeText={setPassword}
+                            autoCapitalize="none"
+                            autoComplete="new-password"
+                            secureTextEntry
+                            onSubmitEditing={signUp}
+                        />
                     </View>
-                )}
-            </SafeAreaView>
-        </ThemedView>
+
+                    <ErrorText>{error}</ErrorText>
+
+                    <SubmitButton
+                        title="Registrati"
+                        onPress={signUp}
+                        disabled={!canSubmit}
+                        pending={pending}
+                    />
+
+                    {loginLink('Hai già un account?')}
+                </>
+            )}
+        </AuthScreen>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    content: {
-        paddingHorizontal: Spacing.four,
-        paddingTop: Spacing.six,
-        gap: Spacing.three,
-    },
     form: {
         gap: Spacing.three,
         paddingTop: Spacing.three,
