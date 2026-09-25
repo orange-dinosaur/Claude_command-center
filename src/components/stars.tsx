@@ -48,7 +48,7 @@ export function Stars({
                 const filled = Math.min(Math.max(value - star * 2 + 2, 0), 2);
                 return (
                     <View key={star}>
-                        <ThemedText style={[glyph, { color: theme.border }]}>
+                        <ThemedText style={[glyph, { color: theme.markEmpty }]}>
                             {char}
                         </ThemedText>
                         <View

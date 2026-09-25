@@ -9,6 +9,7 @@ export const Colors = {
         secondary: '#A14A5A',
         tertiary: '#D8C6B0',
         border: '#DED5C9',
+        markEmpty: '#DED5C9',
         onAccent: '#FBF8F4',
     },
     dark: {
@@ -21,6 +22,7 @@ export const Colors = {
         secondary: '#B35F6D',
         tertiary: '#E1CFB8',
         border: '#343B33',
+        markEmpty: '#5A6457',
         onAccent: '#171B17',
     },
 } as const;
