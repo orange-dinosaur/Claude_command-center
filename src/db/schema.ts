@@ -278,6 +278,25 @@ export const creativeCycle = pgTable(
         intentPractice: text('intent_practice'),
         intentFeeling: text('intent_feeling'),
         intentProject: text('intent_project'),
+        openingNourishing: text('opening_nourishing'),
+        openingDraining: text('opening_draining'),
+        openingSuccess: text('opening_success'),
+        /** The four setup checklist items, in order. */
+        setup: boolean('setup')
+            .array()
+            .default([false, false, false, false])
+            .notNull(),
+        midpointShifted: text('midpoint_shifted'),
+        midpointHelping: text('midpoint_helping'),
+        midpointSimplify: text('midpoint_simplify'),
+        closingShift1: text('closing_shift_1'),
+        closingShift2: text('closing_shift_2'),
+        closingShift3: text('closing_shift_3'),
+        closingPractice: text('closing_practice'),
+        closingDiscovery: text('closing_discovery'),
+        closingMade: text('closing_made'),
+        closingBelief: text('closing_belief'),
+        closingPromise: text('closing_promise'),
         createdAt: timestamp('created_at').defaultNow().notNull(),
         updatedAt: timestamp('updated_at')
             .defaultNow()
@@ -294,6 +313,7 @@ export const creativeCycle = pgTable(
             'creative_cycle_interrupted_within',
             sql`${table.interruptedOn} between ${table.startDate} and ${table.startDate} + 83`
         ),
+        check('creative_cycle_setup', sql`cardinality(${table.setup}) = 4`),
     ]
 );
 
