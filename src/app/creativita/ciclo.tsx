@@ -11,13 +11,18 @@ import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { INTENT_LABELS } from '@/creativity/cycle';
+import { ANSWER_LABELS } from '@/creativity/cycle';
 import { addDays, formatDay, todayDay } from '@/dates';
 import type { Cycle } from '@/hooks/use-cycles';
 
-type IntentKey = keyof typeof INTENT_LABELS;
+type AnswerKey = keyof typeof ANSWER_LABELS;
 
-const INTENT_KEYS = Object.keys(INTENT_LABELS) as IntentKey[];
+const ANSWER_KEYS = Object.keys(ANSWER_LABELS) as AnswerKey[];
+
+const answersOf = (cycle?: Cycle) =>
+    Object.fromEntries(
+        ANSWER_KEYS.map((key) => [key, cycle?.[key] ?? ''])
+    ) as Record<AnswerKey, string>;
 
 const ERRORS: Record<string, string> = {
     'Overlaps another cycle': 'Queste date si sovrappongono a un altro ciclo.',
@@ -35,11 +40,7 @@ export default function CycleForm() {
 
     const [cycle, setCycle] = useState<Cycle | null>(null);
     const [startDate, setStartDate] = useState<string | null>(null);
-    const [intents, setIntents] = useState<Record<IntentKey, string>>({
-        intentPractice: '',
-        intentFeeling: '',
-        intentProject: '',
-    });
+    const [answers, setAnswers] = useState(answersOf);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -55,11 +56,7 @@ export default function CycleForm() {
                     if (cancelled) return;
                     setCycle(loaded);
                     setStartDate(loaded.startDate);
-                    setIntents({
-                        intentPractice: loaded.intentPractice ?? '',
-                        intentFeeling: loaded.intentFeeling ?? '',
-                        intentProject: loaded.intentProject ?? '',
-                    });
+                    setAnswers(answersOf(loaded));
                 })
                 .catch(() => {
                     if (!cancelled) setError('Non riesco a caricare il ciclo.');
@@ -107,14 +104,14 @@ export default function CycleForm() {
 
     const save = () => {
         if (!startDate) return;
-        const answers = Object.fromEntries(
-            INTENT_KEYS.map((key) => [key, intents[key].trim() || null])
+        const trimmed = Object.fromEntries(
+            ANSWER_KEYS.map((key) => [key, answers[key].trim() || null])
         );
         send(
             id ? `/api/cycles/${id}` : '/api/cycles',
             {
                 method: id ? 'PATCH' : 'POST',
-                body: JSON.stringify({ startDate, ...answers }),
+                body: JSON.stringify({ startDate, ...trimmed }),
             },
             'Non riesco a salvare il ciclo.'
         );
@@ -152,13 +149,13 @@ export default function CycleForm() {
                         )}
                     </View>
 
-                    {INTENT_KEYS.map((key) => (
+                    {ANSWER_KEYS.map((key) => (
                         <TextField
                             key={key}
-                            label={INTENT_LABELS[key]}
-                            value={intents[key]}
+                            label={ANSWER_LABELS[key]}
+                            value={answers[key]}
                             onChange={(value) =>
-                                setIntents((i) => ({ ...i, [key]: value }))
+                                setAnswers((a) => ({ ...a, [key]: value }))
                             }
                             placeholder="Facoltativo"
                             multiline

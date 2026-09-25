@@ -13,6 +13,16 @@ export const INTENT_LABELS = {
     intentProject: 'Un piccolo progetto che potrei esplorare',
 } as const;
 
+export const OPENING_LABELS = {
+    openingNourishing: 'Cosa sta nutrendo la mia creatività in questo momento?',
+    openingDraining: 'Cosa la sta prosciugando o bloccando?',
+    openingSuccess:
+        'Cosa renderebbe questo percorso un successo anche se non producessi nulla di pubblico?',
+} as const;
+
+/** The answers written in the cycle form, in the order they are shown. */
+export const ANSWER_LABELS = { ...INTENT_LABELS, ...OPENING_LABELS };
+
 /** The Monday that starts week `week`, 1 to 12. */
 export const weekStart = (startDate: string, week: number) =>
     addDays(startDate, (week - 1) * 7);

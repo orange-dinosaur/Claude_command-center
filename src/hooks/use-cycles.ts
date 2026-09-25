@@ -17,6 +17,22 @@ export interface Cycle {
     intentPractice: string | null;
     intentFeeling: string | null;
     intentProject: string | null;
+    openingNourishing: string | null;
+    openingDraining: string | null;
+    openingSuccess: string | null;
+    /** The four setup checklist items, in order. */
+    setup: boolean[];
+    midpointShifted: string | null;
+    midpointHelping: string | null;
+    midpointSimplify: string | null;
+    closingShift1: string | null;
+    closingShift2: string | null;
+    closingShift3: string | null;
+    closingPractice: string | null;
+    closingDiscovery: string | null;
+    closingMade: string | null;
+    closingBelief: string | null;
+    closingPromise: string | null;
 }
 
 export interface Week {

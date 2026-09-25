@@ -13,8 +13,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import {
+    ANSWER_LABELS,
     cycleState,
-    INTENT_LABELS,
     weekOf,
     weeksBegun,
     weekStart,
@@ -100,8 +100,8 @@ function CycleView({ cycle, past }: { cycle: CycleWithWeeks; past: boolean }) {
         ? weeksBegun(cycle.startDate, cycle.interruptedOn)
         : 12;
     const current = cycle.interruptedOn ? null : weekOf(cycle.startDate, today);
-    const intents = (
-        Object.keys(INTENT_LABELS) as (keyof typeof INTENT_LABELS)[]
+    const answers = (
+        Object.keys(ANSWER_LABELS) as (keyof typeof ANSWER_LABELS)[]
     ).filter((key) => cycle[key]);
 
     return (
@@ -132,10 +132,10 @@ function CycleView({ cycle, past }: { cycle: CycleWithWeeks; past: boolean }) {
                 </View>
             </View>
 
-            {intents.map((key) => (
+            {answers.map((key) => (
                 <View key={key}>
                     <ThemedText type="small" themeColor="textMuted">
-                        {INTENT_LABELS[key]}
+                        {ANSWER_LABELS[key]}
                     </ThemedText>
                     <ThemedText>{cycle[key]}</ThemedText>
                 </View>
