@@ -14,6 +14,7 @@ interface TextFieldProps {
     keyboardType?: TextInputProps['keyboardType'];
     /** Several lines, up to 5000 characters instead of 200. */
     multiline?: boolean;
+    onBlur?: () => void;
 }
 
 /** A text input with a small muted label above it. */
@@ -24,6 +25,7 @@ export function TextField({
     placeholder,
     keyboardType,
     multiline,
+    onBlur,
 }: TextFieldProps) {
     const theme = useTheme();
     const focus = useFocusRing();
@@ -37,7 +39,10 @@ export function TextField({
                 value={value}
                 onChangeText={onChange}
                 onFocus={focus.onFocus}
-                onBlur={focus.onBlur}
+                onBlur={() => {
+                    focus.onBlur();
+                    onBlur?.();
+                }}
                 placeholder={placeholder}
                 placeholderTextColor={theme.textMuted}
                 keyboardType={keyboardType}

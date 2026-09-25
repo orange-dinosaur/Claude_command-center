@@ -13,38 +13,49 @@ interface StarsProps {
      */
     onChange?: (rating: number | null) => void;
     size?: number;
+    /** Another character in place of ★, such as ● for energy dots. */
+    glyph?: string;
+    /** Spoken unit, singular and plural. */
+    unit?: [string, string];
+    emptyLabel?: string;
 }
-
-const spoken = (rating: number) =>
-    `${String(rating / 2).replace('.', ',')} ${rating === 2 ? 'stella' : 'stelle'} su 5`;
 
 /**
  * Five stars. Each is a faint star with an accent one on top, clipped to the
  * filled part. The web symbol font has no filled star, so these are plain
  * characters.
  */
-export function Stars({ rating, onChange, size = 18 }: StarsProps) {
+export function Stars({
+    rating,
+    onChange,
+    size = 18,
+    glyph: char = '★',
+    unit = ['stella', 'stelle'],
+    emptyLabel = 'Nessun voto',
+}: StarsProps) {
     const theme = useTheme();
     const glyph = { fontSize: size, lineHeight: Math.round(size * 1.2) };
     const value = rating ?? 0;
+    const spoken = (half: number) =>
+        `${String(half / 2).replace('.', ',')} ${half === 2 ? unit[0] : unit[1]} su 5`;
 
     return (
         <View
             style={styles.row}
             accessible={!onChange}
-            accessibilityLabel={rating ? spoken(rating) : 'Nessun voto'}>
+            accessibilityLabel={rating ? spoken(rating) : emptyLabel}>
             {[1, 2, 3, 4, 5].map((star) => {
                 const filled = Math.min(Math.max(value - star * 2 + 2, 0), 2);
                 return (
                     <View key={star}>
                         <ThemedText style={[glyph, { color: theme.border }]}>
-                            ★
+                            {char}
                         </ThemedText>
                         <View
                             style={[styles.fill, { width: `${filled * 50}%` }]}>
                             <ThemedText
                                 style={[glyph, { color: theme.accent }]}>
-                                ★
+                                {char}
                             </ThemedText>
                         </View>
                         {onChange &&

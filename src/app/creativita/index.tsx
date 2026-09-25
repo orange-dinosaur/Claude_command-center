@@ -151,14 +151,22 @@ function CycleView({ cycle }: { cycle: CycleWithWeeks }) {
                     const days = saved?.dailyPages.filter(Boolean).length ?? 0;
                     const start = weekStart(cycle.startDate, week);
                     return (
-                        <View
+                        <Pressable
                             key={week}
-                            style={[
+                            onPress={() =>
+                                router.push({
+                                    pathname: '/creativita/settimana',
+                                    params: { cycle: cycle.id, week },
+                                })
+                            }
+                            accessibilityRole="button"
+                            style={({ pressed }) => [
                                 styles.row,
                                 { backgroundColor: theme.backgroundElement },
                                 week === current && {
                                     borderColor: theme.accent,
                                 },
+                                pressed && styles.pressed,
                             ]}>
                             <View style={styles.grow}>
                                 <ThemedText>
@@ -186,7 +194,7 @@ function CycleView({ cycle }: { cycle: CycleWithWeeks }) {
                             ) : (
                                 <View style={styles.check} />
                             )}
-                        </View>
+                        </Pressable>
                     );
                 })}
             </View>
