@@ -161,9 +161,7 @@ export default function MonthlyCloseout() {
                                     styles.sheetButton,
                                     pressed && styles.pressed,
                                 ]}>
-                                <ThemedText themeColor="accent">
-                                    Annulla
-                                </ThemedText>
+                                <ThemedText>Annulla</ThemedText>
                             </Pressable>
                         </Pressable>
                     </Pressable>
