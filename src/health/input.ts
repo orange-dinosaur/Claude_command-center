@@ -62,3 +62,4 @@ export function pgCode(error: unknown): string | undefined {
 
 export const UNIQUE_VIOLATION = '23505';
 export const CHECK_VIOLATION = '23514';
+export const FOREIGN_KEY_VIOLATION = '23503';
