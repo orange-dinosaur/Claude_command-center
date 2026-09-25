@@ -18,6 +18,8 @@ interface StarsProps {
     /** Spoken unit, singular and plural. */
     unit?: [string, string];
     emptyLabel?: string;
+    /** Drawn on an `accent` background, such as a selected row. */
+    onAccent?: boolean;
 }
 
 /**
@@ -32,8 +34,13 @@ export function Stars({
     glyph: char = '★',
     unit = ['stella', 'stelle'],
     emptyLabel = 'Nessun voto',
+    onAccent,
 }: StarsProps) {
     const theme = useTheme();
+    const full = onAccent ? theme.onAccent : theme.accent;
+    const empty = onAccent
+        ? [{ color: theme.onAccent }, styles.faint]
+        : { color: theme.markEmpty };
     const glyph = { fontSize: size, lineHeight: Math.round(size * 1.2) };
     const value = rating ?? 0;
     const spoken = (half: number) =>
@@ -48,13 +55,10 @@ export function Stars({
                 const filled = Math.min(Math.max(value - star * 2 + 2, 0), 2);
                 return (
                     <View key={star}>
-                        <ThemedText style={[glyph, { color: theme.markEmpty }]}>
-                            {char}
-                        </ThemedText>
+                        <ThemedText style={[glyph, empty]}>{char}</ThemedText>
                         <View
                             style={[styles.fill, { width: `${filled * 50}%` }]}>
-                            <ThemedText
-                                style={[glyph, { color: theme.accent }]}>
+                            <ThemedText style={[glyph, { color: full }]}>
                                 {char}
                             </ThemedText>
                         </View>
@@ -88,6 +92,9 @@ export function Stars({
 const styles = StyleSheet.create({
     row: {
         flexDirection: 'row',
+    },
+    faint: {
+        opacity: 0.4,
     },
     fill: {
         position: 'absolute',

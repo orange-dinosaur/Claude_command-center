@@ -1,14 +1,14 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { type ReactNode } from 'react';
-import {
-    ActivityIndicator,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import {
+    AddButton,
+    ListColumn,
+    ListRow,
+    Secondary,
+    listPage,
+} from '@/components/list-column';
 import { ScreenHeader } from '@/components/screen-header';
 import { TabBar } from '@/components/tab-bar';
 import { ThemedText } from '@/components/themed-text';
@@ -85,6 +85,7 @@ export default function Health() {
     const add = (
         <AddButton
             onPress={() => open(tab === 'Visite' ? 'visita' : 'farmaco')}
+            style={!isDesktop && styles.addSpacing}
         />
     );
 
@@ -107,7 +108,7 @@ export default function Health() {
             ) : (
                 <ScrollView
                     contentContainerStyle={
-                        isDesktop ? styles.desktopList : styles.list
+                        isDesktop ? listPage.list : styles.list
                     }>
                     {!isDesktop && add}
                     {tab === 'Visite' ? (
@@ -118,7 +119,7 @@ export default function Health() {
                             {health.checkups.map((c) => {
                                 const selected = c.id === params.visita;
                                 return (
-                                    <Row
+                                    <ListRow
                                         key={c.id}
                                         selected={selected}
                                         onPress={() => open('visita', c.id)}>
@@ -134,7 +135,7 @@ export default function Health() {
                                                 ? formatDay(c.lastDate)
                                                 : 'Nessuna data'}
                                         </Secondary>
-                                    </Row>
+                                    </ListRow>
                                 );
                             })}
                         </>
@@ -176,16 +177,17 @@ export default function Health() {
 
     if (isDesktop) {
         return (
-            <ThemedView style={styles.desktop}>
-                <View
-                    style={[styles.column, { borderRightColor: theme.border }]}>
-                    <View style={styles.header}>
-                        <ThemedText type="title">Salute</ThemedText>
-                        {tabBar}
-                        {add}
-                    </View>
+            <ThemedView style={listPage.page}>
+                <ListColumn
+                    title="Salute"
+                    header={
+                        <>
+                            {tabBar}
+                            {add}
+                        </>
+                    }>
                     {list}
-                </View>
+                </ListColumn>
                 <View style={styles.grow}>
                     {/* The key starts a fresh form whenever the selection changes. */}
                     {tab === 'Visite' ? (
@@ -195,7 +197,7 @@ export default function Health() {
                             title={params.visita ? 'Visita' : 'Nuova visita'}
                             onSaved={(id) => saved('visita', id)}
                             onDeleted={() => saved('visita')}
-                            style={styles.panel}
+                            style={listPage.panel}
                         />
                     ) : (
                         <MedicineForm
@@ -204,7 +206,7 @@ export default function Health() {
                             title={params.farmaco ? 'Farmaco' : 'Nuovo farmaco'}
                             onSaved={(id) => saved('farmaco', id)}
                             onDeleted={() => saved('farmaco')}
-                            style={styles.panel}
+                            style={listPage.panel}
                         />
                     )}
                 </View>
@@ -223,77 +225,6 @@ export default function Health() {
     );
 }
 
-function AddButton({ onPress }: { onPress: () => void }) {
-    const theme = useTheme();
-    const isDesktop = useIsDesktop();
-
-    return (
-        <Pressable
-            onPress={onPress}
-            accessibilityRole="button"
-            style={({ pressed }) => [
-                styles.addButton,
-                !isDesktop && styles.addSpacing,
-                { backgroundColor: theme.accent },
-                pressed && styles.pressed,
-            ]}>
-            <ThemedText style={[styles.buttonText, { color: theme.onAccent }]}>
-                Aggiungi
-            </ThemedText>
-        </Pressable>
-    );
-}
-
-function Row({
-    selected,
-    onPress,
-    children,
-}: {
-    selected: boolean;
-    onPress: () => void;
-    children: ReactNode;
-}) {
-    const theme = useTheme();
-
-    return (
-        <Pressable
-            onPress={onPress}
-            accessibilityRole="button"
-            accessibilityState={{ selected }}
-            style={({ pressed }) => [
-                styles.row,
-                {
-                    backgroundColor: selected
-                        ? theme.accent
-                        : theme.backgroundElement,
-                },
-                pressed && styles.pressed,
-            ]}>
-            {children}
-        </Pressable>
-    );
-}
-
-/** Muted text, or slightly faded `onAccent` on a selected row. */
-function Secondary({
-    selected,
-    small,
-    children,
-}: {
-    selected: boolean;
-    small?: boolean;
-    children: ReactNode;
-}) {
-    return (
-        <ThemedText
-            type={small ? 'small' : 'default'}
-            themeColor={selected ? 'onAccent' : 'textMuted'}
-            style={selected && styles.faded}>
-            {children}
-        </ThemedText>
-    );
-}
-
 function MedicineRow({
     medicine,
     selected,
@@ -304,7 +235,7 @@ function MedicineRow({
     onPress: () => void;
 }) {
     return (
-        <Row selected={selected} onPress={onPress}>
+        <ListRow selected={selected} onPress={onPress}>
             <View style={styles.grow}>
                 <ThemedText themeColor={selected ? 'onAccent' : 'text'}>
                     {medicine.name}
@@ -327,7 +258,7 @@ function MedicineRow({
                     </Secondary>
                 )}
             </View>
-        </Row>
+        </ListRow>
     );
 }
 
@@ -343,20 +274,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    desktop: {
-        flex: 1,
-        flexDirection: 'row',
-    },
-    column: {
-        width: 360,
-        borderRightWidth: 1,
-    },
-    header: {
-        paddingTop: 32,
-        paddingHorizontal: Spacing.four,
-        paddingBottom: Spacing.three,
-        gap: Spacing.three,
-    },
     flush: {
         marginHorizontal: 0,
     },
@@ -369,46 +286,11 @@ const styles = StyleSheet.create({
         padding: Spacing.four,
         gap: Spacing.two,
     },
-    desktopList: {
-        paddingHorizontal: Spacing.three,
-        paddingBottom: Spacing.four,
-        gap: Spacing.two,
-    },
-    addButton: {
-        paddingVertical: Spacing.three,
-        borderRadius: 14,
-        alignItems: 'center',
-    },
     addSpacing: {
         marginBottom: Spacing.two,
     },
-    buttonText: {
-        fontFamily: 'Karla_600SemiBold',
-        fontSize: 18,
-        lineHeight: 24,
-    },
-    pressed: {
-        opacity: 0.6,
-    },
-    faded: {
-        opacity: 0.8,
-    },
     section: {
         marginTop: Spacing.three,
-    },
-    row: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: Spacing.three,
-        paddingHorizontal: Spacing.three,
-        paddingVertical: Spacing.three,
-        borderRadius: 14,
-    },
-    panel: {
-        paddingVertical: 32,
-        paddingHorizontal: 40,
-        // 560 of content plus the padding.
-        maxWidth: 640,
     },
     grow: {
         flex: 1,

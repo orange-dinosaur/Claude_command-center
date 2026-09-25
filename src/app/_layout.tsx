@@ -23,7 +23,12 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { DESKTOP_MIN_WIDTH, useIsDesktop } from '@/hooks/use-is-desktop';
 
 // Routes with their own desktop layout; the rest get the centred column.
-const DESKTOP_PAGES = new Set(['index', '(auth)', 'salute/index']);
+const DESKTOP_PAGES = new Set([
+    'index',
+    '(auth)',
+    'salute/index',
+    'media/index',
+]);
 
 function navigationTheme(scheme: 'light' | 'dark'): Theme {
     const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
