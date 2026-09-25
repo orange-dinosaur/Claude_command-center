@@ -53,6 +53,15 @@ export default function CommandCenter() {
                             web: 'palette',
                         }}
                     />
+                    <ToolButton
+                        title="Sport"
+                        href="/sport"
+                        icon={{
+                            ios: 'figure.run',
+                            android: 'directions_run',
+                            web: 'directions_run',
+                        }}
+                    />
                 </View>
                 <View style={styles.spacer} />
                 <Pressable
