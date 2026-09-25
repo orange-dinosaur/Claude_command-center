@@ -64,10 +64,12 @@ export function ListColumn({
 export function AddButton({
     label = 'Aggiungi',
     onPress,
+    disabled,
     style,
 }: {
     label?: string;
     onPress: () => void;
+    disabled?: boolean;
     style?: StyleProp<ViewStyle>;
 }) {
     const theme = useTheme();
@@ -75,6 +77,7 @@ export function AddButton({
     return (
         <Pressable
             onPress={onPress}
+            disabled={disabled}
             accessibilityRole="button"
             style={({ pressed }) => [
                 styles.addButton,

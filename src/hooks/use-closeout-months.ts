@@ -22,6 +22,8 @@ export function useCloseoutMonths() {
     const [months, setMonths] = useState<MonthSummary[] | undefined>(undefined);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // Bumped by `reload` for pages that change the data without losing focus.
+    const [version, setVersion] = useState(0);
 
     useFocusEffect(
         useCallback(() => {
@@ -41,8 +43,12 @@ export function useCloseoutMonths() {
             return () => {
                 cancelled = true;
             };
-        }, [])
+            // version is listed only so that reload() fetches again.
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [version])
     );
+
+    const reload = useCallback(() => setVersion((v) => v + 1), []);
 
     /** Resolves to the month's id, new or existing, or null on failure. */
     const create = async (
@@ -68,5 +74,5 @@ export function useCloseoutMonths() {
         }
     };
 
-    return { months, busy, error, create };
+    return { months, busy, error, create, reload };
 }

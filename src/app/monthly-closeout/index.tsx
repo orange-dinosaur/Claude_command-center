@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
     ActivityIndicator,
@@ -9,19 +9,30 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { MonthDetail } from '@/closeout/month-detail';
 import { MONTH_NAMES, monthLabel, nextMonth } from '@/closeout/months';
+import {
+    AddButton,
+    ListColumn,
+    ListRow,
+    Secondary,
+    listPage,
+} from '@/components/list-column';
 import { ScreenHeader } from '@/components/screen-header';
 import { Sheet } from '@/components/sheet';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useCloseoutMonths } from '@/hooks/use-closeout-months';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function MonthlyCloseout() {
     const theme = useTheme();
     const router = useRouter();
-    const { months, busy, error, create } = useCloseoutMonths();
+    const isDesktop = useIsDesktop();
+    const params = useLocalSearchParams<{ id?: string }>();
+    const { months, busy, error, create, reload } = useCloseoutMonths();
     const [picked, setPicked] = useState<{
         year: number;
         month: number;
@@ -40,12 +51,142 @@ export default function MonthlyCloseout() {
         }
     };
 
+    // With no month in the URL, desktop shows the newest one.
+    const selected = params.id ?? months?.[0]?.id;
+
+    // On desktop a row selects the month for the panel beside the list; on
+    // the phone it opens the month.
+    const open = (id: string) =>
+        isDesktop
+            ? router.setParams({ id })
+            : router.push(`/monthly-closeout/${id}`);
+
     const confirm = async () => {
         if (!picked) return;
         const id = await create(picked.year, picked.month);
         setPicked(null);
-        if (id) router.push(`/monthly-closeout/${id}`);
+        if (id) {
+            reload();
+            open(id);
+        }
     };
+
+    const newButton = (
+        <AddButton
+            label="Nuovo mese"
+            onPress={openPicker}
+            disabled={months === undefined || busy}
+            style={!isDesktop && styles.newSpacing}
+        />
+    );
+
+    const list = (
+        <>
+            {error && (
+                <ThemedText
+                    type="small"
+                    themeColor="danger"
+                    style={styles.message}>
+                    {error}
+                </ThemedText>
+            )}
+
+            {months === undefined ? (
+                <ActivityIndicator
+                    color={theme.textMuted}
+                    style={styles.message}
+                />
+            ) : months.length === 0 ? (
+                <ThemedText themeColor="textMuted" style={styles.message}>
+                    Ancora nessun mese. Crea il primo con “Nuovo mese”.
+                </ThemedText>
+            ) : (
+                <ScrollView
+                    contentContainerStyle={
+                        isDesktop ? listPage.list : styles.list
+                    }>
+                    {months.map((m) => {
+                        const isSelected = isDesktop && m.id === selected;
+                        return (
+                            <ListRow
+                                key={m.id}
+                                selected={isSelected}
+                                onPress={() => open(m.id)}>
+                                <ThemedText
+                                    type="subtitle"
+                                    themeColor={
+                                        isSelected ? 'onAccent' : 'text'
+                                    }
+                                    style={styles.monthName}>
+                                    {monthLabel(m.year, m.month)}
+                                </ThemedText>
+                                <Secondary selected={isSelected}>
+                                    {m.done}/{m.total}
+                                </Secondary>
+                            </ListRow>
+                        );
+                    })}
+                </ScrollView>
+            )}
+        </>
+    );
+
+    const sheet = (
+        <Sheet visible={picked !== null} onClose={() => setPicked(null)}>
+            {picked && <MonthPicker value={picked} onChange={setPicked} />}
+            <Pressable
+                onPress={confirm}
+                disabled={busy}
+                accessibilityRole="button"
+                style={({ pressed }) => [
+                    styles.sheetButton,
+                    pressed && styles.pressed,
+                ]}>
+                <ThemedText themeColor="accent" style={styles.buttonText}>
+                    {picked
+                        ? `Crea ${monthLabel(picked.year, picked.month)}`
+                        : ''}
+                </ThemedText>
+            </Pressable>
+            <Pressable
+                onPress={() => setPicked(null)}
+                accessibilityRole="button"
+                style={({ pressed }) => [
+                    styles.sheetButton,
+                    pressed && styles.pressed,
+                ]}>
+                <ThemedText>Annulla</ThemedText>
+            </Pressable>
+        </Sheet>
+    );
+
+    if (isDesktop) {
+        return (
+            <ThemedView style={listPage.page}>
+                <ListColumn
+                    title="Monthly closeout"
+                    width={280}
+                    header={newButton}>
+                    {list}
+                </ListColumn>
+                <View style={styles.grow}>
+                    {/* The key starts afresh whenever the selection changes. */}
+                    {selected && (
+                        <MonthDetail
+                            key={selected}
+                            id={selected}
+                            onDeleted={() => {
+                                reload();
+                                router.setParams({ id: undefined });
+                            }}
+                            onItemsChanged={reload}
+                        />
+                    )}
+                </View>
+                {sheet}
+            </ThemedView>
+        );
+    }
 
     return (
         <ThemedView style={styles.container}>
@@ -54,102 +195,9 @@ export default function MonthlyCloseout() {
                     title="Monthly closeout"
                     backTo="/command-center"
                 />
-
-                <Pressable
-                    onPress={openPicker}
-                    disabled={months === undefined || busy}
-                    accessibilityRole="button"
-                    style={({ pressed }) => [
-                        styles.newButton,
-                        { backgroundColor: theme.accent },
-                        pressed && styles.pressed,
-                    ]}>
-                    <ThemedText
-                        style={[styles.buttonText, { color: theme.onAccent }]}>
-                        Nuovo mese
-                    </ThemedText>
-                </Pressable>
-
-                {error && (
-                    <ThemedText
-                        type="small"
-                        themeColor="danger"
-                        style={styles.message}>
-                        {error}
-                    </ThemedText>
-                )}
-
-                {months === undefined ? (
-                    <ActivityIndicator
-                        color={theme.textMuted}
-                        style={styles.message}
-                    />
-                ) : months.length === 0 ? (
-                    <ThemedText themeColor="textMuted" style={styles.message}>
-                        Ancora nessun mese. Crea il primo con “Nuovo mese”.
-                    </ThemedText>
-                ) : (
-                    <ScrollView contentContainerStyle={styles.list}>
-                        {months.map((m) => (
-                            <Pressable
-                                key={m.id}
-                                onPress={() =>
-                                    router.push(`/monthly-closeout/${m.id}`)
-                                }
-                                accessibilityRole="button"
-                                style={({ pressed }) => [
-                                    styles.row,
-                                    {
-                                        backgroundColor:
-                                            theme.backgroundElement,
-                                    },
-                                    pressed && styles.pressed,
-                                ]}>
-                                <ThemedText
-                                    type="subtitle"
-                                    style={styles.monthName}>
-                                    {monthLabel(m.year, m.month)}
-                                </ThemedText>
-                                <ThemedText themeColor="textMuted">
-                                    {m.done}/{m.total}
-                                </ThemedText>
-                            </Pressable>
-                        ))}
-                    </ScrollView>
-                )}
-
-                <Sheet
-                    visible={picked !== null}
-                    onClose={() => setPicked(null)}>
-                    {picked && (
-                        <MonthPicker value={picked} onChange={setPicked} />
-                    )}
-                    <Pressable
-                        onPress={confirm}
-                        disabled={busy}
-                        accessibilityRole="button"
-                        style={({ pressed }) => [
-                            styles.sheetButton,
-                            pressed && styles.pressed,
-                        ]}>
-                        <ThemedText
-                            themeColor="accent"
-                            style={styles.buttonText}>
-                            {picked
-                                ? `Crea ${monthLabel(picked.year, picked.month)}`
-                                : ''}
-                        </ThemedText>
-                    </Pressable>
-                    <Pressable
-                        onPress={() => setPicked(null)}
-                        accessibilityRole="button"
-                        style={({ pressed }) => [
-                            styles.sheetButton,
-                            pressed && styles.pressed,
-                        ]}>
-                        <ThemedText>Annulla</ThemedText>
-                    </Pressable>
-                </Sheet>
+                {newButton}
+                {list}
+                {sheet}
             </SafeAreaView>
         </ThemedView>
     );
@@ -223,12 +271,9 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    newButton: {
+    newSpacing: {
         marginHorizontal: Spacing.four,
         marginBottom: Spacing.three,
-        paddingVertical: Spacing.three,
-        borderRadius: 14,
-        alignItems: 'center',
     },
     buttonText: {
         fontFamily: 'Karla_600SemiBold',
@@ -236,8 +281,12 @@ const styles = StyleSheet.create({
         lineHeight: 24,
     },
     monthName: {
+        flex: 1,
         fontSize: 24,
         lineHeight: 28,
+    },
+    grow: {
+        flex: 1,
     },
     message: {
         paddingHorizontal: Spacing.four,
@@ -248,14 +297,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: Spacing.four,
         paddingBottom: Spacing.four,
         gap: Spacing.two,
-    },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: Spacing.three,
-        paddingVertical: Spacing.three,
-        borderRadius: 14,
     },
     pressed: {
         opacity: 0.6,
