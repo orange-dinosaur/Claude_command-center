@@ -19,11 +19,14 @@ import { useTheme } from '@/hooks/use-theme';
 /** The list column on desktop: title and controls on top, then the list. */
 export function ListColumn({
     title,
+    link,
     header,
     width = 360,
     children,
 }: {
     title: string;
+    /** A text link at the right of the title. */
+    link?: { label: string; onPress: () => void };
     /** Controls under the title, such as tabs and the add button. */
     header?: ReactNode;
     width?: number;
@@ -35,7 +38,22 @@ export function ListColumn({
         <View
             style={[styles.column, { width, borderRightColor: theme.border }]}>
             <View style={styles.header}>
-                <ThemedText type="title">{title}</ThemedText>
+                <View style={styles.titleRow}>
+                    <ThemedText type="title" style={styles.grow}>
+                        {title}
+                    </ThemedText>
+                    {link && (
+                        <Pressable
+                            onPress={link.onPress}
+                            accessibilityRole="link"
+                            hitSlop={Spacing.two}
+                            style={({ pressed }) => pressed && styles.pressed}>
+                            <ThemedText style={{ color: theme.accent }}>
+                                {link.label}
+                            </ThemedText>
+                        </Pressable>
+                    )}
+                </View>
                 {header}
             </View>
             {children}
@@ -151,6 +169,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: Spacing.four,
         paddingBottom: Spacing.three,
         gap: Spacing.three,
+    },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.three,
+    },
+    grow: {
+        flex: 1,
     },
     addButton: {
         paddingVertical: Spacing.three,

@@ -28,6 +28,7 @@ const DESKTOP_PAGES = new Set([
     '(auth)',
     'salute/index',
     'media/index',
+    'sport/index',
 ]);
 
 function navigationTheme(scheme: 'light' | 'dark'): Theme {
