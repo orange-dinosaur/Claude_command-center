@@ -61,5 +61,16 @@ body {
     body {
         background-color: ${Colors.dark.background};
     }
+    /* The server renders light, so hide the page until the app has switched
+       to dark. The animation reveals it anyway if that never happens. */
+    html:not([data-scheme-ready]) #root {
+        visibility: hidden;
+        animation: reveal 0s 2s forwards;
+    }
+}
+@keyframes reveal {
+    to {
+        visibility: visible;
+    }
 }
 `;

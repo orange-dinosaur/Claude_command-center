@@ -49,6 +49,15 @@ export default function RootLayout() {
         if (fontsReady) SplashScreen.hideAsync();
     }, [fontsReady]);
 
+    // Lifts the dark-mode hiding in +html.tsx once the scheme matches the device.
+    useEffect(() => {
+        if (Platform.OS !== 'web') return;
+        const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+        if (colorScheme === (dark ? 'dark' : 'light')) {
+            document.documentElement.dataset.schemeReady = '';
+        }
+    }, [colorScheme]);
+
     // On web the server HTML already carries the @font-face rules, so render right away.
     if (!fontsReady && Platform.OS !== 'web') return null;
 
