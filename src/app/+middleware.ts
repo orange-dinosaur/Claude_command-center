@@ -24,6 +24,7 @@ const APP_SCREENS = [
     '/monthly-closeout',
     '/salute',
     '/media',
+    '/creativita',
 ];
 
 /**
@@ -38,6 +39,8 @@ const HEALTH_PAGE = /^\/salute\/.+$/;
 
 const MEDIA_PAGE = /^\/media\/.+$/;
 
+const CREATIVITY_PAGE = /^\/creativita\/.+$/;
+
 export const unstable_settings: MiddlewareSettings = {
     matcher: {
         methods: ['GET'],
@@ -48,6 +51,7 @@ export const unstable_settings: MiddlewareSettings = {
             MONTH_PAGE,
             HEALTH_PAGE,
             MEDIA_PAGE,
+            CREATIVITY_PAGE,
         ],
     },
 };

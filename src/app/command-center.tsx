@@ -44,6 +44,15 @@ export default function CommandCenter() {
                             web: 'local_library',
                         }}
                     />
+                    <ToolButton
+                        title="Creatività"
+                        href="/creativita"
+                        icon={{
+                            ios: 'paintpalette',
+                            android: 'palette',
+                            web: 'palette',
+                        }}
+                    />
                 </View>
                 <View style={styles.spacer} />
                 <Pressable

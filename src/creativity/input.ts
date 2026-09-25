@@ -5,6 +5,7 @@
 
 import { and, eq, ne, sql } from 'drizzle-orm';
 
+import { CYCLE_LAST_DAY } from './cycle';
 import { THEMES } from './themes';
 
 import { db } from '@/db';
@@ -14,9 +15,6 @@ import { parseDate } from '@/health/input';
 type Cycle = typeof creativeCycle.$inferSelect;
 
 const MAX_ANSWER = 5000;
-
-/** Days from a cycle's first Monday to its last Sunday. */
-export const CYCLE_LAST_DAY = 83;
 
 /** The last day of a cycle: the day it was interrupted, or its 12th Sunday. */
 // Inlined: Postgres cannot type `date + $1` from a bound parameter.
@@ -46,24 +44,8 @@ export const weekColumns = {
     reviewed: creativeWeek.reviewed,
 };
 
-/** Whole days from one `YYYY-MM-DD` to another. */
-export const daysBetween = (from: string, to: string) =>
-    Math.round(
-        (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) /
-            86_400_000
-    );
-
-export const addDays = (day: string, days: number) =>
-    new Date(Date.parse(`${day}T00:00:00Z`) + days * 86_400_000)
-        .toISOString()
-        .slice(0, 10);
-
 const isMonday = (day: string) =>
     new Date(`${day}T00:00:00Z`).getUTCDay() === 1;
-
-/** How many weeks an interrupted cycle keeps: those begun by that day. */
-export const weeksBegun = (startDate: string, interruptedOn: string) =>
-    Math.floor(daysBetween(startDate, interruptedOn) / 7) + 1;
 
 /** Free text such as an intention answer: `null` or empty clears it. */
 function parseAnswer(value: unknown): string | null | undefined {

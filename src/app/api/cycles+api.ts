@@ -6,13 +6,13 @@
 import { desc, eq } from 'drizzle-orm';
 
 import { getSessionUser, unauthorized } from '@/auth/session';
+import { CYCLE_LAST_DAY } from '@/creativity/cycle';
 import {
-    addDays,
     cycleColumns,
-    CYCLE_LAST_DAY,
     overlapsAnother,
     parseCycleFields,
 } from '@/creativity/input';
+import { addDays } from '@/dates';
 import { db } from '@/db';
 import { creativeCycle } from '@/db/schema';
 import { badRequest, readBody } from '@/health/input';

@@ -6,7 +6,8 @@
 import { and, eq } from 'drizzle-orm';
 
 import { getSessionUser, unauthorized } from '@/auth/session';
-import { parseWeekFields, weekColumns, weeksBegun } from '@/creativity/input';
+import { weeksBegun } from '@/creativity/cycle';
+import { parseWeekFields, weekColumns } from '@/creativity/input';
 import { db } from '@/db';
 import { creativeCycle, creativeWeek } from '@/db/schema';
 import { badRequest, notFound, readBody } from '@/health/input';

@@ -8,16 +8,14 @@
 import { and, asc, eq, gt } from 'drizzle-orm';
 
 import { getSessionUser, unauthorized } from '@/auth/session';
+import { CYCLE_LAST_DAY, weeksBegun } from '@/creativity/cycle';
 import {
-    addDays,
     cycleColumns,
-    CYCLE_LAST_DAY,
-    daysBetween,
     overlapsAnother,
     parseCycleFields,
     weekColumns,
-    weeksBegun,
 } from '@/creativity/input';
+import { addDays, daysBetween } from '@/dates';
 import { db } from '@/db';
 import { creativeCycle, creativeWeek } from '@/db/schema';
 import { badRequest, notFound, parseDate, readBody } from '@/health/input';
