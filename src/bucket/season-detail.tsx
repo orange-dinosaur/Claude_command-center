@@ -22,7 +22,6 @@ import { Spacing } from '@/constants/theme';
 import { formatShortDay, todayDay } from '@/dates';
 import { type BucketItem, useBucketSeason } from '@/hooks/use-bucket-season';
 import { useFocusRing } from '@/hooks/use-focus-ring';
-import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
 
 const MAX_TEXT = 200;
@@ -30,12 +29,14 @@ const MAX_TEXT = 200;
 export function SeasonDetail({
     id,
     onItemsChanged,
+    panel,
 }: {
     id: string;
     onItemsChanged?: () => void;
+    /** Drawn in the desktop panel beside the list, without the back header. */
+    panel?: boolean;
 }) {
     const theme = useTheme();
-    const isDesktop = useIsDesktop();
     const { season, error, add, update, remove } = useBucketSeason(
         id,
         onItemsChanged
@@ -52,11 +53,9 @@ export function SeasonDetail({
             </ThemedText>
         ) : (
             <ScrollView
-                contentContainerStyle={
-                    isDesktop ? styles.desktopBody : styles.body
-                }
+                contentContainerStyle={panel ? styles.desktopBody : styles.body}
                 keyboardShouldPersistTaps="handled">
-                {isDesktop && <ThemedText type="title">{label}</ThemedText>}
+                {panel && <ThemedText type="title">{label}</ThemedText>}
                 <AddField onAdd={add} />
                 {season.items.length === 0 && (
                     <ThemedText themeColor="textMuted">
@@ -79,7 +78,7 @@ export function SeasonDetail({
             </ScrollView>
         );
 
-    if (isDesktop) return <View style={styles.panel}>{body}</View>;
+    if (panel) return <View style={styles.panel}>{body}</View>;
 
     return (
         <>
