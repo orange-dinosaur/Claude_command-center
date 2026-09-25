@@ -1,12 +1,9 @@
 /**
- * The signed-in user's creativity cycles. Each hook reloads whenever the
- * screen comes back into view, so edits made on another page show up.
+ * The signed-in user's creativity cycles.
  */
 
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-
 import { apiFetch } from '@/auth/client';
+import { useOnFocus } from '@/hooks/use-on-focus';
 
 export interface Cycle {
     id: string;
@@ -53,40 +50,7 @@ export type CycleWithWeeks = Cycle & { weeks: Week[] };
 
 const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
-// data is undefined while loading the first time, null when there is none.
-function useOnFocus<T>(load: () => Promise<T | null>, key?: string) {
-    const [data, setData] = useState<T | null | undefined>(undefined);
-    const [error, setError] = useState<string | null>(null);
-    // Bumped by `reload` for pages that change the data without losing focus.
-    const [version, setVersion] = useState(0);
-
-    useFocusEffect(
-        useCallback(() => {
-            let cancelled = false;
-            load()
-                .then((result) => {
-                    if (cancelled) return;
-                    setData(result);
-                    setError(null);
-                })
-                .catch(() => {
-                    if (cancelled) return;
-                    setData((current) => current ?? null);
-                    setError('Non riesco a caricare i dati.');
-                });
-            return () => {
-                cancelled = true;
-            };
-            // load is a new closure each render; key says when it changes, and
-            // version is listed only so that reload() fetches again.
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, [key, version])
-    );
-
-    const reload = useCallback(() => setVersion((v) => v + 1), []);
-
-    return { data, error, reload };
-}
+const FAILURE = 'Non riesco a caricare i dati.';
 
 /** The cycle with this id, or the latest one when there is no id. */
 export function useCycle(id?: string) {
@@ -103,6 +67,7 @@ export function useCycle(id?: string) {
                                 )
                               : null
                       ),
+        FAILURE,
         id
     );
     return { cycle: data, error, reload };
@@ -110,8 +75,9 @@ export function useCycle(id?: string) {
 
 /** Every cycle, newest first, without weeks. */
 export function useCycles() {
-    const { data, error, reload } = useOnFocus<Cycle[]>(() =>
-        apiFetch('/api/cycles').then(json)
+    const { data, error, reload } = useOnFocus<Cycle[]>(
+        () => apiFetch('/api/cycles').then(json),
+        FAILURE
     );
     return { cycles: data, error, reload };
 }

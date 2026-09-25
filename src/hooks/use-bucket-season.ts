@@ -3,12 +3,9 @@
  * the season reloaded, since the server decides the order.
  */
 
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-
 import { apiFetch } from '@/auth/client';
 import type { SeasonName } from '@/bucket/season';
-import { useReloadOnActive } from '@/hooks/use-bucket-seasons';
+import { useOnFocus } from '@/hooks/use-on-focus';
 
 export interface BucketItem {
     id: string;
@@ -27,38 +24,20 @@ export interface BucketSeason {
 
 export function useBucketSeason(id: string, onChanged?: () => void) {
     // undefined while loading, null when missing.
-    const [season, setSeason] = useState<BucketSeason | null | undefined>(
-        undefined
+    const {
+        data: season,
+        error,
+        setError,
+        reload,
+    } = useOnFocus<BucketSeason>(
+        () =>
+            apiFetch(`/api/bucket/${id}`).then((res) => {
+                if (res.status === 404) return null;
+                return res.ok ? res.json() : Promise.reject();
+            }),
+        'Non riesco a caricare la stagione.',
+        id
     );
-    const [error, setError] = useState<string | null>(null);
-    const [version, setVersion] = useState(0);
-
-    useFocusEffect(
-        useCallback(() => {
-            let cancelled = false;
-            apiFetch(`/api/bucket/${id}`)
-                .then(async (res) => {
-                    if (cancelled) return;
-                    if (res.status === 404) return setSeason(null);
-                    if (!res.ok) throw new Error();
-                    setSeason(await res.json());
-                    setError(null);
-                })
-                .catch(() => {
-                    if (cancelled) return;
-                    setSeason((current) => current ?? null);
-                    setError('Non riesco a caricare la stagione.');
-                });
-            return () => {
-                cancelled = true;
-            };
-            // version is listed only so that reload() fetches again.
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, [id, version])
-    );
-
-    const reload = useCallback(() => setVersion((v) => v + 1), []);
-    useReloadOnActive(reload);
 
     const send = async (path: string, init: RequestInit, failure: string) => {
         setError(null);

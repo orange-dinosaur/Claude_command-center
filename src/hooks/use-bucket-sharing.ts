@@ -4,11 +4,10 @@
  * after accepting or unlinking, when the seasons have changed.
  */
 
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 import { apiFetch } from '@/auth/client';
-import { useReloadOnActive } from '@/hooks/use-bucket-seasons';
+import { useOnFocus } from '@/hooks/use-on-focus';
 
 export interface Sharing {
     partner: { name: string } | null;
@@ -23,34 +22,20 @@ const INVITE_ERRORS: Record<number, string> = {
 };
 
 export function useBucketSharing(onLinked: () => void) {
-    // undefined while loading the first time.
-    const [sharing, setSharing] = useState<Sharing | undefined>(undefined);
-    const [busy, setBusy] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [version, setVersion] = useState(0);
-
-    useFocusEffect(
-        useCallback(() => {
-            let cancelled = false;
-            apiFetch('/api/bucket/invite')
-                .then((res) => (res.ok ? res.json() : Promise.reject()))
-                .then((body: Sharing) => {
-                    if (!cancelled) setSharing(body);
-                })
-                .catch(() => {
-                    if (!cancelled)
-                        setError('Non riesco a caricare la condivisione.');
-                });
-            return () => {
-                cancelled = true;
-            };
-            // version is listed only so that reload() fetches again.
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, [version])
+    // undefined while loading the first time, null if that failed.
+    const {
+        data: sharing,
+        error,
+        setError,
+        reload,
+    } = useOnFocus<Sharing>(
+        () =>
+            apiFetch('/api/bucket/invite').then((res) =>
+                res.ok ? res.json() : Promise.reject()
+            ),
+        'Non riesco a caricare la condivisione.'
     );
-
-    const reload = useCallback(() => setVersion((v) => v + 1), []);
-    useReloadOnActive(reload);
+    const [busy, setBusy] = useState(false);
 
     /** Resolves to true on success; on failure sets `error` from the status. */
     const send = async (
