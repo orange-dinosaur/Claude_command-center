@@ -38,7 +38,11 @@ export default function Sport() {
     return (
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.container}>
-                <ScreenHeader title="Sport" backTo="/command-center" />
+                <ScreenHeader
+                    title="Sport"
+                    backTo="/command-center"
+                    link={{ label: 'Tipi', href: '/sport/tipi' }}
+                />
 
                 {error && (
                     <ThemedText

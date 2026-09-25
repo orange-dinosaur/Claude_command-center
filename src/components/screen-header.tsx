@@ -11,13 +11,15 @@ interface ScreenHeaderProps {
     title: string;
     /** Where the back arrow leads when there is no history to go back to. */
     backTo?: Href;
+    /** A text link at the right of the title. */
+    link?: { label: string; href: Href };
 }
 
 /**
  * A screen can be opened straight from the address bar, so back needs a
  * fixed destination as well as the history.
  */
-export function ScreenHeader({ title, backTo }: ScreenHeaderProps) {
+export function ScreenHeader({ title, backTo, link }: ScreenHeaderProps) {
     const theme = useTheme();
     const router = useRouter();
 
@@ -48,7 +50,24 @@ export function ScreenHeader({ title, backTo }: ScreenHeaderProps) {
                     />
                 </Pressable>
             )}
-            <ThemedText type="title">{title}</ThemedText>
+            {link ? (
+                <View style={styles.titleRow}>
+                    <ThemedText type="title" style={styles.grow}>
+                        {title}
+                    </ThemedText>
+                    <Pressable
+                        onPress={() => router.push(link.href)}
+                        accessibilityRole="link"
+                        hitSlop={Spacing.two}
+                        style={({ pressed }) => pressed && styles.pressed}>
+                        <ThemedText style={{ color: theme.accent }}>
+                            {link.label}
+                        </ThemedText>
+                    </Pressable>
+                </View>
+            ) : (
+                <ThemedText type="title">{title}</ThemedText>
+            )}
         </View>
     );
 }
@@ -67,5 +86,13 @@ const styles = StyleSheet.create({
     },
     pressed: {
         opacity: 0.6,
+    },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.three,
+    },
+    grow: {
+        flex: 1,
     },
 });
