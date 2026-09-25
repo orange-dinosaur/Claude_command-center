@@ -31,6 +31,7 @@ const DESKTOP_PAGES = new Set([
     'sport/index',
     'monthly-closeout/index',
     'creativita/index',
+    'bucket-list/index',
 ]);
 
 function navigationTheme(scheme: 'light' | 'dark'): Theme {
