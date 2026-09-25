@@ -25,12 +25,15 @@ export function DateField({
     onChange,
     label,
     mondaysOnly,
+    pastOnly,
 }: {
     value: string | null;
     onChange: (value: string | null) => void;
     label: string;
     /** Only Mondays can be picked, and the date cannot be cleared. */
     mondaysOnly?: boolean;
+    /** Only today or earlier can be picked, and the date cannot be cleared. */
+    pastOnly?: boolean;
 }) {
     const theme = useTheme();
     const [view, setView] = useState<Shown | null>(null);
@@ -86,19 +89,20 @@ export function DateField({
                                 onPickingYear={setPickingYear}
                                 onPick={pick}
                                 mondaysOnly={mondaysOnly}
+                                pastOnly={pastOnly}
                             />
                         )}
                         {!mondaysOnly && (
-                            <>
-                                <SheetButton
-                                    onPress={() => pick(todayDay())}
-                                    accent>
-                                    Oggi
-                                </SheetButton>
-                                <SheetButton onPress={() => pick(null)} accent>
-                                    Nessuna data
-                                </SheetButton>
-                            </>
+                            <SheetButton
+                                onPress={() => pick(todayDay())}
+                                accent>
+                                Oggi
+                            </SheetButton>
+                        )}
+                        {!mondaysOnly && !pastOnly && (
+                            <SheetButton onPress={() => pick(null)} accent>
+                                Nessuna data
+                            </SheetButton>
                         )}
                         <SheetButton onPress={() => setView(null)}>
                             Annulla
@@ -118,6 +122,7 @@ function Calendar({
     onPickingYear,
     onPick,
     mondaysOnly,
+    pastOnly,
 }: {
     view: Shown;
     onView: (view: Shown) => void;
@@ -126,6 +131,7 @@ function Calendar({
     onPickingYear: (picking: boolean) => void;
     onPick: (day: string) => void;
     mondaysOnly?: boolean;
+    pastOnly?: boolean;
 }) {
     const theme = useTheme();
     const { year, month } = view;
@@ -236,7 +242,9 @@ function Calendar({
                 ))}
                 {days.map((day, i) => {
                     const selected = day === value;
-                    const disabled = mondaysOnly && (blanks + i) % 7 !== 0;
+                    const disabled =
+                        (mondaysOnly && (blanks + i) % 7 !== 0) ||
+                        (pastOnly && day > today);
                     return (
                         <Pressable
                             key={day}

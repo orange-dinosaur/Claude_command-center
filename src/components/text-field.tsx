@@ -15,6 +15,7 @@ interface TextFieldProps {
     /** Several lines, up to 5000 characters instead of 200. */
     multiline?: boolean;
     onBlur?: () => void;
+    autoFocus?: boolean;
 }
 
 /** A text input with a small muted label above it. */
@@ -26,6 +27,7 @@ export function TextField({
     keyboardType,
     multiline,
     onBlur,
+    autoFocus,
 }: TextFieldProps) {
     const theme = useTheme();
     const focus = useFocusRing();
@@ -47,6 +49,7 @@ export function TextField({
                 placeholderTextColor={theme.textMuted}
                 keyboardType={keyboardType}
                 multiline={multiline}
+                autoFocus={autoFocus}
                 maxLength={multiline ? 5000 : 200}
                 accessibilityLabel={label}
                 style={[

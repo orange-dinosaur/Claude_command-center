@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import {
@@ -20,6 +21,7 @@ import { countWorkouts, formatMonth, groupByMonth } from '@/sport/riepilogo';
 
 export default function Sport() {
     const theme = useTheme();
+    const router = useRouter();
     const { workouts, error } = useWorkouts();
     const today = todayDay();
     const [open, setOpen] = useState(() => new Set([today.slice(0, 7)]));
@@ -60,6 +62,7 @@ export default function Sport() {
                         </View>
 
                         <Pressable
+                            onPress={() => router.push('/sport/allenamento')}
                             accessibilityRole="button"
                             style={({ pressed }) => [
                                 styles.addButton,
@@ -156,9 +159,16 @@ function Tile({ value, label }: { value: number; label: string }) {
 
 function WorkoutRow({ workout }: { workout: Workout }) {
     const theme = useTheme();
+    const router = useRouter();
 
     return (
         <Pressable
+            onPress={() =>
+                router.push({
+                    pathname: '/sport/allenamento',
+                    params: { id: workout.id },
+                })
+            }
             accessibilityRole="button"
             style={({ pressed }) => [
                 styles.row,
