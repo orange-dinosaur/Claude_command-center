@@ -1,7 +1,7 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import { type PropsWithChildren } from 'react';
 
-import { Colors } from '@/constants/theme';
+import { Colors, SCHEME_KEY } from '@/constants/theme';
 import { DESKTOP_MIN_WIDTH } from '@/hooks/use-is-desktop';
 
 export default function Root({ children }: PropsWithChildren) {
@@ -44,6 +44,7 @@ export default function Root({ children }: PropsWithChildren) {
                 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
                 <link rel="icon" href="/favicon.ico" sizes="any" />
 
+                <script dangerouslySetInnerHTML={{ __html: schemeScript }} />
                 <ScrollViewStyleReset />
                 <style dangerouslySetInnerHTML={{ __html: rootStyle }} />
             </head>
@@ -52,22 +53,40 @@ export default function Root({ children }: PropsWithChildren) {
     );
 }
 
+// Runs before the first paint so a stored theme never shows a frame of the other one.
+const schemeScript = `
+try {
+    var scheme = localStorage.getItem('${SCHEME_KEY}');
+    if (scheme === 'light' || scheme === 'dark') {
+        document.documentElement.dataset.scheme = scheme;
+    }
+} catch (e) {}
+`;
+
 const rootStyle = `
 body {
     background-color: ${Colors.light.background};
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
 }
+/* A stored choice sets data-scheme and replaces the device setting. */
 @media (prefers-color-scheme: dark) {
-    body {
+    html:not([data-scheme]) body {
         background-color: ${Colors.dark.background};
     }
     /* The server renders light, so hide the page until the app has switched
        to dark. The animation reveals it anyway if that never happens. */
-    html:not([data-scheme-ready]) #root {
+    html:not([data-scheme]):not([data-scheme-ready]) #root {
         visibility: hidden;
         animation: reveal 0s 2s forwards;
     }
+}
+html[data-scheme='dark'] body {
+    background-color: ${Colors.dark.background};
+}
+html[data-scheme='dark']:not([data-scheme-ready]) #root {
+    visibility: hidden;
+    animation: reveal 0s 2s forwards;
 }
 /* Same for the phone layout the server renders on a wide window. */
 @media (min-width: ${DESKTOP_MIN_WIDTH}px) {

@@ -51,11 +51,15 @@ export default function RootLayout() {
         if (fontsReady) SplashScreen.hideAsync();
     }, [fontsReady]);
 
-    // Lifts the dark-mode hiding in +html.tsx once the scheme matches the device.
+    // Lifts the dark-mode hiding in +html.tsx once the scheme matches the stored
+    // choice, or the device when there is none.
     useEffect(() => {
         if (Platform.OS !== 'web') return;
         const dark = matchMedia('(prefers-color-scheme: dark)').matches;
-        if (colorScheme === (dark ? 'dark' : 'light')) {
+        const expected =
+            document.documentElement.dataset.scheme ??
+            (dark ? 'dark' : 'light');
+        if (colorScheme === expected) {
             document.documentElement.dataset.schemeReady = '';
         }
     }, [colorScheme]);

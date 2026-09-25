@@ -1,3 +1,6 @@
+/** localStorage key for the theme picked on the web, 'light' or 'dark'. */
+export const SCHEME_KEY = 'color-scheme';
+
 export const Colors = {
     light: {
         text: '#2F2A27',
