@@ -7,12 +7,38 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { VisionBoard } from '@/components/vision-board';
 import { Spacing } from '@/constants/theme';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
 import { useToday } from '@/hooks/use-today';
 
 export default function Home() {
     const theme = useTheme();
     const today = useToday();
+    const isDesktop = useIsDesktop();
+
+    if (isDesktop) {
+        // "giovedì 24 settembre": one word each for weekday, day and month.
+        const [weekday, day, month] = today.split(' ');
+        return (
+            <ThemedView style={styles.container}>
+                <VisionBoard
+                    aside={
+                        <View>
+                            <ThemedText
+                                themeColor="textMuted"
+                                style={styles.weekday}>
+                                {weekday}
+                            </ThemedText>
+                            <ThemedText style={styles.day}>{day}</ThemedText>
+                            <ThemedText type="title" style={styles.month}>
+                                {month}
+                            </ThemedText>
+                        </View>
+                    }
+                />
+            </ThemedView>
+        );
+    }
 
     return (
         <ThemedView style={styles.container}>
@@ -66,5 +92,19 @@ const styles = StyleSheet.create({
     },
     pressed: {
         opacity: 0.6,
+    },
+    weekday: {
+        fontFamily: 'Karla_500Medium',
+        fontSize: 14,
+        lineHeight: 20,
+        textTransform: 'capitalize',
+    },
+    day: {
+        fontFamily: 'CormorantGaramond_600SemiBold',
+        fontSize: 64,
+        lineHeight: 64,
+    },
+    month: {
+        textTransform: 'capitalize',
     },
 });

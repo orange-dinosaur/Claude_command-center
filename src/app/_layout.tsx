@@ -22,6 +22,9 @@ import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { DESKTOP_MIN_WIDTH, useIsDesktop } from '@/hooks/use-is-desktop';
 
+// Routes with their own desktop layout; the rest get the centred column.
+const DESKTOP_PAGES = new Set(['index']);
+
 function navigationTheme(scheme: 'light' | 'dark'): Theme {
     const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
     return {
@@ -87,10 +90,13 @@ export default function RootLayout() {
                 {isDesktop && segments[0] !== '(auth)' && <Rail />}
                 <View style={styles.main}>
                     <Stack
-                        screenOptions={{
+                        screenOptions={({ route }) => ({
                             headerShown: false,
-                            contentStyle: isDesktop ? styles.column : undefined,
-                        }}
+                            contentStyle:
+                                isDesktop && !DESKTOP_PAGES.has(route.name)
+                                    ? styles.column
+                                    : undefined,
+                        })}
                     />
                 </View>
             </View>
@@ -106,7 +112,6 @@ const styles = StyleSheet.create({
     main: {
         flex: 1,
     },
-    // Pages without a desktop layout yet show as the phone page, centred.
     column: {
         width: '100%',
         maxWidth: 640,

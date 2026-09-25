@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import {
     ActivityIndicator,
     Platform,
@@ -25,7 +25,11 @@ const noCallout = Platform.select({
     web: { WebkitTouchCallout: 'none', userSelect: 'none' } as ViewStyle,
 });
 
-export function VisionBoard() {
+/**
+ * On desktop `aside` fills a column beside the board, with links to replace
+ * and remove the image under it in place of the long-press.
+ */
+export function VisionBoard({ aside }: { aside?: ReactNode }) {
     const theme = useTheme();
     const { image, busy, error, choose, remove } = useVisionBoard();
     const [menu, setMenu] = useState<'closed' | 'actions' | 'confirm'>(
@@ -42,17 +46,21 @@ export function VisionBoard() {
         );
     }
 
-    return (
-        <View style={styles.container}>
+    const board = (
+        <View style={aside ? styles.desktopBoard : styles.container}>
             {image ? (
                 <Pressable
-                    onLongPress={() => setMenu('actions')}
-                    accessibilityLabel="Vision board. Tieni premuto per modificarla."
+                    onLongPress={aside ? undefined : () => setMenu('actions')}
+                    accessibilityLabel={
+                        aside
+                            ? 'Vision board'
+                            : 'Vision board. Tieni premuto per modificarla.'
+                    }
                     style={[styles.fill, noCallout]}>
                     <Image
                         source={{ uri: apiUrl(image) }}
                         contentFit="contain"
-                        style={styles.fill}
+                        style={[styles.fill, !!aside && styles.rounded]}
                         accessibilityIgnoresInvertColors
                     />
                 </Pressable>
@@ -96,6 +104,41 @@ export function VisionBoard() {
                     {error}
                 </ThemedText>
             )}
+        </View>
+    );
+
+    return (
+        <>
+            {aside ? (
+                <View style={styles.row}>
+                    <View style={styles.aside}>
+                        {aside}
+                        {image && (
+                            <View style={styles.links}>
+                                <Pressable
+                                    onPress={choose}
+                                    disabled={busy}
+                                    accessibilityRole="button">
+                                    <ThemedText themeColor="accent">
+                                        Sostituisci vision board
+                                    </ThemedText>
+                                </Pressable>
+                                <Pressable
+                                    onPress={() => setMenu('confirm')}
+                                    disabled={busy}
+                                    accessibilityRole="button">
+                                    <ThemedText themeColor="danger">
+                                        Rimuovi
+                                    </ThemedText>
+                                </Pressable>
+                            </View>
+                        )}
+                    </View>
+                    {board}
+                </View>
+            ) : (
+                board
+            )}
 
             <Sheet visible={menu !== 'closed'} onClose={close}>
                 {menu === 'actions' ? (
@@ -132,7 +175,7 @@ export function VisionBoard() {
                 )}
                 <SheetButton title="Annulla" color="text" onPress={close} />
             </Sheet>
-        </View>
+        </>
     );
 }
 
@@ -171,6 +214,30 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: Spacing.four,
         paddingBottom: Spacing.four,
+    },
+    row: {
+        flex: 1,
+        flexDirection: 'row',
+    },
+    aside: {
+        width: 280,
+        justifyContent: 'space-between',
+        paddingTop: 32,
+        paddingRight: 32,
+        paddingBottom: 32,
+        paddingLeft: 40,
+    },
+    links: {
+        gap: Spacing.one,
+    },
+    desktopBoard: {
+        flex: 1,
+        paddingTop: 32,
+        paddingRight: 32,
+        paddingBottom: 32,
+    },
+    rounded: {
+        borderRadius: 20,
     },
     center: {
         flex: 1,
