@@ -6,9 +6,16 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { formatDay } from '@/dates';
-import { dayOf, isDone, weekCount, weekDays } from '@/habits/stats';
+import {
+    dayOf,
+    isDone,
+    shortAmount,
+    weekCount,
+    weekDays,
+} from '@/habits/stats';
 import type { Habit } from '@/hooks/use-habits';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -54,7 +61,11 @@ export function DayCell({
                     day === today && styles.today,
                     done && { color: theme.onAccent },
                 ]}>
-                {amount ?? (done ? '✓' : Number(day.slice(8)))}
+                {amount != null
+                    ? shortAmount(amount)
+                    : done
+                      ? '✓'
+                      : Number(day.slice(8))}
             </ThemedText>
         </Pressable>
     );
@@ -103,7 +114,6 @@ export function WeekRow({
                     pressed && styles.pressed,
                 ]}>
                 <ThemedText
-                    type="subtitle"
                     themeColor={selected ? 'accent' : 'text'}
                     style={styles.grow}>
                     {habit.name}
@@ -123,28 +133,44 @@ export function WeekRow({
                 )}
             </Pressable>
             <View style={styles.days}>
-                {weekDays(monday).map((day, i) => (
-                    <View key={day} style={styles.day}>
-                        <ThemedText type="small" themeColor="textMuted">
-                            {LETTERS[i]}
-                        </ThemedText>
-                        <DayCell
-                            habit={habit}
-                            day={day}
-                            today={today}
-                            onPress={() => onPressDay(day)}
-                        />
-                    </View>
+                {weekDays(monday).map((day) => (
+                    <DayCell
+                        key={day}
+                        habit={habit}
+                        day={day}
+                        today={today}
+                        onPress={() => onPressDay(day)}
+                    />
                 ))}
             </View>
         </View>
     );
 }
 
+/**
+ * The day letters, once above the week rows, one per cell column. Opaque so
+ * it can stay pinned while the rows scroll under it.
+ */
+export function WeekLetters() {
+    return (
+        <ThemedView style={styles.days}>
+            {LETTERS.map((letter, i) => (
+                <ThemedText
+                    key={i}
+                    type="small"
+                    themeColor="textMuted"
+                    style={styles.letter}>
+                    {letter}
+                </ThemedText>
+            ))}
+        </ThemedView>
+    );
+}
+
 const styles = StyleSheet.create({
     row: {
-        gap: Spacing.two,
-        paddingVertical: Spacing.two,
+        gap: Spacing.one,
+        paddingVertical: Spacing.one,
     },
     heading: {
         flexDirection: 'row',
@@ -158,14 +184,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
     },
-    day: {
-        alignItems: 'center',
-        gap: Spacing.one,
+    letter: {
+        width: 34,
+        textAlign: 'center',
     },
     cell: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 34,
+        height: 34,
+        borderRadius: 17,
         borderWidth: 2,
         alignItems: 'center',
         justifyContent: 'center',

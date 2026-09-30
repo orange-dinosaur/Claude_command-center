@@ -42,7 +42,7 @@ export function ToolButton({ title, href, icon }: ToolButtonProps) {
 const styles = StyleSheet.create({
     button: {
         flexBasis: '47%',
-        aspectRatio: 1,
+        aspectRatio: 1.6,
     },
     tile: {
         flex: 1,

@@ -19,7 +19,7 @@ import { HabitDetail } from '@/habits/habit-detail';
 import { HabitForm } from '@/habits/habit-form';
 import { mondayOf } from '@/habits/stats';
 import { useDayPress } from '@/habits/use-day-press';
-import { WeekRow } from '@/habits/week-row';
+import { WeekLetters, WeekRow } from '@/habits/week-row';
 import { useHabits, type Habit } from '@/hooks/use-habits';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
@@ -112,10 +112,18 @@ export default function Abitudini() {
                 />
             ) : (
                 <ScrollView
+                    stickyHeaderIndices={[0]}
                     contentContainerStyle={
                         isDesktop ? listPage.list : styles.list
                     }>
-                    {!isDesktop && week}
+                    {isDesktop ? (
+                        <WeekLetters />
+                    ) : (
+                        <ThemedView style={styles.pinned}>
+                            {week}
+                            <WeekLetters />
+                        </ThemedView>
+                    )}
                     {active.map((habit) => (
                         <WeekRow
                             key={habit.id}
@@ -268,7 +276,10 @@ const styles = StyleSheet.create({
     },
     list: {
         padding: Spacing.four,
-        gap: Spacing.three,
+        gap: Spacing.two,
+    },
+    pinned: {
+        gap: Spacing.two,
     },
     week: {
         flexDirection: 'row',
