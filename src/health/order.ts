@@ -42,8 +42,7 @@ export function placeMedicine(
             ongoing,
             saved,
             (a, b) =>
-                desc(a.startDate, b.startDate) ||
-                desc(a.createdAt, b.createdAt)
+                desc(a.startDate, b.startDate) || desc(a.createdAt, b.createdAt)
         ),
     };
 }

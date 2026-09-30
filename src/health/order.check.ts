@@ -27,17 +27,29 @@ const health: Health = {
 
 // Check-ups: oldest last visit first, never visited last, then by name.
 assert.deepEqual(
-    ids(placeCheckup(health, { id: 'c', name: 'Analisi', lastDate: null }).checkups),
+    ids(
+        placeCheckup(health, { id: 'c', name: 'Analisi', lastDate: null })
+            .checkups
+    ),
     ['a', 'c', 'b']
 );
 assert.deepEqual(
-    ids(placeCheckup(health, { id: 'b', name: 'Oculista', lastDate: '2025-05-01' }).checkups),
+    ids(
+        placeCheckup(health, {
+            id: 'b',
+            name: 'Oculista',
+            lastDate: '2025-05-01',
+        }).checkups
+    ),
     ['b', 'a']
 );
 
 // A medicine ending today is still ongoing; one that ended yesterday moves.
 const endsToday = placeMedicine(health, m('x', { endDate: today }), today);
-assert.deepEqual([ids(endsToday.ongoing), ids(endsToday.ended)], [['x'], ['y']]);
+assert.deepEqual(
+    [ids(endsToday.ongoing), ids(endsToday.ended)],
+    [['x'], ['y']]
+);
 const ended = placeMedicine(health, m('x', { endDate: '2026-09-29' }), today);
 assert.deepEqual([ids(ended.ongoing), ids(ended.ended)], [[], ['x', 'y']]);
 

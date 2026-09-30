@@ -19,10 +19,6 @@ export function place(sections: Sections, saved: Title): Sections {
         todo: without(sections.todo, saved.id),
         done: without(sections.done, saved.id),
     };
-    next[saved.status] = upsert(
-        next[saved.status],
-        saved,
-        ORDER[saved.status]
-    );
+    next[saved.status] = upsert(next[saved.status], saved, ORDER[saved.status]);
     return next;
 }
