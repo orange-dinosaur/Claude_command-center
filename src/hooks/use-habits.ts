@@ -3,6 +3,8 @@
  * once and rolls back if the save fails. The habit form saves the rest.
  */
 
+import { useRef } from 'react';
+
 import { apiFetch } from '@/auth/client';
 import { dayOf, type Tracked } from '@/habits/stats';
 import { useOnFocus } from '@/hooks/use-on-focus';
@@ -51,8 +53,25 @@ export function useHabits() {
             )
         );
 
-    // ponytail: two quick taps on one cell can reach the server out of order;
-    // queue requests per cell if that ever shows up.
+    // Requests for one habit and day go out one after another, so quick taps
+    // reach the server in order. ponytail: if two queued requests both fail,
+    // the second rollback restores the first tap's state; a reload fixes it.
+    const pending = useRef(new Map<string, Promise<unknown>>());
+
+    const sendDay = (
+        id: string,
+        date: string,
+        method: string,
+        body?: object
+    ) => {
+        const key = `${id}:${date}`;
+        const request = (pending.current.get(key) ?? Promise.resolve())
+            .catch(() => {})
+            .then(() => send(`/api/habits/${id}/days/${date}`, method, body));
+        pending.current.set(key, request);
+        return request;
+    };
+
     /** Marks a day, or clears it with `amount` 0 on an amount habit. */
     const mark = async (habit: Habit, date: string, amount?: number) => {
         if (habit.mode === 'amount' && !amount) return unmark(habit, date);
@@ -60,9 +79,7 @@ export function useHabits() {
         setError(null);
         setDay(habit.id, date, { date, amount: amount ?? null });
         try {
-            await send(`/api/habits/${habit.id}/days/${date}`, 'PUT', {
-                amount,
-            });
+            await sendDay(habit.id, date, 'PUT', { amount });
             return true;
         } catch {
             setDay(habit.id, date, previous);
@@ -76,7 +93,7 @@ export function useHabits() {
         setError(null);
         setDay(habit.id, date, undefined);
         try {
-            await send(`/api/habits/${habit.id}/days/${date}`, 'DELETE');
+            await sendDay(habit.id, date, 'DELETE');
             return true;
         } catch {
             setDay(habit.id, date, previous);
