@@ -15,8 +15,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { addDays, formatDayRange, todayDay } from '@/dates';
-import { AmountSheet } from '@/habits/amount-sheet';
-import { dayOf, mondayOf } from '@/habits/stats';
+import { mondayOf } from '@/habits/stats';
+import { useDayPress } from '@/habits/use-day-press';
 import { WeekRow } from '@/habits/week-row';
 import { useHabits, type Habit } from '@/hooks/use-habits';
 import { useTheme } from '@/hooks/use-theme';
@@ -26,29 +26,17 @@ export default function Abitudini() {
     const router = useRouter();
     const today = todayDay();
     const { habits, error, mark, unmark } = useHabits();
+    const { press, sheet } = useDayPress({ mark, unmark });
     const thisMonday = mondayOf(today);
     const [monday, setMonday] = useState(thisMonday);
-    // The amount habit and day whose sheet is open.
-    const [editing, setEditing] = useState<{ id: string; day: string }>();
 
     const active = habits?.filter((h) => !h.archivedAt);
-    const editingHabit = habits?.find((h) => h.id === editing?.id);
-
-    const pressDay = (habit: Habit, day: string) => {
-        // Sport days come from workouts, so the cell leads to Sport.
-        if (habit.sport) {
-            router.push(
-                dayOf(habit, day)
-                    ? '/sport'
-                    : {
-                          pathname: '/sport/allenamento',
-                          params: { data: day },
-                      }
-            );
-        } else if (habit.mode === 'amount') setEditing({ id: habit.id, day });
-        else if (dayOf(habit, day)) unmark(habit, day);
-        else mark(habit, day);
-    };
+    const archived = habits?.filter((h) => h.archivedAt) ?? [];
+    const open = (habit: Habit) =>
+        router.push({
+            pathname: '/abitudini/[id]',
+            params: { id: habit.id },
+        });
 
     const arrow = (
         symbol: string,
@@ -108,7 +96,8 @@ export default function Abitudini() {
                                 habit={habit}
                                 monday={monday}
                                 today={today}
-                                onPressDay={(day) => pressDay(habit, day)}
+                                onPressDay={(day) => press(habit, day)}
+                                onPressName={() => open(habit)}
                             />
                         ))}
                         {active.length === 1 && (
@@ -123,18 +112,30 @@ export default function Abitudini() {
                             label="Nuova abitudine"
                             onPress={() => router.push('/abitudini/abitudine')}
                         />
+                        {archived.length > 0 && (
+                            <View style={styles.archived}>
+                                <ThemedText type="subtitle">
+                                    Archiviate
+                                </ThemedText>
+                                {archived.map((habit) => (
+                                    <Pressable
+                                        key={habit.id}
+                                        onPress={() => open(habit)}
+                                        accessibilityRole="link"
+                                        style={({ pressed }) => [
+                                            styles.archivedRow,
+                                            { borderTopColor: theme.border },
+                                            pressed && styles.pressed,
+                                        ]}>
+                                        <ThemedText>{habit.name}</ThemedText>
+                                    </Pressable>
+                                ))}
+                            </View>
+                        )}
                     </ScrollView>
                 )}
             </SafeAreaView>
-            {editing && editingHabit && (
-                <AmountSheet
-                    key={`${editing.id}-${editing.day}`}
-                    habit={editingHabit}
-                    day={editing.day}
-                    onSave={(amount) => mark(editingHabit, editing.day, amount)}
-                    onClose={() => setEditing(undefined)}
-                />
-            )}
+            {sheet}
         </ThemedView>
     );
 }
@@ -162,6 +163,14 @@ const styles = StyleSheet.create({
     },
     arrow: {
         paddingHorizontal: Spacing.three,
+    },
+    archived: {
+        marginTop: Spacing.four,
+        gap: Spacing.two,
+    },
+    archivedRow: {
+        paddingVertical: Spacing.three,
+        borderTopWidth: 1,
     },
     disabled: {
         opacity: 0.3,

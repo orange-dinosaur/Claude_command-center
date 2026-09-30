@@ -1,6 +1,6 @@
 /**
  * The signed-in user's habits with their marked days. Marking a day shows at
- * once and rolls back if the save fails; other changes save, then reload.
+ * once and rolls back if the save fails. The habit form saves the rest.
  */
 
 import { apiFetch } from '@/auth/client';
@@ -17,15 +17,6 @@ export interface Habit extends Tracked {
 }
 
 type Day = Habit['days'][number];
-
-export interface HabitChanges {
-    name?: string;
-    weeklyTarget?: number;
-    unit?: string;
-    dailyTarget?: number;
-    archived?: boolean;
-    move?: 'up' | 'down';
-}
 
 const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
@@ -94,36 +85,8 @@ export function useHabits() {
         }
     };
 
-    /** Saves, reloads, and says whether it worked. */
-    const change = async (
-        request: () => Promise<Response>,
-        failure: string
-    ) => {
-        setError(null);
-        try {
-            const res = await request();
-            reload();
-            return res;
-        } catch {
-            setError(failure);
-            return null;
-        }
-    };
-
-    const edit = async (id: string, changes: HabitChanges) =>
-        !!(await change(
-            () => send(`/api/habits/${id}`, 'PATCH', changes),
-            'Non riesco a salvare l’abitudine.'
-        ));
-
-    const remove = async (id: string) =>
-        !!(await change(
-            () => send(`/api/habits/${id}`, 'DELETE'),
-            'Non riesco a eliminare l’abitudine.'
-        ));
-
     // undefined while loading the first time; a failed first load is empty.
     const habits = data === null ? [] : data;
 
-    return { habits, error, reload, mark, unmark, edit, remove };
+    return { habits, error, reload, mark, unmark };
 }
