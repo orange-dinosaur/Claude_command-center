@@ -27,8 +27,10 @@ export const user = pgTable('user', {
     email: text('email').notNull().unique(),
     emailVerified: boolean('email_verified').default(false).notNull(),
     image: text('image'),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at')
+    createdAt: timestamp('created_at', { withTimezone: true })
+        .defaultNow()
+        .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
         .defaultNow()
         .$onUpdate(() => new Date())
         .notNull(),
@@ -38,10 +40,12 @@ export const session = pgTable(
     'session',
     {
         id: text('id').primaryKey(),
-        expiresAt: timestamp('expires_at').notNull(),
+        expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
         token: text('token').notNull().unique(),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at')
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
             .defaultNow()
             .$onUpdate(() => new Date())
             .notNull(),
@@ -66,12 +70,18 @@ export const account = pgTable(
         accessToken: text('access_token'),
         refreshToken: text('refresh_token'),
         idToken: text('id_token'),
-        accessTokenExpiresAt: timestamp('access_token_expires_at'),
-        refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
+        accessTokenExpiresAt: timestamp('access_token_expires_at', {
+            withTimezone: true,
+        }),
+        refreshTokenExpiresAt: timestamp('refresh_token_expires_at', {
+            withTimezone: true,
+        }),
         scope: text('scope'),
         password: text('password'),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at')
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
             .defaultNow()
             .$onUpdate(() => new Date())
             .notNull(),
@@ -85,9 +95,11 @@ export const verification = pgTable(
         id: text('id').primaryKey(),
         identifier: text('identifier').notNull(),
         value: text('value').notNull(),
-        expiresAt: timestamp('expires_at').notNull(),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at')
+        expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
             .defaultNow()
             .$onUpdate(() => new Date())
             .notNull(),
@@ -108,7 +120,7 @@ export const visionBoard = pgTable('vision_board', {
     /** Base64, so no part of this needs a binary column type. */
     data: text('data').notNull(),
     contentType: text('content_type').notNull(),
-    updatedAt: timestamp('updated_at')
+    updatedAt: timestamp('updated_at', { withTimezone: true })
         .defaultNow()
         .$onUpdate(() => new Date())
         .notNull(),
@@ -133,8 +145,10 @@ export const closeoutMonth = pgTable(
             .$type<Record<string, string>>()
             .default({})
             .notNull(),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at')
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
             .defaultNow()
             .$onUpdate(() => new Date())
             .notNull(),
@@ -175,8 +189,10 @@ export const checkup = pgTable(
             .references(() => user.id, { onDelete: 'cascade' }),
         name: text('name').notNull(),
         lastDate: date('last_date'),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at')
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
             .defaultNow()
             .$onUpdate(() => new Date())
             .notNull(),
@@ -202,8 +218,10 @@ export const medicine = pgTable(
         frequency: text('frequency'),
         startDate: date('start_date'),
         endDate: date('end_date'),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at')
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
             .defaultNow()
             .$onUpdate(() => new Date())
             .notNull(),
@@ -243,8 +261,10 @@ export const title = pgTable(
         endDate: date('end_date'),
         /** Half stars, 1 to 10. */
         rating: integer('rating'),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at')
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
             .defaultNow()
             .$onUpdate(() => new Date())
             .notNull(),
@@ -303,8 +323,10 @@ export const creativeCycle = pgTable(
         closingMade: text('closing_made'),
         closingBelief: text('closing_belief'),
         closingPromise: text('closing_promise'),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at')
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
             .defaultNow()
             .$onUpdate(() => new Date())
             .notNull(),
@@ -349,8 +371,10 @@ export const creativeWeek = pgTable(
         notes: text('notes'),
         carryForward: text('carry_forward'),
         reviewed: boolean('reviewed').default(false).notNull(),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at')
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
             .defaultNow()
             .$onUpdate(() => new Date())
             .notNull(),
@@ -375,8 +399,10 @@ export const workoutType = pgTable(
             .notNull()
             .references(() => user.id, { onDelete: 'cascade' }),
         name: text('name').notNull(),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at')
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
             .defaultNow()
             .$onUpdate(() => new Date())
             .notNull(),
@@ -407,8 +433,10 @@ export const workout = pgTable(
         date: date('date').notNull(),
         minutes: integer('minutes'),
         note: text('note'),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at')
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
             .defaultNow()
             .$onUpdate(() => new Date())
             .notNull(),
@@ -476,7 +504,9 @@ export const bucketItem = pgTable(
         doneOn: date('done_on'),
         /** Insertion order. */
         position: integer('position').notNull(),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
     },
     (table) => [index('bucket_item_season_id_idx').on(table.seasonId)]
 );
@@ -491,7 +521,9 @@ export const bucketInvite = pgTable('bucket_invite', {
     toUserId: text('to_user_id')
         .notNull()
         .references(() => user.id, { onDelete: 'cascade' }),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+        .defaultNow()
+        .notNull(),
 });
 
 /**
@@ -514,9 +546,11 @@ export const habit = pgTable(
         unit: text('unit'),
         dailyTarget: integer('daily_target'),
         position: integer('position').notNull(),
-        archivedAt: timestamp('archived_at'),
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at')
+        archivedAt: timestamp('archived_at', { withTimezone: true }),
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
             .defaultNow()
             .$onUpdate(() => new Date())
             .notNull(),
