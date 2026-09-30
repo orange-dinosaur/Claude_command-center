@@ -33,7 +33,11 @@ export default function Sport() {
     const theme = useTheme();
     const router = useRouter();
     const isDesktop = useIsDesktop();
-    const params = useLocalSearchParams<{ id?: string; tipi?: string }>();
+    const params = useLocalSearchParams<{
+        id?: string;
+        tipi?: string;
+        data?: string;
+    }>();
     const { workouts, error, reload, drop } = useWorkouts();
     const today = todayDay();
     // Open months, keyed `YYYY-MM`; the current one starts open.
@@ -55,7 +59,7 @@ export default function Sport() {
     // the phone it opens the form. Without an id it records a new workout.
     const select = (id?: string) => {
         if (isDesktop) {
-            router.setParams({ id, tipi: undefined });
+            router.setParams({ id, tipi: undefined, data: undefined });
         } else {
             router.push({
                 pathname: '/sport/allenamento',
@@ -227,8 +231,9 @@ export default function Sport() {
                     ) : (
                         // The key starts a fresh form whenever the selection changes.
                         <WorkoutForm
-                            key={params.id ?? 'new'}
+                            key={params.id ?? `new-${params.data}`}
                             id={params.id}
+                            initialDate={params.data}
                             title={
                                 params.id ? 'Allenamento' : 'Nuovo allenamento'
                             }

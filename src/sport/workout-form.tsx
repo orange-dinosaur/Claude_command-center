@@ -22,6 +22,7 @@ import { useTheme } from '@/hooks/use-theme';
 /** Records a workout, or edits the one with `id`. */
 export function WorkoutForm({
     id,
+    initialDate,
     title,
     onSaved,
     onDeleted,
@@ -29,6 +30,8 @@ export function WorkoutForm({
 }: {
     /** The workout to edit; without it the form records a new one. */
     id?: string;
+    /** A new workout's day, from a link; anything but `YYYY-MM-DD` means today. */
+    initialDate?: string;
     /** Shown above the fields when the page has no header of its own. */
     title?: string;
     onSaved: (id: string) => void;
@@ -38,7 +41,11 @@ export function WorkoutForm({
     const theme = useTheme();
     const { types, setTypes, error: typesError } = useWorkoutTypes();
     const [typeId, setTypeId] = useState<string | null>(null);
-    const [date, setDate] = useState(todayDay());
+    const [date, setDate] = useState(
+        initialDate && /^\d{4}-\d{2}-\d{2}$/.test(initialDate)
+            ? initialDate
+            : todayDay()
+    );
     const [minutes, setMinutes] = useState('');
     const [note, setNote] = useState('');
     const [loading, setLoading] = useState(Boolean(id));

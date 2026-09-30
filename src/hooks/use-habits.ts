@@ -27,12 +27,6 @@ export interface HabitChanges {
     move?: 'up' | 'down';
 }
 
-export type NewHabit = Pick<Habit, 'name' | 'mode'> & {
-    weeklyTarget?: number;
-    unit?: string;
-    dailyTarget?: number;
-};
-
 const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 const send = (path: string, method: string, body?: object) =>
@@ -116,15 +110,6 @@ export function useHabits() {
         }
     };
 
-    /** The new habit's id, or null. */
-    const create = async (fields: NewHabit): Promise<string | null> => {
-        const res = await change(
-            () => send('/api/habits', 'POST', fields),
-            'Non riesco a creare l’abitudine.'
-        );
-        return res ? ((await res.json()) as Habit).id : null;
-    };
-
     const edit = async (id: string, changes: HabitChanges) =>
         !!(await change(
             () => send(`/api/habits/${id}`, 'PATCH', changes),
@@ -140,5 +125,5 @@ export function useHabits() {
     // undefined while loading the first time; a failed first load is empty.
     const habits = data === null ? [] : data;
 
-    return { habits, error, reload, mark, unmark, create, edit, remove };
+    return { habits, error, reload, mark, unmark, edit, remove };
 }

@@ -7,16 +7,24 @@ import { ThemedView } from '@/components/themed-view';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { WorkoutForm } from '@/sport/workout-form';
 
-/** Records a workout, or edits the one in `?id=`. */
+/**
+ * Records a workout, on the day in `?data=` if there is one, or edits the one
+ * in `?id=`.
+ */
 export default function WorkoutPage() {
     const router = useRouter();
     const isDesktop = useIsDesktop();
-    const { id } = useLocalSearchParams<{ id?: string }>();
+    const { id, data } = useLocalSearchParams<{ id?: string; data?: string }>();
 
     // On desktop the form lives in the panel beside the list.
     if (isDesktop) {
         return (
-            <Redirect href={{ pathname: '/sport', params: id ? { id } : {} }} />
+            <Redirect
+                href={{
+                    pathname: '/sport',
+                    params: id ? { id } : data ? { data } : {},
+                }}
+            />
         );
     }
 
@@ -32,6 +40,7 @@ export default function WorkoutPage() {
                 />
                 <WorkoutForm
                     id={id}
+                    initialDate={data}
                     onSaved={backToList}
                     onDeleted={backToList}
                 />

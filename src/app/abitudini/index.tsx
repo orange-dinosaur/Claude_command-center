@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
     ActivityIndicator,
@@ -8,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AddButton } from '@/components/list-column';
 import { ScreenHeader } from '@/components/screen-header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -21,6 +23,7 @@ import { useTheme } from '@/hooks/use-theme';
 
 export default function Abitudini() {
     const theme = useTheme();
+    const router = useRouter();
     const today = todayDay();
     const { habits, error, mark, unmark } = useHabits();
     const thisMonday = mondayOf(today);
@@ -32,9 +35,17 @@ export default function Abitudini() {
     const editingHabit = habits?.find((h) => h.id === editing?.id);
 
     const pressDay = (habit: Habit, day: string) => {
-        // ponytail: Sport cells do nothing until they open Sport.
-        if (habit.sport) return;
-        if (habit.mode === 'amount') setEditing({ id: habit.id, day });
+        // Sport days come from workouts, so the cell leads to Sport.
+        if (habit.sport) {
+            router.push(
+                dayOf(habit, day)
+                    ? '/sport'
+                    : {
+                          pathname: '/sport/allenamento',
+                          params: { data: day },
+                      }
+            );
+        } else if (habit.mode === 'amount') setEditing({ id: habit.id, day });
         else if (dayOf(habit, day)) unmark(habit, day);
         else mark(habit, day);
     };
@@ -108,6 +119,10 @@ export default function Abitudini() {
                                 segna da sola con i tuoi allenamenti.
                             </ThemedText>
                         )}
+                        <AddButton
+                            label="Nuova abitudine"
+                            onPress={() => router.push('/abitudini/abitudine')}
+                        />
                     </ScrollView>
                 )}
             </SafeAreaView>
