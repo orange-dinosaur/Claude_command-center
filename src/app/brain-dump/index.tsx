@@ -8,7 +8,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { formatTime, groupByDay, TEXT_MAX } from '@/brain/days';
+import { groupByDay, TEXT_MAX } from '@/brain/days';
+import { EntryRow } from '@/brain/entry-row';
 import { ScreenHeader } from '@/components/screen-header';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -23,7 +24,7 @@ export default function BrainDumpScreen() {
     const theme = useTheme();
     const focus = useFocusRing();
     const isDesktop = useIsDesktop();
-    const { entries, error, add } = useBrain();
+    const { entries, error, add, edit, remove } = useBrain();
     const [draft, setDraft] = useState('');
 
     const submit = async () => {
@@ -78,15 +79,12 @@ export default function BrainDumpScreen() {
                     <View key={group.title} style={styles.group}>
                         <ThemedText type="subtitle">{group.title}</ThemedText>
                         {group.entries.map((entry) => (
-                            <View key={entry.id} style={styles.entry}>
-                                <ThemedText>•</ThemedText>
-                                <ThemedText style={styles.grow}>
-                                    {entry.text}
-                                </ThemedText>
-                                <ThemedText type="small" themeColor="textMuted">
-                                    {formatTime(entry.createdAt)}
-                                </ThemedText>
-                            </View>
+                            <EntryRow
+                                key={entry.id}
+                                entry={entry}
+                                onEdit={(text) => edit(entry, text)}
+                                onRemove={() => remove(entry)}
+                            />
                         ))}
                     </View>
                 ))
@@ -132,13 +130,5 @@ const styles = StyleSheet.create({
     },
     group: {
         gap: Spacing.two,
-    },
-    entry: {
-        flexDirection: 'row',
-        alignItems: 'baseline',
-        gap: Spacing.two,
-    },
-    grow: {
-        flex: 1,
     },
 });

@@ -1,6 +1,6 @@
 /**
- * The signed-in user's brain dump, newest first. A new entry shows at once
- * and goes away again if the save fails.
+ * The signed-in user's brain dump, newest first. Every change shows at once
+ * and is undone if the save fails.
  */
 
 import { apiFetch } from '@/auth/client';
@@ -48,8 +48,48 @@ export function useBrain() {
         }
     };
 
+    const send = (entry: Entry, method: string, body?: object) =>
+        apiFetch(`/api/brain/${entry.id}`, {
+            method,
+            headers: body ? { 'Content-Type': 'application/json' } : undefined,
+            body: body ? JSON.stringify(body) : undefined,
+        }).then((res) => {
+            if (!res.ok) throw new Error();
+        });
+
+    const put = (entry: Entry) =>
+        setData((current) =>
+            current?.map((e) => (e.id === entry.id ? entry : e))
+        );
+
+    const edit = async (entry: Entry, text: string) => {
+        setError(null);
+        put({ ...entry, text });
+        try {
+            await send(entry, 'PATCH', { text });
+        } catch {
+            put(entry);
+            setError('Non riesco a salvare la voce.');
+        }
+    };
+
+    const remove = async (entry: Entry) => {
+        setError(null);
+        setData((current) => current?.filter((e) => e.id !== entry.id));
+        try {
+            await send(entry, 'DELETE');
+        } catch {
+            setData((current) =>
+                [...(current ?? []), entry].sort((a, b) =>
+                    b.createdAt.localeCompare(a.createdAt)
+                )
+            );
+            setError('Non riesco a eliminare la voce.');
+        }
+    };
+
     // undefined while loading the first time; a failed first load is empty.
     const entries = data === null ? [] : data;
 
-    return { entries, error, add };
+    return { entries, error, add, edit, remove };
 }
