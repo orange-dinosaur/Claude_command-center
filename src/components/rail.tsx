@@ -43,6 +43,12 @@ const items: { label: string; title: string; href: Href; icon: string }[] = [
     },
     { label: 'Sport', title: 'Sport', href: '/sport', icon: 'directions_run' },
     {
+        label: 'Abitudini',
+        title: 'Abitudini',
+        href: '/abitudini',
+        icon: 'check_circle',
+    },
+    {
         label: 'Bucket list',
         title: 'Bucket list',
         href: '/bucket-list',

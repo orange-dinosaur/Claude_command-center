@@ -10,7 +10,8 @@ import { getSessionUser, unauthorized } from '@/auth/session';
 import { db } from '@/db';
 import { habit, habitDay } from '@/db/schema';
 import { addDays, todayDay } from '@/dates';
-import { AMOUNT_MAX, parseTarget } from '@/habits/input';
+import { parseTarget } from '@/habits/input';
+import { AMOUNT_MAX } from '@/habits/stats';
 import { badRequest, conflict, notFound, parseDate, readBody } from '@/http';
 
 /** The habit behind the URL, or the response that refuses it. */

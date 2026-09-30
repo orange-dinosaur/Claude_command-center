@@ -3,6 +3,7 @@
  */
 
 import { habit } from '@/db/schema';
+import { AMOUNT_MAX, UNIT_MAX, WEEKLY_MAX } from '@/habits/stats';
 import { parseName } from '@/http';
 
 export const MODES = ['daily', 'weekly', 'amount'] as const;
@@ -30,11 +31,6 @@ export function parseTarget(value: unknown, max: number): number | undefined {
         ? (value as number)
         : undefined;
 }
-
-export const WEEKLY_MAX = 7;
-/** Caps both an amount habit's daily target and a day's number. */
-export const AMOUNT_MAX = 100000;
-export const UNIT_MAX = 30;
 
 const absent = (value: unknown) => value === undefined || value === null;
 

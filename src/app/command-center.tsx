@@ -68,6 +68,15 @@ export default function CommandCenter() {
                         }}
                     />
                     <ToolButton
+                        title="Abitudini"
+                        href="/abitudini"
+                        icon={{
+                            ios: 'checkmark.circle',
+                            android: 'check_circle',
+                            web: 'check_circle',
+                        }}
+                    />
+                    <ToolButton
                         title="Bucket list"
                         href="/bucket-list"
                         icon={{

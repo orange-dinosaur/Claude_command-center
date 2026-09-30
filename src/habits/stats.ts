@@ -5,6 +5,11 @@
 
 import { addDays, toDay } from '@/dates';
 
+export const WEEKLY_MAX = 7;
+/** Caps both an amount habit's daily target and a day's number. */
+export const AMOUNT_MAX = 100000;
+export const UNIT_MAX = 30;
+
 export interface Tracked {
     mode: 'daily' | 'weekly' | 'amount';
     weeklyTarget: number | null;
