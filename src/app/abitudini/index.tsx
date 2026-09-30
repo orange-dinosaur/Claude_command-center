@@ -217,7 +217,10 @@ export default function Abitudini() {
                             title="Modifica abitudine"
                             onSaved={putAndSelect}
                             onDeleted={() => saved()}
-                            onMoved={reload}
+                            onMoved={(habit) => {
+                                put(habit);
+                                reload();
+                            }}
                             style={listPage.panel}
                         />
                     ) : (

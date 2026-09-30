@@ -106,22 +106,32 @@ export function useHabits() {
     // undefined while loading the first time; a failed first load is empty.
     const habits = data === null ? [] : data;
 
-    /** Shows a saved habit in its place before the reload, keeping its days. */
+    /**
+     * Shows a saved habit in its place before the reload, keeping its days.
+     * A move returns only the moved habit, so the neighbour it swapped with
+     * takes its old position here.
+     */
     const put = (saved: Omit<Habit, 'days'>) =>
-        setData(
-            (current) =>
-                current &&
-                upsert(
-                    current,
-                    {
-                        ...saved,
-                        days:
-                            current.find((h) => h.id === saved.id)?.days ?? [],
-                    },
-                    (a, b) =>
-                        a.position - b.position || asc(a.createdAt, b.createdAt)
-                )
-        );
+        setData((current) => {
+            if (!current) return current;
+            const before = current.find((h) => h.id === saved.id);
+            const swapped =
+                before && before.position !== saved.position
+                    ? current.map((h) =>
+                          h.id !== saved.id &&
+                          !h.archivedAt &&
+                          h.position === saved.position
+                              ? { ...h, position: before.position }
+                              : h
+                      )
+                    : current;
+            return upsert(
+                swapped,
+                { ...saved, days: before?.days ?? [] },
+                (a, b) =>
+                    a.position - b.position || asc(a.createdAt, b.createdAt)
+            );
+        });
 
     return { habits, error, reload, mark, unmark, put };
 }

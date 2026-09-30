@@ -56,7 +56,7 @@ export function HabitForm({
     onSaved: (saved: Omit<Habit, 'days'>) => void;
     onDeleted: () => void;
     /** After "Sposta su" or "Sposta giù", for a list shown beside the form. */
-    onMoved?: () => void;
+    onMoved?: (habit: Omit<Habit, 'days'>) => void;
     style?: StyleProp<ViewStyle>;
 }) {
     const theme = useTheme();
@@ -167,9 +167,8 @@ export function HabitForm({
     const move = async (direction: 'up' | 'down') => {
         const path = `/api/habits/${habit!.id}`;
         const failure = 'Non riesco a spostare l’abitudine.';
-        if (await send(path, 'PATCH', { move: direction }, failure)) {
-            onMoved?.();
-        }
+        const res = await send(path, 'PATCH', { move: direction }, failure);
+        if (res) onMoved?.(await res.json());
     };
 
     const remove = async () => {
