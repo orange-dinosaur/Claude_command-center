@@ -556,3 +556,31 @@ export const habitDay = pgTable(
         check('habit_day_amount', sql`${table.amount} >= 1`),
     ]
 );
+
+/** One line of the brain dump. `createdAt` is when it was written. */
+export const brainEntry = pgTable(
+    'brain_entry',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        text: text('text').notNull(),
+        // With time zone: the time is shown, and pg reads a plain timestamp
+        // as the server's local time.
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
+            .defaultNow()
+            .$onUpdate(() => new Date())
+            .notNull(),
+    },
+    (table) => [
+        index('brain_entry_user_id_idx').on(table.userId),
+        check(
+            'brain_entry_text_length',
+            sql`char_length(${table.text}) between 1 and 1000`
+        ),
+    ]
+);
