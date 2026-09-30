@@ -75,6 +75,8 @@ interface WeekRowProps {
     habit: Habit;
     monday: string;
     today: string;
+    /** The habit open in the desktop panel. */
+    selected?: boolean;
     onPressDay: (day: string) => void;
     onPressName: () => void;
 }
@@ -83,6 +85,7 @@ export function WeekRow({
     habit,
     monday,
     today,
+    selected = false,
     onPressDay,
     onPressName,
 }: WeekRowProps) {
@@ -99,7 +102,10 @@ export function WeekRow({
                     styles.heading,
                     pressed && styles.pressed,
                 ]}>
-                <ThemedText type="subtitle" style={styles.grow}>
+                <ThemedText
+                    type="subtitle"
+                    themeColor={selected ? 'accent' : 'text'}
+                    style={styles.grow}>
                     {habit.name}
                 </ThemedText>
                 {habit.mode === 'weekly' && (

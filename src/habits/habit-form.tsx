@@ -44,6 +44,7 @@ export function HabitForm({
     title,
     onSaved,
     onDeleted,
+    onMoved,
     style,
 }: {
     /** The habit to edit; without it the form adds a new one. */
@@ -53,6 +54,8 @@ export function HabitForm({
     /** After a save, an archive or a restore. */
     onSaved: (id: string) => void;
     onDeleted: () => void;
+    /** After "Sposta su" or "Sposta giù", for a list shown beside the form. */
+    onMoved?: () => void;
     style?: StyleProp<ViewStyle>;
 }) {
     const theme = useTheme();
@@ -158,13 +161,13 @@ export function HabitForm({
         if (await send(path, 'PATCH', { archived })) onSaved(habit!.id);
     };
 
-    const move = (direction: 'up' | 'down') =>
-        send(
-            `/api/habits/${habit!.id}`,
-            'PATCH',
-            { move: direction },
-            'Non riesco a spostare l’abitudine.'
-        );
+    const move = async (direction: 'up' | 'down') => {
+        const path = `/api/habits/${habit!.id}`;
+        const failure = 'Non riesco a spostare l’abitudine.';
+        if (await send(path, 'PATCH', { move: direction }, failure)) {
+            onMoved?.();
+        }
+    };
 
     const remove = async () => {
         const path = `/api/habits/${habit!.id}`;
