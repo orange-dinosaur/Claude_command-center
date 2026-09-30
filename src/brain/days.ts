@@ -4,6 +4,9 @@
 
 import { addDays, toDay } from '@/dates';
 
+/** The longest entry, in characters. */
+export const TEXT_MAX = 1000;
+
 export interface DayGroup<T> {
     /** "Oggi", "Ieri", "lunedì 28 settembre", or with the year if not this year's. */
     title: string;

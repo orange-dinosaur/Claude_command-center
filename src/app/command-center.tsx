@@ -85,6 +85,15 @@ export default function CommandCenter() {
                             web: 'wb_sunny',
                         }}
                     />
+                    <ToolButton
+                        title="Brain dump"
+                        href="/brain-dump"
+                        icon={{
+                            ios: 'brain',
+                            android: 'psychology',
+                            web: 'psychology',
+                        }}
+                    />
                 </View>
                 <View style={styles.spacer} />
                 <Pressable

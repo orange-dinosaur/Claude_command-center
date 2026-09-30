@@ -2,10 +2,9 @@
  * Body checks for the brain dump routes. Server-side only.
  */
 
+import { TEXT_MAX } from '@/brain/days';
 import { brainEntry } from '@/db/schema';
 import { parseName } from '@/http';
-
-export const TEXT_MAX = 1000;
 
 /** The columns every brain dump route returns. */
 export const entryColumns = {
