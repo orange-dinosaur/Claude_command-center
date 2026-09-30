@@ -493,3 +493,66 @@ export const bucketInvite = pgTable('bucket_invite', {
         .references(() => user.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+/**
+ * A habit in the habit tracker. `daily` is done or not per day, `weekly` adds
+ * a target of days per week, `amount` is a number per day against a daily
+ * target. Each account has one Sport habit, which stores no days: its days
+ * are the dates of the account's workouts.
+ */
+export const habit = pgTable(
+    'habit',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        name: text('name').notNull(),
+        mode: text('mode', { enum: ['daily', 'weekly', 'amount'] }).notNull(),
+        sport: boolean('sport').default(false).notNull(),
+        weeklyTarget: integer('weekly_target'),
+        unit: text('unit'),
+        dailyTarget: integer('daily_target'),
+        position: integer('position').notNull(),
+        archivedAt: timestamp('archived_at'),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+        updatedAt: timestamp('updated_at')
+            .defaultNow()
+            .$onUpdate(() => new Date())
+            .notNull(),
+    },
+    (table) => [
+        index('habit_user_id_idx').on(table.userId),
+        uniqueIndex('habit_user_id_sport_idx')
+            .on(table.userId)
+            .where(sql`${table.sport}`),
+        check(
+            'habit_mode_fields',
+            sql`case ${table.mode}
+                when 'daily' then ${table.weeklyTarget} is null and ${table.unit} is null and ${table.dailyTarget} is null
+                when 'weekly' then ${table.weeklyTarget} between 1 and 7 and ${table.unit} is null and ${table.dailyTarget} is null
+                when 'amount' then ${table.weeklyTarget} is null and ${table.unit} is not null and ${table.dailyTarget} >= 1
+                else false end`
+        ),
+        check(
+            'habit_sport_weekly',
+            sql`not ${table.sport} or (${table.mode} = 'weekly' and ${table.archivedAt} is null)`
+        ),
+    ]
+);
+
+/** A marked day of a habit. `amount` is set only for `amount` habits. */
+export const habitDay = pgTable(
+    'habit_day',
+    {
+        habitId: text('habit_id')
+            .notNull()
+            .references(() => habit.id, { onDelete: 'cascade' }),
+        date: date('date').notNull(),
+        amount: integer('amount'),
+    },
+    (table) => [
+        primaryKey({ columns: [table.habitId, table.date] }),
+        check('habit_day_amount', sql`${table.amount} >= 1`),
+    ]
+);
