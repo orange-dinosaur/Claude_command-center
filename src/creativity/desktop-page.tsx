@@ -79,7 +79,7 @@ export function DesktopCreativita() {
     const theme = useTheme();
     const router = useRouter();
     const params = useLocalSearchParams<Selection & { id?: string }>();
-    const { cycle, error, reload, clear } = useCycle(params.id);
+    const { cycle, error, reload, clear, put } = useCycle(params.id);
     const { cycles, reload: reloadCycles } = useCycles();
     const today = todayDay();
 
@@ -180,7 +180,8 @@ export function DesktopCreativita() {
                     <CycleForm
                         key="new"
                         title="Nuovo ciclo"
-                        onDone={() => {
+                        onDone={(saved) => {
+                            if (saved) put(saved);
                             refresh();
                             backToCurrent();
                         }}
@@ -192,12 +193,13 @@ export function DesktopCreativita() {
                         key={cycle.id}
                         id={cycle.id}
                         title="Modifica ciclo"
-                        onDone={(deleted) => {
+                        onDone={(saved) => {
                             // Clearing drops the deleted cycle's weeks at once.
-                            if (deleted) clear();
+                            if (saved) put(saved);
+                            else clear();
                             refresh();
-                            if (deleted) backToCurrent();
-                            else show({});
+                            if (saved) show({});
+                            else backToCurrent();
                         }}
                         style={listPage.panel}
                     />

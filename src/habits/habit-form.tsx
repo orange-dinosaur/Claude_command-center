@@ -52,7 +52,8 @@ export function HabitForm({
     /** Shown above the fields when the page has no header of its own. */
     title?: string;
     /** After a save, an archive or a restore. */
-    onSaved: (id: string) => void;
+    /** The saved habit, without its days. */
+    onSaved: (saved: Omit<Habit, 'days'>) => void;
     onDeleted: () => void;
     /** After "Sposta su" or "Sposta giù", for a list shown beside the form. */
     onMoved?: () => void;
@@ -153,12 +154,14 @@ export function HabitForm({
         const res = habit
             ? await send(`/api/habits/${habit.id}`, 'PATCH', fields)
             : await send('/api/habits', 'POST', fields);
-        if (res) onSaved(habit?.id ?? ((await res.json()) as Habit).id);
+        if (res) onSaved(await res.json());
     };
 
     const archive = async (archived: boolean) => {
-        const path = `/api/habits/${habit!.id}`;
-        if (await send(path, 'PATCH', { archived })) onSaved(habit!.id);
+        const res = await send(`/api/habits/${habit!.id}`, 'PATCH', {
+            archived,
+        });
+        if (res) onSaved(await res.json());
     };
 
     const move = async (direction: 'up' | 'down') => {

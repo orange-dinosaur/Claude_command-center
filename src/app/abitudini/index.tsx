@@ -30,7 +30,7 @@ export default function Abitudini() {
     const isDesktop = useIsDesktop();
     const params = useLocalSearchParams<{ id?: string; modifica?: string }>();
     const today = todayDay();
-    const { habits, error, reload, mark, unmark } = useHabits();
+    const { habits, error, reload, mark, unmark, put } = useHabits();
     const { press, sheet } = useDayPress({ mark, unmark });
     const thisMonday = mondayOf(today);
     const [monday, setMonday] = useState(thisMonday);
@@ -181,6 +181,10 @@ export default function Abitudini() {
             reload();
             router.setParams({ id, modifica: undefined });
         };
+        const putAndSelect = (habit: Omit<Habit, 'days'>) => {
+            put(habit);
+            saved(habit.id);
+        };
 
         return (
             <ThemedView style={listPage.page}>
@@ -201,7 +205,7 @@ export default function Abitudini() {
                             <HabitForm
                                 key="new"
                                 title="Nuova abitudine"
-                                onSaved={saved}
+                                onSaved={putAndSelect}
                                 onDeleted={saved}
                                 style={listPage.panel}
                             />
@@ -211,7 +215,7 @@ export default function Abitudini() {
                             key={`edit-${selected.id}`}
                             id={selected.id}
                             title="Modifica abitudine"
-                            onSaved={saved}
+                            onSaved={putAndSelect}
                             onDeleted={() => saved()}
                             onMoved={reload}
                             style={listPage.panel}

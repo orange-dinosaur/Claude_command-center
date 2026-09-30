@@ -45,8 +45,8 @@ export function CycleForm({
     id?: string;
     /** Shown above the fields when the page has no header of its own. */
     title?: string;
-    /** Called after a save, an interruption or a delete. */
-    onDone: (deleted: boolean) => void;
+    /** Called with the saved cycle after a save or an interruption, or with null after a delete. */
+    onDone: (saved: Cycle | null) => void;
     style?: StyleProp<ViewStyle>;
 }) {
     const today = todayDay();
@@ -102,7 +102,11 @@ export function CycleForm({
                 ...init,
                 headers: { 'content-type': 'application/json' },
             });
-            if (res.ok) return onDone(init.method === 'DELETE');
+            if (res.ok) {
+                return onDone(
+                    init.method === 'DELETE' ? null : await res.json()
+                );
+            }
             const body = await res.json().catch(() => null);
             setError(ERRORS[body?.error] ?? failure);
         } catch {

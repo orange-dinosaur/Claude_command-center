@@ -34,7 +34,7 @@ export function WorkoutForm({
     initialDate?: string;
     /** Shown above the fields when the page has no header of its own. */
     title?: string;
-    onSaved: (id: string) => void;
+    onSaved: (saved: Workout) => void;
     onDeleted: () => void;
     style?: StyleProp<ViewStyle>;
 }) {
@@ -112,7 +112,14 @@ export function WorkoutForm({
                 }
             );
             if (res.ok) {
-                return onSaved(id ?? ((await res.json()) as Workout).id);
+                // The API returns only the type's id; the name comes from
+                // the types already loaded for the picker.
+                const saved: Omit<Workout, 'typeName'> = await res.json();
+                return onSaved({
+                    ...saved,
+                    typeName:
+                        types?.find((t) => t.id === saved.typeId)?.name ?? '',
+                });
             }
             setError('Non riesco a salvare l’allenamento.');
         } catch {

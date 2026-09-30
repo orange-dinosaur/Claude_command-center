@@ -8,6 +8,7 @@ import { useRef } from 'react';
 import { apiFetch } from '@/auth/client';
 import { dayOf, type Tracked } from '@/habits/stats';
 import { useOnFocus } from '@/hooks/use-on-focus';
+import { asc, upsert } from '@/order';
 
 export interface Habit extends Tracked {
     id: string;
@@ -105,5 +106,22 @@ export function useHabits() {
     // undefined while loading the first time; a failed first load is empty.
     const habits = data === null ? [] : data;
 
-    return { habits, error, reload, mark, unmark };
+    /** Shows a saved habit in its place before the reload, keeping its days. */
+    const put = (saved: Omit<Habit, 'days'>) =>
+        setData(
+            (current) =>
+                current &&
+                upsert(
+                    current,
+                    {
+                        ...saved,
+                        days:
+                            current.find((h) => h.id === saved.id)?.days ?? [],
+                    },
+                    (a, b) =>
+                        a.position - b.position || asc(a.createdAt, b.createdAt)
+                )
+        );
+
+    return { habits, error, reload, mark, unmark, put };
 }

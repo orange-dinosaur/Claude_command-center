@@ -38,7 +38,7 @@ export default function Sport() {
         tipi?: string;
         data?: string;
     }>();
-    const { workouts, error, reload, drop } = useWorkouts();
+    const { workouts, error, reload, drop, put } = useWorkouts();
     const today = todayDay();
     // Open months, keyed `YYYY-MM`; the current one starts open.
     const [open, setOpen] = useState<Record<string, boolean>>(() => ({
@@ -237,7 +237,10 @@ export default function Sport() {
                             title={
                                 params.id ? 'Allenamento' : 'Nuovo allenamento'
                             }
-                            onSaved={saved}
+                            onSaved={(workout) => {
+                                put(workout);
+                                saved(workout.id);
+                            }}
                             onDeleted={() => {
                                 if (params.id) drop(params.id);
                                 saved();

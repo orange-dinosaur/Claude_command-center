@@ -3,6 +3,7 @@
  */
 
 import { apiFetch } from '@/auth/client';
+import { weeksBegun } from '@/creativity/cycle';
 import { useOnFocus } from '@/hooks/use-on-focus';
 
 export interface Cycle {
@@ -73,7 +74,29 @@ export function useCycle(id?: string) {
     /** Shows the loading state until the next cycle arrives. */
     const clear = () => setData(undefined);
 
-    return { cycle: data, error, reload, clear };
+    /**
+     * Shows a saved cycle before the reload. It keeps the loaded weeks,
+     * without those an interruption deletes; a new cycle has none yet.
+     */
+    const put = (saved: Cycle) =>
+        setData((current) => ({
+            ...saved,
+            weeks:
+                current?.id !== saved.id
+                    ? []
+                    : saved.interruptedOn
+                      ? current.weeks.filter(
+                            (w) =>
+                                w.week <=
+                                weeksBegun(
+                                    saved.startDate,
+                                    saved.interruptedOn!
+                                )
+                        )
+                      : current.weeks,
+        }));
+
+    return { cycle: data, error, reload, clear, put };
 }
 
 /** Every cycle, newest first, without weeks. */

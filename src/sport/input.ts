@@ -20,6 +20,7 @@ export const workoutColumns = {
     date: workout.date,
     minutes: workout.minutes,
     note: workout.note,
+    createdAt: workout.createdAt,
 };
 
 export type WorkoutFields = Partial<

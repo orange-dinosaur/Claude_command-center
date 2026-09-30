@@ -4,6 +4,7 @@
 
 import { apiFetch } from '@/auth/client';
 import { useOnFocus } from '@/hooks/use-on-focus';
+import { desc, upsert } from '@/order';
 
 export interface Workout {
     id: string;
@@ -13,6 +14,8 @@ export interface Workout {
     date: string;
     minutes: number | null;
     note: string | null;
+    /** ISO timestamp, only for ordering. */
+    createdAt: string;
 }
 
 const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
@@ -29,7 +32,20 @@ export function useWorkouts() {
     const drop = (id: string) =>
         setData((current) => current?.filter((w) => w.id !== id));
 
-    return { workouts, error, reload, drop };
+    /** Shows a saved workout in its place before the reload, newest first. */
+    const put = (saved: Workout) =>
+        setData(
+            (current) =>
+                current &&
+                upsert(
+                    current,
+                    saved,
+                    (a, b) =>
+                        desc(a.date, b.date) || desc(a.createdAt, b.createdAt)
+                )
+        );
+
+    return { workouts, error, reload, drop, put };
 }
 
 export interface WorkoutType {
