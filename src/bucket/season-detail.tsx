@@ -301,8 +301,9 @@ const styles = StyleSheet.create({
         padding: 0,
     },
     initial: {
-        width: 24,
+        minWidth: 24,
         height: 24,
+        paddingHorizontal: 6,
         borderRadius: 12,
         borderWidth: 1,
         alignItems: 'center',

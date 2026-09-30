@@ -206,7 +206,11 @@ export function WeekView({
 
     const midpoint = number === 6 && (
         <Section title="Midpoint check-in">
-            <CycleAnswers cycle={cycle} labels={MIDPOINT_LABELS} />
+            <CycleAnswers
+                cycle={cycle}
+                labels={MIDPOINT_LABELS}
+                unsaved={unsaved}
+            />
         </Section>
     );
 

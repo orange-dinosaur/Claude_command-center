@@ -17,6 +17,8 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
+export type Unsaved = ReturnType<typeof useUnsaved>;
+
 export function useUnsaved() {
     const theme = useTheme();
     const navigation = useNavigation();

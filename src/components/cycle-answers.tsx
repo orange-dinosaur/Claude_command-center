@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { apiFetch } from '@/auth/client';
 import { TextField } from '@/components/text-field';
 import type { Cycle } from '@/hooks/use-cycles';
-import { useUnsaved } from '@/hooks/use-unsaved';
+import { useUnsaved, type Unsaved } from '@/hooks/use-unsaved';
 
 type AnswerKey = {
     [K in keyof Cycle]: Cycle[K] extends string | null ? K : never;
@@ -19,10 +19,13 @@ export function CycleAnswers<K extends AnswerKey>({
     cycle,
     labels,
     multiline = true,
+    unsaved: page,
 }: {
     cycle: Cycle;
     labels: Record<K, string>;
     multiline?: boolean;
+    /** The page's own, when it has other fields: one back-arrow sheet per page. */
+    unsaved?: Unsaved;
 }) {
     const keys = Object.keys(labels) as K[];
     const initial = () =>
@@ -31,7 +34,8 @@ export function CycleAnswers<K extends AnswerKey>({
         ) as Record<K, string>;
     const [saved, setSaved] = useState(initial);
     const [texts, setTexts] = useState(initial);
-    const unsaved = useUnsaved();
+    const own = useUnsaved();
+    const unsaved = page ?? own;
 
     const save = async (key: K) => {
         const text = texts[key].trim();
@@ -66,7 +70,7 @@ export function CycleAnswers<K extends AnswerKey>({
                     unsaved={unsaved.isUnsaved(key)}
                 />
             ))}
-            {unsaved.sheet}
+            {!page && own.sheet}
         </>
     );
 }

@@ -14,6 +14,7 @@ import { CLOSING_LABELS, CLOSING_SHIFT_LABELS } from '@/creativity/cycle';
 import { formatDayRange } from '@/dates';
 import { useCycle } from '@/hooks/use-cycles';
 import { useTheme } from '@/hooks/use-theme';
+import { useUnsaved } from '@/hooks/use-unsaved';
 
 /** The reflection that closes the cycle with `cycleId`. */
 export function ClosingReview({
@@ -28,6 +29,7 @@ export function ClosingReview({
 }) {
     const theme = useTheme();
     const { cycle, error } = useCycle(cycleId);
+    const unsaved = useUnsaved();
 
     if (cycle === undefined) {
         return (
@@ -56,9 +58,15 @@ export function ClosingReview({
                     cycle={cycle}
                     labels={CLOSING_SHIFT_LABELS}
                     multiline={false}
+                    unsaved={unsaved}
                 />
             </View>
-            <CycleAnswers cycle={cycle} labels={CLOSING_LABELS} />
+            <CycleAnswers
+                cycle={cycle}
+                labels={CLOSING_LABELS}
+                unsaved={unsaved}
+            />
+            {unsaved.sheet}
         </ScrollView>
     );
 }

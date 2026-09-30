@@ -7,9 +7,10 @@
 import { and, asc, eq, sql } from 'drizzle-orm';
 
 import { getSessionUser, unauthorized } from '@/auth/session';
+import { initials } from '@/bucket/initials';
 import { listIdFor } from '@/bucket/list';
 import { db } from '@/db';
-import { bucketItem, bucketSeason, user } from '@/db/schema';
+import { bucketItem, bucketListMember, bucketSeason, user } from '@/db/schema';
 import { badRequest, notFound, parseName, readBody } from '@/http';
 
 async function findSeason(id: string, userId: string) {
@@ -19,6 +20,7 @@ async function findSeason(id: string, userId: string) {
             id: bucketSeason.id,
             year: bucketSeason.year,
             season: bucketSeason.season,
+            listId: bucketSeason.listId,
         })
         .from(bucketSeason)
         .where(and(eq(bucketSeason.id, id), eq(bucketSeason.listId, listId)));
@@ -32,24 +34,42 @@ export async function GET(
     const account = await getSessionUser(request);
     if (!account) return unauthorized();
 
-    const season = await findSeason(id, account.id);
-    if (!season) return notFound();
+    const found = await findSeason(id, account.id);
+    if (!found) return notFound();
+    const { listId, ...season } = found;
 
-    const items = await db
-        .select({
-            id: bucketItem.id,
-            text: bucketItem.text,
-            doneOn: bucketItem.doneOn,
-            addedBy: sql<string | null>`upper(left(${user.name}, 1))`,
-        })
-        .from(bucketItem)
-        .leftJoin(user, eq(user.id, bucketItem.addedBy))
-        .where(eq(bucketItem.seasonId, id))
-        .orderBy(
-            sql`${bucketItem.doneOn} is not null`,
-            asc(bucketItem.doneOn),
-            asc(bucketItem.position)
-        );
+    const [rows, members] = await Promise.all([
+        db
+            .select({
+                id: bucketItem.id,
+                text: bucketItem.text,
+                doneOn: bucketItem.doneOn,
+                author: user.name,
+            })
+            .from(bucketItem)
+            .leftJoin(user, eq(user.id, bucketItem.addedBy))
+            .where(eq(bucketItem.seasonId, id))
+            .orderBy(
+                sql`${bucketItem.doneOn} is not null`,
+                asc(bucketItem.doneOn),
+                asc(bucketItem.position)
+            ),
+        db
+            .select({ name: user.name })
+            .from(bucketListMember)
+            .innerJoin(user, eq(user.id, bucketListMember.userId))
+            .where(eq(bucketListMember.listId, listId)),
+    ]);
+
+    // Authors who left the list still count, so their label stays distinct.
+    const labels = initials([
+        ...members.map((m) => m.name),
+        ...rows.flatMap((row) => (row.author ? [row.author] : [])),
+    ]);
+    const items = rows.map(({ author, ...item }) => ({
+        ...item,
+        addedBy: (author && labels.get(author)) || null,
+    }));
 
     return Response.json({ ...season, items });
 }
