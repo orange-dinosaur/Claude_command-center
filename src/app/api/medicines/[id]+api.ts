@@ -68,6 +68,7 @@ export async function PATCH(
                 frequency: medicine.frequency,
                 startDate: medicine.startDate,
                 endDate: medicine.endDate,
+                createdAt: medicine.createdAt,
             });
         return updated ? Response.json(updated) : notFound();
     } catch (error) {

@@ -56,7 +56,7 @@ export function TitleForm({
     id?: string;
     /** Shown above the fields when the page has no header of its own. */
     title?: string;
-    onSaved: (id: string) => void;
+    onSaved: (saved: Title) => void;
     onDeleted: () => void;
     style?: StyleProp<ViewStyle>;
 }) {
@@ -145,7 +145,7 @@ export function TitleForm({
                 }
             );
             if (res.ok) {
-                return onSaved(id ?? ((await res.json()) as Title).id);
+                return onSaved((await res.json()) as Title);
             }
             const body = await res.json().catch(() => null);
             setError(

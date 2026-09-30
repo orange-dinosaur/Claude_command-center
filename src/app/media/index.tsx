@@ -50,7 +50,7 @@ export default function Media() {
     const router = useRouter();
     const isDesktop = useIsDesktop();
     const params = useLocalSearchParams<{ kind?: string; id?: string }>();
-    const { titles, error, reload, drop } = useTitles();
+    const { titles, error, reload, drop, put } = useTitles();
     // Open sections, keyed like "book-todo", closed until tapped.
     const [open, setOpen] = useState<Record<string, boolean>>({});
 
@@ -238,7 +238,10 @@ export default function Media() {
                                 ? TITLE_HEADERS[kind].edit
                                 : TITLE_HEADERS[kind].add
                         }
-                        onSaved={saved}
+                        onSaved={(title) => {
+                            put(title);
+                            saved(title.id);
+                        }}
                         onDeleted={() => {
                             if (params.id) drop(params.id);
                             saved();

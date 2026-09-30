@@ -4,6 +4,8 @@
  */
 
 import { apiFetch } from '@/auth/client';
+import { todayDay } from '@/dates';
+import { placeCheckup, placeMedicine } from '@/health/order';
 import { useOnFocus } from '@/hooks/use-on-focus';
 
 export interface Checkup {
@@ -18,9 +20,11 @@ export interface Medicine {
     frequency: string | null;
     startDate: string | null;
     endDate: string | null;
+    /** ISO timestamp, only for ordering. */
+    createdAt: string;
 }
 
-interface Health {
+export interface Health {
     checkups: Checkup[];
     ongoing: Medicine[];
     ended: Medicine[];
@@ -53,5 +57,13 @@ export function useHealth() {
                 : current
         );
 
-    return { health, error, reload, drop };
+    /** Shows a saved checkup or medicine in its place before the reload. */
+    const putCheckup = (saved: Checkup) =>
+        setData((current) => current && placeCheckup(current, saved));
+    const putMedicine = (saved: Medicine) =>
+        setData(
+            (current) => current && placeMedicine(current, saved, todayDay())
+        );
+
+    return { health, error, reload, drop, putCheckup, putMedicine };
 }

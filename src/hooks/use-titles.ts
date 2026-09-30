@@ -5,6 +5,7 @@
 
 import { apiFetch } from '@/auth/client';
 import { useOnFocus } from '@/hooks/use-on-focus';
+import { place } from '@/media/order';
 
 export type Kind = 'book' | 'film' | 'series';
 export type Status = 'doing' | 'todo' | 'done';
@@ -21,6 +22,8 @@ export interface Title {
     endDate: string | null;
     /** Half stars, 1 to 10. */
     rating: number | null;
+    /** ISO timestamp, only for ordering. */
+    createdAt: string;
 }
 
 export type Sections = Record<Status, Title[]>;
@@ -63,5 +66,15 @@ export function useTitles() {
             };
         });
 
-    return { titles, error, reload, drop };
+    /** Shows a saved title in its place before the reload. */
+    const put = (saved: Title) =>
+        setData(
+            (current) =>
+                current && {
+                    ...current,
+                    [saved.kind]: place(current[saved.kind], saved),
+                }
+        );
+
+    return { titles, error, reload, drop, put };
 }

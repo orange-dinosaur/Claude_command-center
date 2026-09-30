@@ -26,6 +26,7 @@ const columns = {
     frequency: medicine.frequency,
     startDate: medicine.startDate,
     endDate: medicine.endDate,
+    createdAt: medicine.createdAt,
 };
 
 const today = sql`(now() at time zone 'Europe/Rome')::date`;

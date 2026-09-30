@@ -30,6 +30,7 @@ export const titleColumns = {
     startDate: title.startDate,
     endDate: title.endDate,
     rating: title.rating,
+    createdAt: title.createdAt,
 };
 
 export const isKind = (value: unknown): value is Kind =>

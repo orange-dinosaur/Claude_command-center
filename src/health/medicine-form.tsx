@@ -18,7 +18,7 @@ export function MedicineForm({
     onSaved,
     onDeleted,
     style,
-}: HealthFormProps) {
+}: HealthFormProps<Medicine>) {
     const theme = useTheme();
     const [name, setName] = useState('');
     const [frequency, setFrequency] = useState('');
@@ -79,7 +79,7 @@ export function MedicineForm({
                     }),
                 }
             );
-            if (res.ok) return onSaved(id ?? (await res.json()).id);
+            if (res.ok) return onSaved(await res.json());
             const body = await res.json().catch(() => null);
             setError(
                 body?.error === 'End before start'

@@ -17,12 +17,12 @@ import { Spacing } from '@/constants/theme';
 import type { Checkup } from '@/hooks/use-health';
 import { useTheme } from '@/hooks/use-theme';
 
-export interface HealthFormProps {
+export interface HealthFormProps<T> {
     /** The record to edit; without it the form adds a new one. */
     id?: string;
     /** Shown above the fields when the page has no header of its own. */
     title?: string;
-    onSaved: (id: string) => void;
+    onSaved: (saved: T) => void;
     onDeleted: () => void;
     style?: StyleProp<ViewStyle>;
 }
@@ -34,7 +34,7 @@ export function CheckupForm({
     onSaved,
     onDeleted,
     style,
-}: HealthFormProps) {
+}: HealthFormProps<Checkup>) {
     const theme = useTheme();
     const [name, setName] = useState('');
     const [lastDate, setLastDate] = useState<string | null>(null);
@@ -84,7 +84,7 @@ export function CheckupForm({
                     body: JSON.stringify({ name, lastDate }),
                 }
             );
-            if (res.ok) return onSaved(id ?? (await res.json()).id);
+            if (res.ok) return onSaved(await res.json());
             setError(
                 res.status === 409
                     ? 'Esiste già una visita con questo nome.'
