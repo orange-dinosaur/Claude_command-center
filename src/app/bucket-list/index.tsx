@@ -65,6 +65,15 @@ export default function BucketList() {
         label: 'Condividi',
         onPress: () => setSharingOpen(true),
     };
+    const partner = sharing.sharing?.partner;
+    const sharedWith = partner && (
+        <ThemedText
+            type="small"
+            themeColor="textMuted"
+            style={!isDesktop && styles.sharedWith}>
+            Condivisa con {partner.name}
+        </ThemedText>
+    );
 
     const prepareButton = seasons && !hasNext && (
         <AddButton
@@ -139,6 +148,7 @@ export default function BucketList() {
                     link={shareLink}
                     header={
                         <>
+                            {sharedWith}
                             <IncomingInvites state={sharing} />
                             {prepareButton}
                         </>
@@ -169,6 +179,7 @@ export default function BucketList() {
                     backTo="/command-center"
                     link={shareLink}
                 />
+                {sharedWith}
                 <IncomingInvites state={sharing} style={styles.invites} />
                 {prepareButton}
                 {list}
@@ -181,6 +192,10 @@ export default function BucketList() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    sharedWith: {
+        paddingHorizontal: Spacing.four,
+        marginBottom: Spacing.three,
     },
     invites: {
         paddingHorizontal: Spacing.four,
