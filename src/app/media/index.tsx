@@ -145,10 +145,13 @@ export default function Media() {
                         const rows = sections[status];
                         if (rows.length === 0) return null;
                         const key = `${kind}-${status}`;
-                        const isOpen = status === 'doing' || !!open[key];
+                        const alwaysOpen =
+                            status === 'doing' ||
+                            (kind === 'film' && status === 'done');
+                        const isOpen = alwaysOpen || !!open[key];
                         return (
                             <View key={status} style={styles.section}>
-                                {status === 'doing' ? (
+                                {alwaysOpen ? (
                                     <ThemedText type="subtitle">
                                         {STATUS_LABELS[kind][status]}
                                     </ThemedText>
