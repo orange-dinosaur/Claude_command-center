@@ -9,13 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { formatDay } from '@/dates';
-import {
-    dayOf,
-    isDone,
-    shortAmount,
-    weekCount,
-    weekDays,
-} from '@/habits/stats';
+import { dayOf, isDone, weekCount, weekDays } from '@/habits/stats';
 import type { Habit } from '@/hooks/use-habits';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -37,6 +31,9 @@ export function DayCell({
     const future = day > today;
     const done = isDone(habit, day);
     const amount = dayOf(habit, day)?.amount;
+    // A partial amount fills the circle from the bottom.
+    const partial =
+        !done && amount ? Math.min(amount / habit.dailyTarget!, 1) : 0;
 
     return (
         <Pressable
@@ -44,7 +41,10 @@ export function DayCell({
             disabled={future}
             accessibilityRole={habit.mode === 'amount' ? 'button' : 'checkbox'}
             aria-checked={done}
-            accessibilityLabel={`${habit.name}, ${formatDay(day)}`}
+            accessibilityLabel={
+                `${habit.name}, ${formatDay(day)}` +
+                (amount != null ? `, ${amount} di ${habit.dailyTarget}` : '')
+            }
             style={({ pressed }) => [
                 styles.cell,
                 { borderColor: theme.markEmpty },
@@ -55,17 +55,24 @@ export function DayCell({
                 future && styles.future,
                 pressed && styles.pressed,
             ]}>
+            {partial > 0 && (
+                <View
+                    style={[
+                        styles.partial,
+                        {
+                            height: `${partial * 100}%`,
+                            backgroundColor: theme.accent,
+                        },
+                    ]}
+                />
+            )}
             <ThemedText
                 type="small"
                 style={[
                     day === today && styles.today,
                     done && { color: theme.onAccent },
                 ]}>
-                {amount != null
-                    ? shortAmount(amount)
-                    : done
-                      ? '✓'
-                      : Number(day.slice(8))}
+                {done ? '✓' : Number(day.slice(8))}
             </ThemedText>
         </Pressable>
     );
@@ -195,6 +202,14 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         alignItems: 'center',
         justifyContent: 'center',
+        overflow: 'hidden',
+    },
+    partial: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: 0.35,
     },
     future: {
         borderStyle: 'dashed',

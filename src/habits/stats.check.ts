@@ -7,7 +7,6 @@ import {
     mondayOf,
     monthDays,
     monthSummary,
-    shortAmount,
     weekCount,
     weekDays,
     type Tracked,
@@ -89,17 +88,6 @@ assert.deepEqual(historyMonths(habit('daily', []), '2027-01-05'), [
     '2026-11',
     '2026-10',
     '2026-09',
-]);
-
-// Amounts in a day cell.
-assert.deepEqual([8, 999, 1000, 1980, 2500, 12000, 100000].map(shortAmount), [
-    '8',
-    '999',
-    '1k',
-    '2k',
-    '2,5k',
-    '12k',
-    '100k',
 ]);
 
 console.log('habit stats: ok');

@@ -39,12 +39,6 @@ export function monthDays(month: string): string[] {
 export const dayOf = (habit: Tracked, day: string) =>
     habit.days.find((d) => d.date === day);
 
-/** An amount short enough for a day cell: 999, "1k", "2,5k", "100k". */
-export const shortAmount = (amount: number) =>
-    amount < 1000
-        ? String(amount)
-        : `${Number((amount / 1000).toFixed(1))}k`.replace('.', ',');
-
 export function isDone(habit: Tracked, day: string): boolean {
     const marked = dayOf(habit, day);
     if (!marked) return false;
