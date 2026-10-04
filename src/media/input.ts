@@ -54,8 +54,8 @@ export type TitleFields = Partial<
 
 /**
  * Reads the fields present in `body` for a title of `kind`. Author and format
- * and language belong to books, season to series. Returns the fields, or the error message
- * for a 400.
+ * belong to books, language to books and films, season to series. Returns the
+ * fields, or the error message for a 400.
  */
 export function parseTitleFields(
     body: Record<string, unknown>,
@@ -77,8 +77,8 @@ export function parseTitleFields(
         fields.author = author;
     }
     if ('language' in body) {
-        if (kind !== 'book' && body.language != null) {
-            return 'Only books have a language';
+        if (kind === 'series' && body.language != null) {
+            return 'Only books and films have a language';
         }
         const language = parseOptionalText(body.language);
         if (language === undefined) return 'Invalid language';

@@ -80,7 +80,7 @@ export function TitleForm({
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!id && kind !== 'book') return;
+        if (!id && kind === 'series') return;
         let cancelled = false;
         apiFetch(`/api/titles?kind=${kind}`)
             .then((res) => (res.ok ? res.json() : Promise.reject()))
@@ -147,7 +147,8 @@ export function TitleForm({
                     body: JSON.stringify({
                         ...(id ? {} : { kind }),
                         name,
-                        ...(kind === 'book' && { author, language, format }),
+                        ...(kind === 'book' && { author, format }),
+                        ...(kind !== 'series' && { language }),
                         ...(kind === 'series' && { season: seasonNumber }),
                         status,
                         startDate,
@@ -217,7 +218,7 @@ export function TitleForm({
                     placeholder="Umberto Eco"
                 />
             )}
-            {kind === 'book' && (
+            {kind !== 'series' && (
                 <Field label="Lingua">
                     <View style={styles.chips}>
                         {languages.map((l) => {
