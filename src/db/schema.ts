@@ -249,6 +249,7 @@ export const title = pgTable(
         kind: text('kind').$type<'book' | 'film' | 'series'>().notNull(),
         name: text('name').notNull(),
         author: text('author'),
+        language: text('language'),
         format: text('format').$type<
             'rigida' | 'flessibile' | 'ebook' | 'audiolibro' | 'biblioteca'
         >(),

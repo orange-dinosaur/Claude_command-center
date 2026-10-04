@@ -15,6 +15,7 @@ export interface Title {
     kind: Kind;
     name: string;
     author: string | null;
+    language: string | null;
     format: string | null;
     season: number | null;
     status: Status;

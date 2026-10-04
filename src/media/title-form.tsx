@@ -65,6 +65,10 @@ export function TitleForm({
 
     const [name, setName] = useState('');
     const [author, setAuthor] = useState('');
+    const [language, setLanguage] = useState('');
+    // Languages already used on books, offered as chips.
+    const [languages, setLanguages] = useState<string[]>([]);
+    const [newLanguage, setNewLanguage] = useState(false);
     const [format, setFormat] = useState<Format | null>(null);
     const [season, setSeason] = useState('');
     const [status, setStatus] = useState<Status>('todo');
@@ -76,20 +80,26 @@ export function TitleForm({
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!id) return;
+        if (!id && kind !== 'book') return;
         let cancelled = false;
         apiFetch(`/api/titles?kind=${kind}`)
             .then((res) => (res.ok ? res.json() : Promise.reject()))
             .then((sections: Sections) => {
                 if (cancelled) return;
-                const found = [
+                const all = [
                     ...sections.doing,
                     ...sections.todo,
                     ...sections.done,
-                ].find((t) => t.id === id);
+                ];
+                setLanguages(
+                    [...new Set(all.flatMap((t) => t.language ?? []))].sort()
+                );
+                if (!id) return;
+                const found = all.find((t) => t.id === id);
                 if (found) {
                     setName(found.name);
                     setAuthor(found.author ?? '');
+                    setLanguage(found.language ?? '');
                     setFormat(found.format as Format | null);
                     setSeason(found.season ? String(found.season) : '');
                     setStatus(found.status);
@@ -101,7 +111,9 @@ export function TitleForm({
                 }
             })
             .catch(() => {
-                if (!cancelled) setError('Non riesco a caricare il titolo.');
+                if (!cancelled && id) {
+                    setError('Non riesco a caricare il titolo.');
+                }
             })
             .finally(() => {
                 if (!cancelled) setLoading(false);
@@ -135,7 +147,7 @@ export function TitleForm({
                     body: JSON.stringify({
                         ...(id ? {} : { kind }),
                         name,
-                        ...(kind === 'book' && { author, format }),
+                        ...(kind === 'book' && { author, language, format }),
                         ...(kind === 'series' && { season: seasonNumber }),
                         status,
                         startDate,
@@ -205,6 +217,54 @@ export function TitleForm({
                     placeholder="Umberto Eco"
                 />
             )}
+            {kind === 'book' && (
+                <Field label="Lingua">
+                    <View style={styles.chips}>
+                        {languages.map((l) => {
+                            const selected = l === language;
+                            return (
+                                <Chip
+                                    key={l}
+                                    label={l}
+                                    selected={selected}
+                                    onPress={() => {
+                                        setLanguage(selected ? '' : l);
+                                        setNewLanguage(false);
+                                    }}
+                                />
+                            );
+                        })}
+                        {!newLanguage && (
+                            <Pressable
+                                onPress={() => {
+                                    setLanguage('');
+                                    setNewLanguage(true);
+                                }}
+                                accessibilityRole="button"
+                                style={[
+                                    styles.chip,
+                                    {
+                                        borderColor: theme.accent,
+                                        borderWidth: 1,
+                                    },
+                                ]}>
+                                <ThemedText style={{ color: theme.accent }}>
+                                    + Nuova lingua
+                                </ThemedText>
+                            </Pressable>
+                        )}
+                    </View>
+                    {newLanguage && (
+                        <TextField
+                            label="Nuova lingua"
+                            value={language}
+                            onChange={setLanguage}
+                            placeholder="Inglese"
+                            autoFocus
+                        />
+                    )}
+                </Field>
+            )}
             {kind === 'series' && (
                 <TextField
                     label="Stagione"
@@ -220,30 +280,14 @@ export function TitleForm({
                         {FORMATS.map((f) => {
                             const selected = f === format;
                             return (
-                                <Pressable
+                                <Chip
                                     key={f}
+                                    label={f}
+                                    selected={selected}
                                     onPress={() =>
                                         setFormat(selected ? null : f)
                                     }
-                                    accessibilityRole="button"
-                                    accessibilityState={{ selected }}
-                                    style={[
-                                        styles.chip,
-                                        {
-                                            backgroundColor: selected
-                                                ? theme.accent
-                                                : theme.backgroundElement,
-                                        },
-                                    ]}>
-                                    <ThemedText
-                                        style={
-                                            selected && {
-                                                color: theme.onAccent,
-                                            }
-                                        }>
-                                        {f}
-                                    </ThemedText>
-                                </Pressable>
+                                />
                             );
                         })}
                     </View>
@@ -283,6 +327,36 @@ export function TitleForm({
                 name={name}
             />
         </ScrollView>
+    );
+}
+
+function Chip({
+    label,
+    selected,
+    onPress,
+}: {
+    label: string;
+    selected: boolean;
+    onPress: () => void;
+}) {
+    const theme = useTheme();
+    return (
+        <Pressable
+            onPress={onPress}
+            accessibilityRole="button"
+            accessibilityState={{ selected }}
+            style={[
+                styles.chip,
+                {
+                    backgroundColor: selected
+                        ? theme.accent
+                        : theme.backgroundElement,
+                },
+            ]}>
+            <ThemedText style={selected && { color: theme.onAccent }}>
+                {label}
+            </ThemedText>
+        </Pressable>
     );
 }
 

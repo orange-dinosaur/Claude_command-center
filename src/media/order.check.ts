@@ -9,6 +9,7 @@ const t = (id: string, fields: Partial<Title> = {}): Title => ({
     kind: 'book',
     name: id,
     author: null,
+    language: null,
     format: null,
     season: null,
     status: 'todo',

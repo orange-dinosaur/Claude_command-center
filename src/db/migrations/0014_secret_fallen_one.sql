@@ -1,0 +1,1 @@
+ALTER TABLE "title" ADD COLUMN "language" text;

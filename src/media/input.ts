@@ -24,6 +24,7 @@ export const titleColumns = {
     kind: title.kind,
     name: title.name,
     author: title.author,
+    language: title.language,
     format: title.format,
     season: title.season,
     status: title.status,
@@ -41,6 +42,7 @@ export type TitleFields = Partial<
         Title,
         | 'name'
         | 'author'
+        | 'language'
         | 'format'
         | 'season'
         | 'status'
@@ -52,7 +54,7 @@ export type TitleFields = Partial<
 
 /**
  * Reads the fields present in `body` for a title of `kind`. Author and format
- * belong to books, season to series. Returns the fields, or the error message
+ * and language belong to books, season to series. Returns the fields, or the error message
  * for a 400.
  */
 export function parseTitleFields(
@@ -73,6 +75,14 @@ export function parseTitleFields(
         const author = parseOptionalText(body.author);
         if (author === undefined) return 'Invalid author';
         fields.author = author;
+    }
+    if ('language' in body) {
+        if (kind !== 'book' && body.language != null) {
+            return 'Only books have a language';
+        }
+        const language = parseOptionalText(body.language);
+        if (language === undefined) return 'Invalid language';
+        fields.language = language;
     }
     if ('format' in body) {
         if (kind !== 'book' && body.format != null) {

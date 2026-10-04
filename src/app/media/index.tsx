@@ -284,9 +284,11 @@ function TitleRow({
                         ? `${title.name} · Stagione ${title.season}`
                         : title.name}
                 </ThemedText>
-                {title.author && (
+                {(title.author || title.language) && (
                     <Secondary selected={selected} small>
-                        {title.author}
+                        {[title.author, title.language]
+                            .filter(Boolean)
+                            .join(' · ')}
                     </Secondary>
                 )}
             </View>
