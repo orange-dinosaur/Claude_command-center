@@ -26,6 +26,7 @@ import { Spacing } from '@/constants/theme';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
 import { useTitles, type Kind, type Title } from '@/hooks/use-titles';
+import { EpisodeDots } from '@/media/episode-dots';
 import { STATUS_LABELS } from '@/media/labels';
 import { TITLE_HEADERS, TitleForm, isKind } from '@/media/title-form';
 
@@ -50,7 +51,7 @@ export default function Media() {
     const router = useRouter();
     const isDesktop = useIsDesktop();
     const params = useLocalSearchParams<{ kind?: string; id?: string }>();
-    const { titles, error, reload, drop, put } = useTitles();
+    const { titles, error, reload, drop, put, watch } = useTitles();
     // Open sections, keyed like "book-todo", closed until tapped.
     const [open, setOpen] = useState<Record<string, boolean>>({});
 
@@ -207,6 +208,7 @@ export default function Media() {
                                             title={t}
                                             selected={t.id === params.id}
                                             onPress={() => select(t.id)}
+                                            onWatch={watch}
                                         />
                                     ))}
                             </View>
@@ -271,10 +273,12 @@ function TitleRow({
     title,
     selected,
     onPress,
+    onWatch,
 }: {
     title: Title;
     selected: boolean;
     onPress: () => void;
+    onWatch: (title: Title, episode: number) => void;
 }) {
     return (
         <ListRow selected={selected} onPress={onPress}>
@@ -290,6 +294,14 @@ function TitleRow({
                             .filter(Boolean)
                             .join(' · ')}
                     </Secondary>
+                )}
+                {title.status === 'doing' && title.episodes && (
+                    <EpisodeDots
+                        episodes={title.episodes}
+                        watched={title.watched}
+                        onAccent={selected}
+                        onPress={(episode) => onWatch(title, episode)}
+                    />
                 )}
             </View>
             {title.rating !== null && (
