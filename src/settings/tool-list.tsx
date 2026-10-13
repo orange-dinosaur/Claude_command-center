@@ -1,6 +1,6 @@
 import { SymbolView } from 'expo-symbols';
 import { useLayoutEffect, useState } from 'react';
-import { Platform, StyleSheet, Switch, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
     useAnimatedStyle,
@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
+import { Switch } from '@/components/switch';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -207,7 +208,6 @@ function Row({
                 value={!tool.hidden}
                 onValueChange={(visible) => onToggle(tool.key, visible)}
                 accessibilityLabel={tool.title}
-                trackColor={{ false: theme.border, true: theme.accent }}
             />
         </Animated.View>
     );

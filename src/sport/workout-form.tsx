@@ -4,7 +4,6 @@ import {
     Pressable,
     ScrollView,
     StyleSheet,
-    Switch,
     View,
     type StyleProp,
     type ViewStyle,
@@ -13,6 +12,7 @@ import {
 import { apiFetch } from '@/auth/client';
 import { DateField } from '@/components/date-field';
 import { FormActions } from '@/components/form-actions';
+import { Switch } from '@/components/switch';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
@@ -236,7 +236,6 @@ export function WorkoutForm({
                         value={lesson}
                         onValueChange={setLesson}
                         accessibilityLabel="Lezione del pacchetto"
-                        trackColor={{ false: theme.border, true: theme.accent }}
                     />
                 </View>
             )}
