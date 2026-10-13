@@ -9,6 +9,7 @@ import { ThemedView } from '@/components/themed-view';
 import { ToolButton } from '@/components/tool-button';
 import { Spacing } from '@/constants/theme';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
+import { arrange } from '@/tools';
 
 export default function CommandCenter() {
     // The auth guard sees the session end and replaces this screen with login.
@@ -22,87 +23,16 @@ export default function CommandCenter() {
             <SafeAreaView style={styles.container}>
                 <ScreenHeader title="Command center" backTo="/" />
                 <View style={styles.grid}>
-                    <ToolButton
-                        title="Monthly closeout"
-                        href="/monthly-closeout"
-                        icon={{
-                            ios: 'calendar',
-                            android: 'calendar_month',
-                            web: 'calendar_month',
-                        }}
-                    />
-                    <ToolButton
-                        title="Salute"
-                        href="/salute"
-                        icon={{
-                            ios: 'heart.text.square',
-                            android: 'monitor_heart',
-                            web: 'monitor_heart',
-                        }}
-                    />
-                    <ToolButton
-                        title="Media"
-                        href="/media"
-                        icon={{
-                            ios: 'books.vertical',
-                            android: 'local_library',
-                            web: 'local_library',
-                        }}
-                    />
-                    <ToolButton
-                        title="Creatività"
-                        href="/creativita"
-                        icon={{
-                            ios: 'paintpalette',
-                            android: 'palette',
-                            web: 'palette',
-                        }}
-                    />
-                    <ToolButton
-                        title="Sport"
-                        href="/sport"
-                        icon={{
-                            ios: 'figure.run',
-                            android: 'directions_run',
-                            web: 'directions_run',
-                        }}
-                    />
-                    <ToolButton
-                        title="Abitudini"
-                        href="/abitudini"
-                        icon={{
-                            ios: 'checkmark.circle',
-                            android: 'check_circle',
-                            web: 'check_circle',
-                        }}
-                    />
-                    <ToolButton
-                        title="Bucket list"
-                        href="/bucket-list"
-                        icon={{
-                            ios: 'sun.max',
-                            android: 'wb_sunny',
-                            web: 'wb_sunny',
-                        }}
-                    />
-                    <ToolButton
-                        title="Brain dump"
-                        href="/brain-dump"
-                        icon={{
-                            ios: 'brain',
-                            android: 'psychology',
-                            web: 'psychology',
-                        }}
-                    />
-                    <ToolButton
-                        title="Glimmers"
-                        href="/glimmers"
-                        icon={{
-                            ios: 'sparkles',
-                            android: 'auto_awesome',
-                            web: 'auto_awesome',
-                        }}
-                    />
+                    {arrange(null)
+                        .filter((tool) => !tool.hidden)
+                        .map((tool) => (
+                            <ToolButton
+                                key={tool.key}
+                                title={tool.title}
+                                href={tool.href}
+                                icon={tool.icon}
+                            />
+                        ))}
                 </View>
                 <View style={styles.spacer} />
                 <Pressable

@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { Link, usePathname, type Href } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
+import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import {
     Pressable,
     StyleSheet,
@@ -15,57 +15,20 @@ import { authClient } from '@/auth/client';
 import { Spacing } from '@/constants/theme';
 import { setColorScheme, useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
+import { arrange } from '@/tools';
 
 // react-native-web passes `hovered` to the style callback; the types omit it.
 type State = PressableStateCallbackType & { hovered?: boolean };
 
-// The rail renders on desktop web only, so the icons need only web names.
-const items: { label: string; title: string; href: Href; icon: string }[] = [
-    { label: 'Home', title: 'Home', href: '/', icon: 'home' },
-    {
-        label: 'Closeout',
-        title: 'Monthly closeout',
-        href: '/monthly-closeout',
-        icon: 'calendar_month',
-    },
-    {
-        label: 'Salute',
-        title: 'Salute',
-        href: '/salute',
-        icon: 'monitor_heart',
-    },
-    { label: 'Media', title: 'Media', href: '/media', icon: 'local_library' },
-    {
-        label: 'Creatività',
-        title: 'Creatività',
-        href: '/creativita',
-        icon: 'palette',
-    },
-    { label: 'Sport', title: 'Sport', href: '/sport', icon: 'directions_run' },
-    {
-        label: 'Abitudini',
-        title: 'Abitudini',
-        href: '/abitudini',
-        icon: 'check_circle',
-    },
-    {
-        label: 'Bucket list',
-        title: 'Bucket list',
-        href: '/bucket-list',
-        icon: 'wb_sunny',
-    },
-    {
-        label: 'Brain dump',
-        title: 'Brain dump',
-        href: '/brain-dump',
-        icon: 'psychology',
-    },
-    {
-        label: 'Glimmers',
-        title: 'Glimmers',
-        href: '/glimmers',
-        icon: 'auto_awesome',
-    },
+// Home is not a tool, so it stays first. The rail is web only, so Home needs only a web icon.
+const items: {
+    label: string;
+    title: string;
+    href: Href;
+    icon: SymbolViewProps['name'];
+}[] = [
+    { label: 'Home', title: 'Home', href: '/', icon: { web: 'home' } },
+    ...arrange(null).filter((tool) => !tool.hidden),
 ];
 
 // react-native-web drops the `title` prop, so the tooltip goes on the DOM node.
@@ -108,7 +71,7 @@ export function Rail() {
                                             pressed && styles.pressed,
                                         ]}>
                                         <SymbolView
-                                            name={{ web: item.icon as never }}
+                                            name={item.icon}
                                             tintColor={color}
                                             size={24}
                                         />
