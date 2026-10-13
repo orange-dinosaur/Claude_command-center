@@ -2,11 +2,40 @@
  * Shared pieces of the sport API. Server only: it imports the database schema.
  */
 
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 import { db } from '@/db';
-import { workout, workoutType } from '@/db/schema';
+import { lessonActivity, lessonPack, workout, workoutType } from '@/db/schema';
 import { parseDate, parseOptionalText } from '@/http';
+
+/**
+ * The user's lesson activities, or just `id`, by type name. The balance is
+ * every lesson paid minus every workout of the type marked as a lesson.
+ */
+export function lessonActivities(userId: string, id?: string) {
+    return db
+        .select({
+            id: lessonActivity.id,
+            typeId: lessonActivity.typeId,
+            typeName: workoutType.name,
+            archived: sql<boolean>`${lessonActivity.archivedAt} is not null`,
+            balance: sql<number>`
+                coalesce((select sum(${lessonPack.lessons}) from ${lessonPack}
+                    where ${lessonPack.activityId} = ${lessonActivity.id}), 0)
+                - (select count(*) from ${workout}
+                    where ${workout.typeId} = ${lessonActivity.typeId}
+                    and ${workout.lesson})`.mapWith(Number),
+        })
+        .from(lessonActivity)
+        .innerJoin(workoutType, eq(workoutType.id, lessonActivity.typeId))
+        .where(
+            and(
+                eq(lessonActivity.userId, userId),
+                id ? eq(lessonActivity.id, id) : undefined
+            )
+        )
+        .orderBy(sql`lower(${workoutType.name})`);
+}
 
 export const workoutTypeColumns = {
     id: workoutType.id,
