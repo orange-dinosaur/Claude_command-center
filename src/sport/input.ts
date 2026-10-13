@@ -2,7 +2,7 @@
  * Shared pieces of the sport API. Server only: it imports the database schema.
  */
 
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 
 import { db } from '@/db';
 import { lessonActivity, lessonPack, workout, workoutType } from '@/db/schema';
@@ -37,6 +37,47 @@ export function lessonActivities(userId: string, id?: string) {
         .orderBy(sql`lower(${workoutType.name})`);
 }
 
+export const packColumns = {
+    id: lessonPack.id,
+    lessons: lessonPack.lessons,
+    paidOn: lessonPack.paidOn,
+    amountCents: lessonPack.amountCents,
+    createdAt: lessonPack.createdAt,
+};
+
+export type PackFields = Partial<
+    Pick<typeof lessonPack.$inferInsert, 'lessons' | 'paidOn' | 'amountCents'>
+>;
+
+const isIntBetween = (value: unknown, min: number, max: number) =>
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= min &&
+    value <= max;
+
+/** Reads the pack fields present in `body`, or returns the 400 message. */
+export function parsePackFields(
+    body: Record<string, unknown>
+): PackFields | string {
+    const fields: PackFields = {};
+    if ('lessons' in body) {
+        if (!isIntBetween(body.lessons, 1, 100)) return 'Invalid lessons';
+        fields.lessons = body.lessons as number;
+    }
+    if ('paidOn' in body) {
+        const paidOn = parseDate(body.paidOn);
+        if (!paidOn) return 'Invalid date';
+        fields.paidOn = paidOn;
+    }
+    if ('amountCents' in body) {
+        if (!isIntBetween(body.amountCents, 0, 10_000_000)) {
+            return 'Invalid amount';
+        }
+        fields.amountCents = body.amountCents as number;
+    }
+    return fields;
+}
+
 export const workoutTypeColumns = {
     id: workoutType.id,
     name: workoutType.name,
@@ -49,12 +90,30 @@ export const workoutColumns = {
     date: workout.date,
     minutes: workout.minutes,
     note: workout.note,
+    lesson: workout.lesson,
     createdAt: workout.createdAt,
 };
 
 export type WorkoutFields = Partial<
-    Pick<typeof workout.$inferInsert, 'typeId' | 'date' | 'minutes' | 'note'>
+    Pick<
+        typeof workout.$inferInsert,
+        'typeId' | 'date' | 'minutes' | 'note' | 'lesson'
+    >
 >;
+
+/** Whether workouts of this type can be marked as lessons. */
+export async function hasOpenActivity(typeId: string): Promise<boolean> {
+    const [activity] = await db
+        .select({ id: lessonActivity.id })
+        .from(lessonActivity)
+        .where(
+            and(
+                eq(lessonActivity.typeId, typeId),
+                isNull(lessonActivity.archivedAt)
+            )
+        );
+    return !!activity;
+}
 
 /**
  * Reads the fields present in `body`. The type must belong to `userId`.
@@ -100,6 +159,10 @@ export async function parseWorkoutFields(
         const note = parseOptionalText(body.note);
         if (note === undefined) return 'Invalid note';
         fields.note = note;
+    }
+    if ('lesson' in body) {
+        if (typeof body.lesson !== 'boolean') return 'Invalid lesson';
+        fields.lesson = body.lesson;
     }
 
     return fields;

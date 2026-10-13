@@ -11,7 +11,7 @@ import { getSessionUser, unauthorized } from '@/auth/session';
 import { db } from '@/db';
 import { lessonActivity, lessonPack, workout } from '@/db/schema';
 import { badRequest, notFound, readBody } from '@/http';
-import { lessonActivities } from '@/sport/input';
+import { lessonActivities, packColumns } from '@/sport/input';
 
 export async function GET(
     request: Request,
@@ -24,13 +24,7 @@ export async function GET(
     if (!activity) return notFound();
 
     const packs = await db
-        .select({
-            id: lessonPack.id,
-            lessons: lessonPack.lessons,
-            paidOn: lessonPack.paidOn,
-            amountCents: lessonPack.amountCents,
-            createdAt: lessonPack.createdAt,
-        })
+        .select(packColumns)
         .from(lessonPack)
         .where(eq(lessonPack.activityId, id))
         .orderBy(desc(lessonPack.paidOn), desc(lessonPack.createdAt));

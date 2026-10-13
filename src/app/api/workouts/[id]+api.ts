@@ -9,7 +9,11 @@ import { getSessionUser, unauthorized } from '@/auth/session';
 import { db } from '@/db';
 import { workout } from '@/db/schema';
 import { badRequest, notFound, readBody } from '@/http';
-import { parseWorkoutFields, workoutColumns } from '@/sport/input';
+import {
+    hasOpenActivity,
+    parseWorkoutFields,
+    workoutColumns,
+} from '@/sport/input';
 
 const owned = (id: string, userId: string) =>
     and(eq(workout.id, id), eq(workout.userId, userId));
@@ -28,6 +32,24 @@ export async function PATCH(
     if (typeof changes === 'string') return badRequest(changes);
     if (Object.keys(changes).length === 0)
         return badRequest('Nothing to change');
+
+    // A lesson needs an open activity when it becomes one or changes type, not
+    // when an old lesson of an archived activity gets a new note.
+    if (changes.lesson !== false && (changes.lesson || changes.typeId)) {
+        const [current] = await db
+            .select({ typeId: workout.typeId, lesson: workout.lesson })
+            .from(workout)
+            .where(owned(id, account.id));
+        if (!current) return notFound();
+        const next = { ...current, ...changes };
+        if (
+            next.lesson &&
+            (!current.lesson || next.typeId !== current.typeId) &&
+            !(await hasOpenActivity(next.typeId))
+        ) {
+            return badRequest('Type has no lesson activity');
+        }
+    }
 
     const [updated] = await db
         .update(workout)

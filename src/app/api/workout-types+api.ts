@@ -1,6 +1,6 @@
 /**
  * The signed-in user's workout types. `GET` lists them by name, each with how
- * many workouts use it. `POST` adds one; a name already in use, in any case,
+ * many workouts use it and its lesson activity, if any. `POST` adds one; a name already in use, in any case,
  * is 409.
  */
 
@@ -8,7 +8,7 @@ import { count, eq, sql } from 'drizzle-orm';
 
 import { getSessionUser, unauthorized } from '@/auth/session';
 import { db } from '@/db';
-import { workout, workoutType } from '@/db/schema';
+import { lessonActivity, workout, workoutType } from '@/db/schema';
 import {
     badRequest,
     conflict,
@@ -23,15 +23,28 @@ export async function GET(request: Request): Promise<Response> {
     const account = await getSessionUser(request);
     if (!account) return unauthorized();
 
-    const types = await db
-        .select({ ...workoutTypeColumns, workouts: count(workout.id) })
+    const rows = await db
+        .select({
+            ...workoutTypeColumns,
+            workouts: count(workout.id),
+            activityId: lessonActivity.id,
+            archivedAt: lessonActivity.archivedAt,
+        })
         .from(workoutType)
         .leftJoin(workout, eq(workout.typeId, workoutType.id))
+        .leftJoin(lessonActivity, eq(lessonActivity.typeId, workoutType.id))
         .where(eq(workoutType.userId, account.id))
-        .groupBy(workoutType.id)
+        .groupBy(workoutType.id, lessonActivity.id)
         .orderBy(sql`lower(${workoutType.name})`);
 
-    return Response.json(types);
+    return Response.json(
+        rows.map(({ activityId, archivedAt, ...type }) => ({
+            ...type,
+            activity: activityId
+                ? { id: activityId, archived: archivedAt !== null }
+                : null,
+        }))
+    );
 }
 
 export async function POST(request: Request): Promise<Response> {

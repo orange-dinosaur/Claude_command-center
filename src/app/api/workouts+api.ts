@@ -9,7 +9,11 @@ import { getSessionUser, unauthorized } from '@/auth/session';
 import { db } from '@/db';
 import { workout, workoutType } from '@/db/schema';
 import { badRequest, readBody } from '@/http';
-import { parseWorkoutFields, workoutColumns } from '@/sport/input';
+import {
+    hasOpenActivity,
+    parseWorkoutFields,
+    workoutColumns,
+} from '@/sport/input';
 
 export async function GET(request: Request): Promise<Response> {
     const account = await getSessionUser(request);
@@ -38,6 +42,9 @@ export async function POST(request: Request): Promise<Response> {
     const { typeId, date } = fields;
     if (typeId === undefined) return badRequest('Invalid type');
     if (date === undefined) return badRequest('Invalid date');
+    if (fields.lesson && !(await hasOpenActivity(typeId))) {
+        return badRequest('Type has no lesson activity');
+    }
 
     const [created] = await db
         .insert(workout)
