@@ -30,13 +30,18 @@ const COLORS = {
 
 // left and top in percent of the band, size in px, duration and delay in ms.
 const STARS = [
-    { left: 62, top: 18, size: 18, duration: 2600, delay: 0 },
-    { left: 80, top: 40, size: 11, duration: 3400, delay: 900 },
-    { left: 90, top: 14, size: 14, duration: 3000, delay: 400 },
-    { left: 48, top: 52, size: 9, duration: 3800, delay: 1500 },
-    { left: 72, top: 70, size: 13, duration: 2900, delay: 2100 },
-    { left: 34, top: 12, size: 10, duration: 3600, delay: 1200 },
-    { left: 94, top: 62, size: 8, duration: 3200, delay: 600 },
+    { left: 62, top: 18, size: 26, duration: 2600, delay: 0 },
+    { left: 80, top: 40, size: 16, duration: 3400, delay: 900 },
+    { left: 90, top: 12, size: 20, duration: 3000, delay: 400 },
+    { left: 50, top: 50, size: 13, duration: 3800, delay: 1500 },
+    { left: 72, top: 68, size: 18, duration: 2900, delay: 2100 },
+    { left: 34, top: 10, size: 14, duration: 3600, delay: 1200 },
+    { left: 93, top: 60, size: 12, duration: 3200, delay: 600 },
+    { left: 18, top: 6, size: 12, duration: 3300, delay: 1800 },
+    { left: 47, top: 22, size: 16, duration: 2800, delay: 300 },
+    { left: 84, top: 84, size: 14, duration: 3500, delay: 1100 },
+    { left: 60, top: 82, size: 11, duration: 3100, delay: 2400 },
+    { left: 76, top: 6, size: 13, duration: 3700, delay: 700 },
 ];
 
 /** Put first inside the page container, before the content. */
@@ -69,7 +74,7 @@ function Star({
     color,
 }: (typeof STARS)[number] & { color: string }) {
     const still = useReducedMotion();
-    const opacity = useSharedValue(still ? 0.7 : 0.15);
+    const opacity = useSharedValue(still ? 0.8 : 0.35);
 
     useEffect(() => {
         if (still) return;
@@ -108,7 +113,7 @@ function Star({
 
 const styles = StyleSheet.create({
     band: {
-        height: 160,
+        height: 170,
     },
     star: {
         position: 'absolute',
