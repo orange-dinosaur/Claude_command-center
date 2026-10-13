@@ -90,7 +90,10 @@ export function useTitles() {
     // order.
     const pending = useRef(new Map<string, Promise<unknown>>());
 
-    /** Marks episodes watched up to `episode`, as a tap on its dot does. */
+    /**
+     * Marks episodes watched up to `episode`, as a tap on its dot does.
+     * Resolves to whether the server saved it.
+     */
     const watch = async (title: Title, episode: number) => {
         const changes = tapEpisode(title, episode, todayDay());
         setError(null);
@@ -110,9 +113,11 @@ export function useTitles() {
         pending.current.set(title.id, request);
         try {
             await request;
+            return true;
         } catch {
             put(title);
             setError('Non riesco a salvare l’episodio.');
+            return false;
         }
     };
 

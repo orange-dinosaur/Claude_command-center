@@ -54,6 +54,13 @@ export default function Media() {
     const { titles, error, reload, drop, put, watch } = useTitles();
     // Open sections, keyed like "book-todo", closed until tapped.
     const [open, setOpen] = useState<Record<string, boolean>>({});
+    // Bumped when a dot tap on the open title is saved, so its form reloads.
+    const [formVersion, setFormVersion] = useState(0);
+    const watchEpisode = async (t: Title, episode: number) => {
+        if ((await watch(t, episode)) && t.id === params.id) {
+            setFormVersion((v) => v + 1);
+        }
+    };
 
     const kind: Kind = isKind(params.kind) ? params.kind : 'book';
     const tab = TABS.find((t) => KIND[t] === kind) ?? 'Libri';
@@ -208,7 +215,7 @@ export default function Media() {
                                             title={t}
                                             selected={t.id === params.id}
                                             onPress={() => select(t.id)}
-                                            onWatch={watch}
+                                            onWatch={watchEpisode}
                                         />
                                     ))}
                             </View>
@@ -235,7 +242,7 @@ export default function Media() {
                 <View style={styles.grow}>
                     {/* The key starts a fresh form whenever the selection changes. */}
                     <TitleForm
-                        key={`${kind}-${params.id ?? 'new'}`}
+                        key={`${kind}-${params.id ?? 'new'}-${formVersion}`}
                         kind={kind}
                         id={params.id}
                         title={
