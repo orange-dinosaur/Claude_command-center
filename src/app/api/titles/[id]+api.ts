@@ -15,7 +15,7 @@ import {
     pgCode,
     readBody,
 } from '@/http';
-import { parseTitleFields, titleColumns } from '@/media/input';
+import { fitWatched, parseTitleFields, titleColumns } from '@/media/input';
 
 const owned = (id: string, userId: string) =>
     and(eq(title.id, id), eq(title.userId, userId));
@@ -33,13 +33,19 @@ export async function PATCH(
 
     // The kind decides which fields are allowed.
     const [existing] = await db
-        .select({ kind: title.kind })
+        .select({
+            kind: title.kind,
+            episodes: title.episodes,
+            watched: title.watched,
+        })
         .from(title)
         .where(owned(id, account.id));
     if (!existing) return notFound();
 
     const changes = parseTitleFields(body, existing.kind);
     if (typeof changes === 'string') return badRequest(changes);
+    const unfit = fitWatched(changes, existing);
+    if (unfit) return badRequest(unfit);
     if (Object.keys(changes).length === 0)
         return badRequest('Nothing to change');
 

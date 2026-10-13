@@ -27,6 +27,8 @@ export const titleColumns = {
     language: title.language,
     format: title.format,
     season: title.season,
+    episodes: title.episodes,
+    watched: title.watched,
     status: title.status,
     startDate: title.startDate,
     endDate: title.endDate,
@@ -45,6 +47,8 @@ export type TitleFields = Partial<
         | 'language'
         | 'format'
         | 'season'
+        | 'episodes'
+        | 'watched'
         | 'status'
         | 'startDate'
         | 'endDate'
@@ -110,6 +114,25 @@ export function parseTitleFields(
             fields.season = season;
         }
     }
+    if ('episodes' in body) {
+        const episodes = body.episodes;
+        if (kind !== 'series') {
+            if (episodes != null) return 'Only series have episodes';
+        } else if (episodes !== null && !isCount(episodes, 1)) {
+            return 'Invalid episodes';
+        } else {
+            fields.episodes = episodes;
+        }
+    }
+    if ('watched' in body) {
+        if (kind !== 'series') {
+            if (body.watched != null) return 'Only series have episodes';
+        } else if (!isCount(body.watched, 0)) {
+            return 'Invalid watched';
+        } else {
+            fields.watched = body.watched;
+        }
+    }
     if ('status' in body) {
         const status = body.status as Title['status'];
         if (!STATUSES.includes(status)) return 'Invalid status';
@@ -137,4 +160,29 @@ export function parseTitleFields(
     }
 
     return fields;
+}
+
+const isCount = (value: unknown, min: number): value is number =>
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= min &&
+    value <= 999;
+
+/**
+ * Keeps episodes watched within the season's episodes once `fields` apply to
+ * `current`. A watched count above them is an error; fewer episodes bring the
+ * stored count down. Returns the error message for a 400.
+ */
+export function fitWatched(
+    fields: TitleFields,
+    current: Pick<Title, 'episodes' | 'watched'>
+): string | undefined {
+    const episodes =
+        fields.episodes !== undefined ? fields.episodes : current.episodes;
+    const limit = episodes ?? 0;
+    if (fields.watched !== undefined) {
+        if (fields.watched > limit) return 'Watched above episodes';
+    } else if (current.watched > limit) {
+        fields.watched = limit;
+    }
 }

@@ -10,7 +10,12 @@ import { getSessionUser, unauthorized } from '@/auth/session';
 import { db } from '@/db';
 import { title } from '@/db/schema';
 import { badRequest, CHECK_VIOLATION, pgCode, readBody } from '@/http';
-import { isKind, parseTitleFields, titleColumns } from '@/media/input';
+import {
+    fitWatched,
+    isKind,
+    parseTitleFields,
+    titleColumns,
+} from '@/media/input';
 
 export async function GET(request: Request): Promise<Response> {
     const account = await getSessionUser(request);
@@ -60,6 +65,8 @@ export async function POST(request: Request): Promise<Response> {
     if (body.kind === 'series' && fields.season === undefined) {
         return badRequest('Invalid season');
     }
+    const unfit = fitWatched(fields, { episodes: null, watched: 0 });
+    if (unfit) return badRequest(unfit);
 
     try {
         const [created] = await db

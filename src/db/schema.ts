@@ -239,7 +239,7 @@ export const medicine = pgTable(
 
 /**
  * A book, a film, or one season of a series. Author and format apply only to
- * books, season only to series; the API enforces that.
+ * books, season, episodes and watched only to series; the API enforces that.
  */
 export const title = pgTable(
     'title',
@@ -256,6 +256,9 @@ export const title = pgTable(
             'rigida' | 'flessibile' | 'ebook' | 'audiolibro' | 'biblioteca'
         >(),
         season: integer('season'),
+        episodes: integer('episodes'),
+        /** Episodes watched, counted from the first. */
+        watched: integer('watched').default(0).notNull(),
         status: text('status')
             .$type<'todo' | 'doing' | 'done'>()
             .default('todo')
