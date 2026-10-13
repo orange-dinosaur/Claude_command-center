@@ -35,6 +35,14 @@ export default function LessonActivityPage() {
                             ? router.back()
                             : router.replace('/sport/pagamenti')
                     }
+                    onLesson={(typeId, workoutId) =>
+                        router.push({
+                            pathname: '/sport/allenamento',
+                            params: workoutId
+                                ? { id: workoutId }
+                                : { tipo: typeId, lezione: '1' },
+                        })
+                    }
                 />
             </SafeAreaView>
         </ThemedView>

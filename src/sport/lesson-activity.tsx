@@ -28,6 +28,7 @@ export function LessonActivityView({
     id,
     header,
     onGone,
+    onLesson,
     style,
 }: {
     id: string;
@@ -35,6 +36,8 @@ export function LessonActivityView({
     header: (title: string) => ReactNode;
     /** Called after the activity is deleted. */
     onGone: () => void;
+    /** Opens the workout form for a new lesson, or for `workoutId`. */
+    onLesson: (typeId: string, workoutId?: string) => void;
     style?: StyleProp<ViewStyle>;
 }) {
     const theme = useTheme();
@@ -140,10 +143,18 @@ export function LessonActivityView({
                     )}
                 </View>
 
-                <AddButton
-                    label="Nuovo pacchetto"
-                    onPress={() => setPackSheet({})}
-                />
+                <View style={styles.buttons}>
+                    {!activity.archived && (
+                        <AddButton
+                            label="Ho fatto una lezione"
+                            onPress={() => onLesson(activity.typeId)}
+                        />
+                    )}
+                    <AddButton
+                        label="Nuovo pacchetto"
+                        onPress={() => setPackSheet({})}
+                    />
+                </View>
 
                 {(error ?? actionError) && (
                     <ThemedText type="small" themeColor="danger">
@@ -164,17 +175,11 @@ export function LessonActivityView({
                                 <ThemedText>{text}</ThemedText>
                             </ListRow>
                         ) : (
-                            <View
+                            <ListRow
                                 key={key}
-                                style={[
-                                    styles.row,
-                                    {
-                                        backgroundColor:
-                                            theme.backgroundElement,
-                                    },
-                                ]}>
+                                onPress={() => onLesson(activity.typeId, key)}>
                                 <ThemedText>{text}</ThemedText>
-                            </View>
+                            </ListRow>
                         )
                     )
                 )}
@@ -254,10 +259,9 @@ const styles = StyleSheet.create({
         gap: Spacing.one,
         paddingBottom: Spacing.three,
     },
-    row: {
-        paddingHorizontal: Spacing.three,
-        paddingVertical: Spacing.three,
-        borderRadius: 14,
+    buttons: {
+        gap: Spacing.two,
+        paddingBottom: Spacing.two,
     },
     actions: {
         flexDirection: 'row',

@@ -28,6 +28,8 @@ import { useTheme } from '@/hooks/use-theme';
 export function WorkoutForm({
     id,
     initialDate,
+    initialTypeId,
+    initialLesson = false,
     title,
     onSaved,
     onDeleted,
@@ -37,6 +39,9 @@ export function WorkoutForm({
     id?: string;
     /** A new workout's day, from a link; anything but `YYYY-MM-DD` means today. */
     initialDate?: string;
+    /** A new workout's type and lesson mark, from "Ho fatto una lezione". */
+    initialTypeId?: string;
+    initialLesson?: boolean;
     /** Shown above the fields when the page has no header of its own. */
     title?: string;
     onSaved: (saved: Workout) => void;
@@ -45,7 +50,7 @@ export function WorkoutForm({
 }) {
     const theme = useTheme();
     const { types, setTypes, error: typesError } = useWorkoutTypes();
-    const [typeId, setTypeId] = useState<string | null>(null);
+    const [typeId, setTypeId] = useState<string | null>(initialTypeId ?? null);
     const [date, setDate] = useState(
         initialDate && /^\d{4}-\d{2}-\d{2}$/.test(initialDate)
             ? initialDate
@@ -53,7 +58,7 @@ export function WorkoutForm({
     );
     const [minutes, setMinutes] = useState('');
     const [note, setNote] = useState('');
-    const [lesson, setLesson] = useState(false);
+    const [lesson, setLesson] = useState(initialLesson);
     // The saved type, so an edit that keeps it leaves the lesson mark alone.
     const [savedTypeId, setSavedTypeId] = useState<string | null>(null);
     const [loading, setLoading] = useState(Boolean(id));

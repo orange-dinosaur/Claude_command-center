@@ -9,12 +9,17 @@ import { WorkoutForm } from '@/sport/workout-form';
 
 /**
  * Records a workout, on the day in `?data=` if there is one, or edits the one
- * in `?id=`.
+ * in `?id=`. `?tipo=` and `?lezione=1` start a lesson of that type.
  */
 export default function WorkoutPage() {
     const router = useRouter();
     const isDesktop = useIsDesktop();
-    const { id, data } = useLocalSearchParams<{ id?: string; data?: string }>();
+    const { id, data, tipo, lezione } = useLocalSearchParams<{
+        id?: string;
+        data?: string;
+        tipo?: string;
+        lezione?: string;
+    }>();
 
     // On desktop the form lives in the panel beside the list.
     if (isDesktop) {
@@ -35,12 +40,20 @@ export default function WorkoutPage() {
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.container}>
                 <ScreenHeader
-                    title={id ? 'Allenamento' : 'Nuovo allenamento'}
+                    title={
+                        id
+                            ? 'Allenamento'
+                            : lezione
+                              ? 'Nuova lezione'
+                              : 'Nuovo allenamento'
+                    }
                     backTo="/sport"
                 />
                 <WorkoutForm
                     id={id}
                     initialDate={data}
+                    initialTypeId={tipo}
+                    initialLesson={!!lezione}
                     onSaved={backToList}
                     onDeleted={backToList}
                 />

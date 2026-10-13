@@ -41,6 +41,10 @@ export default function Sport() {
         data?: string;
         /** `1` for the list, otherwise the id of an open activity. */
         pagamenti?: string;
+        /** The activity a lesson form was opened from, to go back to it. */
+        lezione?: string;
+        /** A new lesson's type. */
+        tipo?: string;
     }>();
     const { workouts, error, reload, drop, put } = useWorkouts();
     const today = todayDay();
@@ -68,6 +72,8 @@ export default function Sport() {
                 tipi: undefined,
                 data: undefined,
                 pagamenti: undefined,
+                lezione: undefined,
+                tipo: undefined,
             });
         } else {
             router.push({
@@ -80,7 +86,25 @@ export default function Sport() {
     // Desktop only: `1` shows the activities in the panel, an id one activity,
     // nothing goes back to the workout form.
     const openPayments = (pagamenti?: string) =>
-        router.setParams({ pagamenti, tipi: undefined, id: undefined });
+        router.setParams({
+            pagamenti,
+            tipi: undefined,
+            id: undefined,
+            lezione: undefined,
+            tipo: undefined,
+        });
+
+    // Desktop only: the workout form for a lesson of the open activity, a new
+    // one of `typeId` or the saved `workoutId`.
+    const openLesson = (typeId: string, workoutId?: string) =>
+        router.setParams({
+            lezione: params.pagamenti,
+            tipo: workoutId ? undefined : typeId,
+            id: workoutId,
+            pagamenti: undefined,
+            tipi: undefined,
+            data: undefined,
+        });
 
     // After a save the workout stays selected; after a delete the panel
     // returns to the empty form.
@@ -250,6 +274,7 @@ export default function Sport() {
                                 </View>
                             )}
                             onGone={() => openPayments('1')}
+                            onLesson={openLesson}
                             style={[listPage.panel, styles.panelBelow]}
                         />
                     ) : params.tipi ? (
@@ -269,19 +294,32 @@ export default function Sport() {
                     ) : (
                         // The key starts a fresh form whenever the selection changes.
                         <WorkoutForm
-                            key={params.id ?? `new-${params.data}`}
+                            key={
+                                params.id ??
+                                `new-${params.data}-${params.tipo}-${params.lezione}`
+                            }
                             id={params.id}
                             initialDate={params.data}
-                            title={
-                                params.id ? 'Allenamento' : 'Nuovo allenamento'
-                            }
+                            initialTypeId={params.tipo}
+                            initialLesson={!!params.lezione}
+                            title={workoutTitle(params.id, params.lezione)}
                             onSaved={(workout) => {
                                 put(workout);
-                                saved(workout.id);
+                                if (params.lezione) {
+                                    reload();
+                                    openPayments(params.lezione);
+                                } else {
+                                    saved(workout.id);
+                                }
                             }}
                             onDeleted={() => {
                                 if (params.id) drop(params.id);
-                                saved();
+                                if (params.lezione) {
+                                    reload();
+                                    openPayments(params.lezione);
+                                } else {
+                                    saved();
+                                }
                             }}
                             style={listPage.panel}
                         />
@@ -307,6 +345,9 @@ export default function Sport() {
         </ThemedView>
     );
 }
+
+const workoutTitle = (id?: string, lesson?: string) =>
+    id ? 'Allenamento' : lesson ? 'Nuova lezione' : 'Nuovo allenamento';
 
 /** A panel title with a back arrow, on desktop. */
 function PanelBack({
