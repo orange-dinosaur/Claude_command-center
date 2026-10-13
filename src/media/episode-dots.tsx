@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useTheme } from '@/hooks/use-theme';
 
@@ -38,8 +38,21 @@ export function EpisodeDots({
                             styles.dot,
                             { backgroundColor: checked ? full : empty },
                             onAccent && !checked && styles.faint,
-                        ]}
-                    />
+                        ]}>
+                        <Text
+                            style={[
+                                styles.number,
+                                {
+                                    color: onAccent
+                                        ? theme.accent
+                                        : checked
+                                          ? theme.onAccent
+                                          : theme.textMuted,
+                                },
+                            ]}>
+                            {episode}
+                        </Text>
+                    </Pressable>
                 );
             })}
         </View>
@@ -50,13 +63,21 @@ const styles = StyleSheet.create({
     dots: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 6,
+        gap: 4,
         marginTop: 6,
     },
     dot: {
-        width: 14,
-        height: 14,
-        borderRadius: 7,
+        minWidth: 20,
+        height: 20,
+        borderRadius: 10,
+        paddingHorizontal: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    number: {
+        fontSize: 10,
+        lineHeight: 12,
+        fontVariant: ['tabular-nums'],
     },
     faint: {
         opacity: 0.4,
