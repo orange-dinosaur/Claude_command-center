@@ -4,7 +4,7 @@
  */
 
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
 /**
@@ -21,14 +21,26 @@ export function useOnFocus<T>(
     const [error, setError] = useState<string | null>(null);
     // Bumped by `reload` for pages that change the data without losing focus.
     const [version, setVersion] = useState(0);
+    // Counts changes made by the page, so a load that started before one
+    // does not overwrite it with what the server had then.
+    const changes = useRef(0);
+    const change = useCallback<typeof setData>((value) => {
+        changes.current++;
+        setData(value);
+    }, []);
 
     useFocusEffect(
         useCallback(() => {
             let cancelled = false;
+            const started = changes.current;
             load()
                 .then((result) => {
                     if (cancelled) return;
-                    setData(result);
+                    setData((current) =>
+                        current === undefined || changes.current === started
+                            ? result
+                            : current
+                    );
                     setError(null);
                 })
                 .catch(() => {
@@ -55,5 +67,5 @@ export function useOnFocus<T>(
         return () => sub.remove();
     }, [reload]);
 
-    return { data, setData, error, setError, reload };
+    return { data, setData: change, error, setError, reload };
 }
