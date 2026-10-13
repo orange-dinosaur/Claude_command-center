@@ -46,6 +46,13 @@ async function save(next: SavedTool[]): Promise<boolean> {
     return false;
 }
 
+/** Moves the tool at `from` to `to` and saves. */
+function move(from: number, to: number): Promise<boolean> {
+    const next = arrange(saved).map(({ key, hidden }) => ({ key, hidden }));
+    next.splice(to, 0, ...next.splice(from, 1));
+    return save(next);
+}
+
 export function useTools() {
     const { data: session } = authClient.useSession();
     const userId = session?.user.id ?? null;
@@ -68,5 +75,5 @@ export function useTools() {
 
     // The code's order, all visible, until the saved list arrives.
     const tools = useMemo(() => arrange(current), [current]);
-    return { tools, save };
+    return { tools, save, move };
 }
