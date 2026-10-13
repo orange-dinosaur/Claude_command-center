@@ -434,6 +434,8 @@ export const workout = pgTable(
         date: date('date').notNull(),
         minutes: integer('minutes'),
         note: text('note'),
+        /** Taken from a lesson pack of this type's lesson activity. */
+        lesson: boolean('lesson').default(false).notNull(),
         createdAt: timestamp('created_at', { withTimezone: true })
             .defaultNow()
             .notNull(),
@@ -445,6 +447,68 @@ export const workout = pgTable(
     (table) => [
         index('workout_user_id_date_idx').on(table.userId, table.date),
         check('workout_minutes', sql`${table.minutes} between 1 and 600`),
+    ]
+);
+
+/**
+ * A workout type the user buys lesson packs for, at most one per type. Like
+ * `workout`, the type key is "no action", so a type with an activity cannot be
+ * deleted.
+ */
+export const lessonActivity = pgTable(
+    'lesson_activity',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        typeId: text('type_id')
+            .notNull()
+            .references(() => workoutType.id, { onDelete: 'no action' }),
+        archivedAt: timestamp('archived_at', { withTimezone: true }),
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
+            .defaultNow()
+            .$onUpdate(() => new Date())
+            .notNull(),
+    },
+    (table) => [
+        uniqueIndex('lesson_activity_type_id_idx').on(table.typeId),
+        index('lesson_activity_user_id_idx').on(table.userId),
+    ]
+);
+
+/** Lessons paid for in advance, all at once. */
+export const lessonPack = pgTable(
+    'lesson_pack',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        activityId: text('activity_id')
+            .notNull()
+            .references(() => lessonActivity.id, { onDelete: 'cascade' }),
+        lessons: integer('lessons').notNull(),
+        paidOn: date('paid_on').notNull(),
+        amountCents: integer('amount_cents').notNull(),
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
+            .defaultNow()
+            .$onUpdate(() => new Date())
+            .notNull(),
+    },
+    (table) => [
+        index('lesson_pack_activity_id_idx').on(table.activityId),
+        check('lesson_pack_lessons', sql`${table.lessons} between 1 and 100`),
+        check(
+            'lesson_pack_amount',
+            sql`${table.amountCents} between 0 and 10000000`
+        ),
     ]
 );
 
