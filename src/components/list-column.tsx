@@ -16,6 +16,8 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
+type HeaderLink = { label: string; onPress: () => void };
+
 /** The list column on desktop: title and controls on top, then the list. */
 export function ListColumn({
     title,
@@ -25,8 +27,8 @@ export function ListColumn({
     children,
 }: {
     title: string;
-    /** A text link at the right of the title. */
-    link?: { label: string; onPress: () => void };
+    /** Text links at the right of the title. */
+    link?: HeaderLink | HeaderLink[];
     /** Controls under the title, such as tabs and the add button. */
     header?: ReactNode;
     width?: number;
@@ -42,17 +44,21 @@ export function ListColumn({
                     <ThemedText type="title" style={styles.grow}>
                         {title}
                     </ThemedText>
-                    {link && (
-                        <Pressable
-                            onPress={link.onPress}
-                            accessibilityRole="link"
-                            hitSlop={Spacing.two}
-                            style={({ pressed }) => pressed && styles.pressed}>
-                            <ThemedText style={{ color: theme.accent }}>
-                                {link.label}
-                            </ThemedText>
-                        </Pressable>
-                    )}
+                    {link &&
+                        [link].flat().map((l) => (
+                            <Pressable
+                                key={l.label}
+                                onPress={l.onPress}
+                                accessibilityRole="link"
+                                hitSlop={Spacing.two}
+                                style={({ pressed }) =>
+                                    pressed && styles.pressed
+                                }>
+                                <ThemedText style={{ color: theme.accent }}>
+                                    {l.label}
+                                </ThemedText>
+                            </Pressable>
+                        ))}
                 </View>
                 {header}
             </View>

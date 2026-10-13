@@ -16,7 +16,11 @@ import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { todayDay } from '@/dates';
-import { useWorkoutTypes, type Workout } from '@/hooks/use-sport';
+import {
+    useWorkoutTypes,
+    type Workout,
+    type WorkoutType,
+} from '@/hooks/use-sport';
 import { useTheme } from '@/hooks/use-theme';
 
 /** Records a workout, or edits the one with `id`. */
@@ -236,11 +240,7 @@ export function WorkoutForm({
 }
 
 /** The "+ Nuovo tipo" chip, which opens a name field under the chips. */
-function NewType({
-    onCreated,
-}: {
-    onCreated: (type: { id: string; name: string; workouts: number }) => void;
-}) {
+function NewType({ onCreated }: { onCreated: (type: WorkoutType) => void }) {
     const theme = useTheme();
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
@@ -267,7 +267,11 @@ function NewType({
                 body: JSON.stringify({ name }),
             });
             if (res.ok) {
-                onCreated({ ...(await res.json()), workouts: 0 });
+                onCreated({
+                    ...(await res.json()),
+                    workouts: 0,
+                    activity: null,
+                });
                 return close();
             }
             setError(

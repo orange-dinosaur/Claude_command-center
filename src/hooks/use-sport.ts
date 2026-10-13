@@ -53,6 +53,7 @@ export interface WorkoutType {
     name: string;
     /** How many workouts use it. */
     workouts: number;
+    activity: { id: string; archived: boolean } | null;
 }
 
 export function useWorkoutTypes() {

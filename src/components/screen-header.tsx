@@ -11,9 +11,13 @@ interface ScreenHeaderProps {
     title: string;
     /** Where the back arrow leads when there is no history to go back to. */
     backTo?: Href;
-    /** A text link at the right of the title. */
-    link?: { label: string } & ({ href: Href } | { onPress: () => void });
+    /** Text links at the right of the title. */
+    link?: HeaderLink | HeaderLink[];
 }
+
+type HeaderLink = { label: string } & (
+    { href: Href } | { onPress: () => void }
+);
 
 /**
  * A screen can be opened straight from the address bar, so back needs a
@@ -55,19 +59,20 @@ export function ScreenHeader({ title, backTo, link }: ScreenHeaderProps) {
                     <ThemedText type="title" style={styles.grow}>
                         {title}
                     </ThemedText>
-                    <Pressable
-                        onPress={() =>
-                            'href' in link
-                                ? router.push(link.href)
-                                : link.onPress()
-                        }
-                        accessibilityRole={'href' in link ? 'link' : 'button'}
-                        hitSlop={Spacing.two}
-                        style={({ pressed }) => pressed && styles.pressed}>
-                        <ThemedText style={{ color: theme.accent }}>
-                            {link.label}
-                        </ThemedText>
-                    </Pressable>
+                    {[link].flat().map((l) => (
+                        <Pressable
+                            key={l.label}
+                            onPress={() =>
+                                'href' in l ? router.push(l.href) : l.onPress()
+                            }
+                            accessibilityRole={'href' in l ? 'link' : 'button'}
+                            hitSlop={Spacing.two}
+                            style={({ pressed }) => pressed && styles.pressed}>
+                            <ThemedText style={{ color: theme.accent }}>
+                                {l.label}
+                            </ThemedText>
+                        </Pressable>
+                    ))}
                 </View>
             ) : (
                 <ThemedText type="title">{title}</ThemedText>

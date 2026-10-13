@@ -25,6 +25,8 @@ import { formatShortDay, todayDay } from '@/dates';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
 import { useWorkouts, type Workout } from '@/hooks/use-sport';
+import { LessonActivities } from '@/sport/lesson-activities';
+import { LessonActivityView } from '@/sport/lesson-activity';
 import { countWorkouts, formatMonth, groupByMonth } from '@/sport/riepilogo';
 import { WorkoutForm } from '@/sport/workout-form';
 import { WorkoutTypes } from '@/sport/workout-types';
@@ -37,6 +39,8 @@ export default function Sport() {
         id?: string;
         tipi?: string;
         data?: string;
+        /** `1` for the list, otherwise the id of an open activity. */
+        pagamenti?: string;
     }>();
     const { workouts, error, reload, drop, put } = useWorkouts();
     const today = todayDay();
@@ -59,7 +63,12 @@ export default function Sport() {
     // the phone it opens the form. Without an id it records a new workout.
     const select = (id?: string) => {
         if (isDesktop) {
-            router.setParams({ id, tipi: undefined, data: undefined });
+            router.setParams({
+                id,
+                tipi: undefined,
+                data: undefined,
+                pagamenti: undefined,
+            });
         } else {
             router.push({
                 pathname: '/sport/allenamento',
@@ -67,6 +76,11 @@ export default function Sport() {
             });
         }
     };
+
+    // Desktop only: `1` shows the activities in the panel, an id one activity,
+    // nothing goes back to the workout form.
+    const openPayments = (pagamenti?: string) =>
+        router.setParams({ pagamenti, tipi: undefined, id: undefined });
 
     // After a save the workout stays selected; after a delete the panel
     // returns to the empty form.
@@ -186,11 +200,21 @@ export default function Sport() {
             <ThemedView style={listPage.page}>
                 <ListColumn
                     title="Sport"
-                    link={{
-                        label: 'Tipi',
-                        onPress: () =>
-                            router.setParams({ tipi: '1', id: undefined }),
-                    }}
+                    link={[
+                        {
+                            label: 'Tipi',
+                            onPress: () =>
+                                router.setParams({
+                                    tipi: '1',
+                                    id: undefined,
+                                    pagamenti: undefined,
+                                }),
+                        },
+                        {
+                            label: 'Pagamenti',
+                            onPress: () => openPayments('1'),
+                        },
+                    ]}
                     header={
                         <>
                             {tiles}
@@ -200,30 +224,44 @@ export default function Sport() {
                     {list}
                 </ListColumn>
                 <View style={styles.grow}>
-                    {params.tipi ? (
+                    {params.pagamenti === '1' ? (
+                        <LessonActivities
+                            header={
+                                <PanelBack
+                                    title="Pagamenti"
+                                    label="Torna all’allenamento"
+                                    onPress={() => openPayments(undefined)}
+                                />
+                            }
+                            onOpen={openPayments}
+                            style={listPage.panel}
+                        />
+                    ) : params.pagamenti ? (
+                        <LessonActivityView
+                            key={params.pagamenti}
+                            id={params.pagamenti}
+                            header={(title) => (
+                                <View style={[listPage.panel, styles.panelTop]}>
+                                    <PanelBack
+                                        title={title}
+                                        label="Torna a Pagamenti"
+                                        onPress={() => openPayments('1')}
+                                    />
+                                </View>
+                            )}
+                            onGone={() => openPayments('1')}
+                            style={[listPage.panel, styles.panelBelow]}
+                        />
+                    ) : params.tipi ? (
                         <WorkoutTypes
                             header={
-                                <Pressable
+                                <PanelBack
+                                    title="Tipi"
+                                    label="Torna all’allenamento"
                                     onPress={() =>
                                         router.setParams({ tipi: undefined })
                                     }
-                                    accessibilityRole="button"
-                                    accessibilityLabel="Torna all’allenamento"
-                                    style={({ pressed }) => [
-                                        styles.back,
-                                        pressed && styles.pressed,
-                                    ]}>
-                                    <SymbolView
-                                        name={{
-                                            ios: 'chevron.left',
-                                            android: 'chevron_left',
-                                            web: 'chevron_left',
-                                        }}
-                                        tintColor={theme.text}
-                                        size={28}
-                                    />
-                                    <ThemedText type="title">Tipi</ThemedText>
-                                </Pressable>
+                                />
                             }
                             onChanged={reload}
                             style={listPage.panel}
@@ -259,11 +297,46 @@ export default function Sport() {
                 <ScreenHeader
                     title="Sport"
                     backTo="/command-center"
-                    link={{ label: 'Tipi', href: '/sport/tipi' }}
+                    link={[
+                        { label: 'Tipi', href: '/sport/tipi' },
+                        { label: 'Pagamenti', href: '/sport/pagamenti' },
+                    ]}
                 />
                 {list}
             </SafeAreaView>
         </ThemedView>
+    );
+}
+
+/** A panel title with a back arrow, on desktop. */
+function PanelBack({
+    title,
+    label,
+    onPress,
+}: {
+    title: string;
+    label: string;
+    onPress: () => void;
+}) {
+    const theme = useTheme();
+
+    return (
+        <Pressable
+            onPress={onPress}
+            accessibilityRole="button"
+            accessibilityLabel={label}
+            style={({ pressed }) => [styles.back, pressed && styles.pressed]}>
+            <SymbolView
+                name={{
+                    ios: 'chevron.left',
+                    android: 'chevron_left',
+                    web: 'chevron_left',
+                }}
+                tintColor={theme.text}
+                size={28}
+            />
+            <ThemedText type="title">{title}</ThemedText>
+        </Pressable>
     );
 }
 
@@ -374,6 +447,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: Spacing.two,
         marginBottom: Spacing.three,
+    },
+    // The activity's title sits above its scrolling content.
+    panelTop: {
+        paddingBottom: Spacing.three,
+    },
+    panelBelow: {
+        paddingTop: 0,
     },
     grow: {
         flex: 1,

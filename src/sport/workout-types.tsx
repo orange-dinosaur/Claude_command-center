@@ -127,6 +127,12 @@ export function WorkoutTypes({
                                             ? 'Usato da 1 allenamento'
                                             : `Usato da ${type.workouts} allenamenti`}
                                     </ThemedText>
+                                ) : type.activity ? (
+                                    <ThemedText
+                                        type="small"
+                                        themeColor="textMuted">
+                                        Usato in Pagamenti
+                                    </ThemedText>
                                 ) : (
                                     <Pressable
                                         onPress={() => remove(type.id)}
