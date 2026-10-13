@@ -10,13 +10,15 @@ import {
 } from 'react-native';
 
 import { apiFetch } from '@/auth/client';
+import { AddButton, ListRow } from '@/components/list-column';
 import { Sheet } from '@/components/sheet';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { formatShortDay, todayDay } from '@/dates';
-import { useLessonActivity } from '@/hooks/use-lessons';
+import { useLessonActivity, type LessonPack } from '@/hooks/use-lessons';
 import { useTheme } from '@/hooks/use-theme';
 import { balanceText, formatEuros, spentInYear } from '@/sport/lessons';
+import { PackSheet } from '@/sport/pack-sheet';
 
 /**
  * One lesson activity: its balance, what it cost this year, and its packs and
@@ -38,6 +40,9 @@ export function LessonActivityView({
     const theme = useTheme();
     const { activity, error, reload } = useLessonActivity(id);
     const [confirming, setConfirming] = useState(false);
+    const [packSheet, setPackSheet] = useState<{ pack?: LessonPack } | null>(
+        null
+    );
     const [actionError, setActionError] = useState<string | null>(null);
     const year = Number(todayDay().slice(0, 4));
 
@@ -89,12 +94,19 @@ export function LessonActivityView({
         );
     }
 
-    const history = [
+    const history: {
+        key: string;
+        day: string;
+        createdAt: string;
+        text: string;
+        pack?: LessonPack;
+    }[] = [
         ...activity.packs.map((p) => ({
             key: p.id,
             day: p.paidOn,
             createdAt: p.createdAt,
             text: `${formatShortDay(p.paidOn)}, pacchetto da ${p.lessons}, ${formatEuros(p.amountCents)}`,
+            pack: p,
         })),
         ...activity.lessons.map((l) => ({
             key: l.id,
@@ -128,6 +140,11 @@ export function LessonActivityView({
                     )}
                 </View>
 
+                <AddButton
+                    label="Nuovo pacchetto"
+                    onPress={() => setPackSheet({})}
+                />
+
                 {(error ?? actionError) && (
                     <ThemedText type="small" themeColor="danger">
                         {error ?? actionError}
@@ -139,16 +156,27 @@ export function LessonActivityView({
                         Ancora nessun pacchetto o lezione.
                     </ThemedText>
                 ) : (
-                    history.map((item) => (
-                        <View
-                            key={item.key}
-                            style={[
-                                styles.row,
-                                { backgroundColor: theme.backgroundElement },
-                            ]}>
-                            <ThemedText>{item.text}</ThemedText>
-                        </View>
-                    ))
+                    history.map(({ key, text, pack }) =>
+                        pack ? (
+                            <ListRow
+                                key={key}
+                                onPress={() => setPackSheet({ pack })}>
+                                <ThemedText>{text}</ThemedText>
+                            </ListRow>
+                        ) : (
+                            <View
+                                key={key}
+                                style={[
+                                    styles.row,
+                                    {
+                                        backgroundColor:
+                                            theme.backgroundElement,
+                                    },
+                                ]}>
+                                <ThemedText>{text}</ThemedText>
+                            </View>
+                        )
+                    )
                 )}
 
                 <View style={styles.actions}>
@@ -168,6 +196,15 @@ export function LessonActivityView({
                     </Pressable>
                 </View>
             </ScrollView>
+
+            {packSheet && (
+                <PackSheet
+                    activityId={id}
+                    pack={packSheet.pack}
+                    onSaved={reload}
+                    onClose={() => setPackSheet(null)}
+                />
+            )}
 
             <Sheet visible={confirming} onClose={() => setConfirming(false)}>
                 <ThemedText type="subtitle" style={styles.sheetTitle}>

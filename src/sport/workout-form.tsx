@@ -4,6 +4,7 @@ import {
     Pressable,
     ScrollView,
     StyleSheet,
+    Switch,
     View,
     type StyleProp,
     type ViewStyle,
@@ -52,6 +53,9 @@ export function WorkoutForm({
     );
     const [minutes, setMinutes] = useState('');
     const [note, setNote] = useState('');
+    const [lesson, setLesson] = useState(false);
+    // The saved type, so an edit that keeps it leaves the lesson mark alone.
+    const [savedTypeId, setSavedTypeId] = useState<string | null>(null);
     const [loading, setLoading] = useState(Boolean(id));
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -66,6 +70,8 @@ export function WorkoutForm({
                 const found = workouts.find((w) => w.id === id);
                 if (found) {
                     setTypeId(found.typeId);
+                    setSavedTypeId(found.typeId);
+                    setLesson(found.lesson);
                     setDate(found.date);
                     setMinutes(found.minutes?.toString() ?? '');
                     setNote(found.note ?? '');
@@ -84,6 +90,10 @@ export function WorkoutForm({
             cancelled = true;
         };
     }, [id]);
+
+    const markable = (type?: WorkoutType) =>
+        !!type?.activity && !type.activity.archived;
+    const canMark = markable(types?.find((t) => t.id === typeId));
 
     const save = async () => {
         if (!typeId) {
@@ -112,6 +122,13 @@ export function WorkoutForm({
                         date,
                         minutes: parsed,
                         note: note.trim() || null,
+                        // Hidden switch: an archived activity keeps its old
+                        // lessons, a new type drops the mark.
+                        lesson: canMark
+                            ? lesson
+                            : typeId === savedTypeId
+                              ? undefined
+                              : false,
                     }),
                 }
             );
@@ -173,7 +190,10 @@ export function WorkoutForm({
                         return (
                             <Pressable
                                 key={t.id}
-                                onPress={() => setTypeId(t.id)}
+                                onPress={() => {
+                                    setTypeId(t.id);
+                                    if (!markable(t)) setLesson(false);
+                                }}
                                 accessibilityRole="button"
                                 accessibilityState={{ selected }}
                                 style={[
@@ -201,6 +221,20 @@ export function WorkoutForm({
                     />
                 </View>
             </View>
+
+            {canMark && (
+                <View style={styles.switchRow}>
+                    <ThemedText style={styles.grow}>
+                        Lezione del pacchetto
+                    </ThemedText>
+                    <Switch
+                        value={lesson}
+                        onValueChange={setLesson}
+                        accessibilityLabel="Lezione del pacchetto"
+                        trackColor={{ false: theme.border, true: theme.accent }}
+                    />
+                </View>
+            )}
 
             <View style={styles.fieldGroup}>
                 <ThemedText type="small" themeColor="textMuted">
@@ -353,6 +387,14 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         padding: Spacing.four,
         gap: Spacing.three,
+    },
+    switchRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.three,
+    },
+    grow: {
+        flex: 1,
     },
     fieldGroup: {
         gap: Spacing.one,

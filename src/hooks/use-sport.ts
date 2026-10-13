@@ -14,6 +14,8 @@ export interface Workout {
     date: string;
     minutes: number | null;
     note: string | null;
+    /** Taken from a lesson pack. */
+    lesson: boolean;
     /** ISO timestamp, only for ordering. */
     createdAt: string;
 }

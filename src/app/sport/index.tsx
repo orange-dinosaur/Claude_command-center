@@ -369,6 +369,11 @@ function WorkoutRow({
             <View style={styles.grow}>
                 <ThemedText themeColor={selected ? 'onAccent' : 'text'}>
                     {workout.typeName}
+                    {workout.lesson && (
+                        <Secondary selected={selected} small>
+                            {' · lezione'}
+                        </Secondary>
+                    )}
                 </ThemedText>
                 {workout.note && (
                     <ThemedText
