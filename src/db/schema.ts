@@ -21,6 +21,8 @@ import {
     uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
+import type { SavedTool } from '../tools';
+
 export const user = pgTable('user', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
@@ -709,3 +711,16 @@ export const glimmer = pgTable(
         ),
     ]
 );
+
+/** One row per account, created on its first save. */
+export const userSettings = pgTable('user_settings', {
+    userId: text('user_id')
+        .primaryKey()
+        .references(() => user.id, { onDelete: 'cascade' }),
+    /** Tool order and hidden flags. `null` means the code's order, all visible. */
+    tools: jsonb('tools').$type<SavedTool[]>(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+        .defaultNow()
+        .$onUpdate(() => new Date())
+        .notNull(),
+});

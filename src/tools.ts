@@ -101,6 +101,20 @@ export const TOOLS: Tool[] = [
     },
 ];
 
+/** A saved list from a request body: known keys, each once, `hidden` a boolean. */
+export function parseSavedTools(value: unknown): SavedTool[] | undefined {
+    if (!Array.isArray(value) || value.length > TOOLS.length) return undefined;
+    const known = new Set(TOOLS.map((tool) => tool.key));
+    const result: SavedTool[] = [];
+    for (const item of value) {
+        const { key, hidden } = (item ?? {}) as Record<string, unknown>;
+        if (typeof key !== 'string' || !known.delete(key)) return undefined;
+        if (typeof hidden !== 'boolean') return undefined;
+        result.push({ key, hidden });
+    }
+    return result;
+}
+
 // The code wins: unknown and repeated saved keys are dropped, and tools the
 // saved list lacks go at the end, visible.
 export function arrange(

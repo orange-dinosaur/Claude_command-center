@@ -1,7 +1,7 @@
 // Run with `bun src/tools.check.ts`.
 import assert from 'node:assert/strict';
 
-import { arrange, TOOLS } from './tools';
+import { arrange, parseSavedTools, TOOLS } from './tools';
 
 const keys = (saved: Parameters<typeof arrange>[0]) =>
     arrange(saved).map((t) => (t.hidden ? `-${t.key}` : t.key));
@@ -54,5 +54,29 @@ assert.deepEqual(
     ]),
     ['-sport', 'media', ...all.filter((k) => k !== 'sport' && k !== 'media')]
 );
+
+const full = all.map((key) => ({ key, hidden: key === 'media' }));
+assert.deepEqual(parseSavedTools(full), full);
+assert.deepEqual(parseSavedTools([]), []);
+assert.deepEqual(parseSavedTools([{ key: 'sport', hidden: true, extra: 1 }]), [
+    { key: 'sport', hidden: true },
+]);
+for (const bad of [
+    null,
+    {},
+    'sport',
+    [null],
+    ['sport'],
+    [{ key: 'gone', hidden: false }],
+    [{ key: 'sport' }],
+    [{ key: 'sport', hidden: 'yes' }],
+    [
+        { key: 'sport', hidden: false },
+        { key: 'sport', hidden: true },
+    ],
+    [...full, { key: 'sport', hidden: false }],
+]) {
+    assert.equal(parseSavedTools(bad), undefined, JSON.stringify(bad));
+}
 
 console.log('tools: ok');
