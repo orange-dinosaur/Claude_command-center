@@ -22,6 +22,7 @@ import {
     toIso,
 } from '@/glimmers/moment-field';
 import { groupByMonth, TEXT_MAX } from '@/glimmers/months';
+import { Sparkles } from '@/glimmers/sparkles';
 import { useFocusRing } from '@/hooks/use-focus-ring';
 import { useGlimmers } from '@/hooks/use-glimmers';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
@@ -31,7 +32,7 @@ export default function GlimmersScreen() {
     const theme = useTheme();
     const focus = useFocusRing();
     const isDesktop = useIsDesktop();
-    const { glimmers, error, setError, add } = useGlimmers();
+    const { glimmers, error, setError, add, edit, remove } = useGlimmers();
     const [draft, setDraft] = useState('');
     // null follows the clock; set once the day or time is changed.
     const [moment, setMoment] = useState<Moment | null>(null);
@@ -101,7 +102,12 @@ export default function GlimmersScreen() {
                     <View key={group.title} style={styles.group}>
                         <ThemedText type="subtitle">{group.title}</ThemedText>
                         {group.glimmers.map((glimmer) => (
-                            <GlimmerRow key={glimmer.id} glimmer={glimmer} />
+                            <GlimmerRow
+                                key={glimmer.id}
+                                glimmer={glimmer}
+                                onEdit={(changes) => edit(glimmer, changes)}
+                                onRemove={() => remove(glimmer)}
+                            />
                         ))}
                     </View>
                 ))
@@ -110,11 +116,17 @@ export default function GlimmersScreen() {
     );
 
     if (isDesktop) {
-        return <ThemedView style={styles.container}>{body}</ThemedView>;
+        return (
+            <ThemedView style={styles.container}>
+                <Sparkles />
+                {body}
+            </ThemedView>
+        );
     }
 
     return (
         <ThemedView style={styles.container}>
+            <Sparkles />
             <SafeAreaView style={styles.container}>
                 <ScreenHeader title="Glimmers" backTo="/command-center" />
                 {body}

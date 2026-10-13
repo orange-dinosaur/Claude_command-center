@@ -54,8 +54,51 @@ export function useGlimmers() {
         }
     };
 
+    const send = (glimmer: Glimmer, method: string, body?: object) =>
+        apiFetch(`/api/glimmers/${glimmer.id}`, {
+            method,
+            headers: body ? { 'Content-Type': 'application/json' } : undefined,
+            body: body ? JSON.stringify(body) : undefined,
+        }).then((res) => {
+            if (!res.ok) throw new Error();
+        });
+
+    const put = (glimmer: Glimmer) =>
+        setData(
+            (current) =>
+                current &&
+                newestFirst(
+                    current.map((g) => (g.id === glimmer.id ? glimmer : g))
+                )
+        );
+
+    const edit = async (
+        glimmer: Glimmer,
+        changes: Pick<Glimmer, 'text' | 'happenedAt'>
+    ) => {
+        setError(null);
+        put({ ...glimmer, ...changes });
+        try {
+            await send(glimmer, 'PATCH', changes);
+        } catch {
+            put(glimmer);
+            setError('Non riesco a salvare il glimmer.');
+        }
+    };
+
+    const remove = async (glimmer: Glimmer) => {
+        setError(null);
+        setData((current) => current?.filter((g) => g.id !== glimmer.id));
+        try {
+            await send(glimmer, 'DELETE');
+        } catch {
+            setData((current) => newestFirst([...(current ?? []), glimmer]));
+            setError('Non riesco a eliminare il glimmer.');
+        }
+    };
+
     // undefined while loading the first time; a failed first load is empty.
     const glimmers = data === null ? [] : data;
 
-    return { glimmers, error, setError, add };
+    return { glimmers, error, setError, add, edit, remove };
 }
