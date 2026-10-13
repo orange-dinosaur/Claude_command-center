@@ -94,6 +94,15 @@ export default function CommandCenter() {
                             web: 'psychology',
                         }}
                     />
+                    <ToolButton
+                        title="Glimmers"
+                        href="/glimmers"
+                        icon={{
+                            ios: 'sparkles',
+                            android: 'auto_awesome',
+                            web: 'auto_awesome',
+                        }}
+                    />
                 </View>
                 <View style={styles.spacer} />
                 <Pressable
