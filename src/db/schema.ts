@@ -619,3 +619,29 @@ export const brainEntry = pgTable(
         ),
     ]
 );
+
+/** One glimmer. `happenedAt` starts as the moment of writing and can be changed. */
+export const glimmer = pgTable(
+    'glimmer',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        text: text('text').notNull(),
+        happenedAt: timestamp('happened_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp('updated_at', { withTimezone: true })
+            .defaultNow()
+            .$onUpdate(() => new Date())
+            .notNull(),
+    },
+    (table) => [
+        index('glimmer_user_id_idx').on(table.userId),
+        check(
+            'glimmer_text_length',
+            sql`char_length(${table.text}) between 1 and 1000`
+        ),
+    ]
+);
