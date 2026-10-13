@@ -15,21 +15,18 @@ import { authClient } from '@/auth/client';
 import { Spacing } from '@/constants/theme';
 import { setColorScheme, useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
-import { arrange } from '@/tools';
+import { useTools } from '@/hooks/use-tools';
 
 // react-native-web passes `hovered` to the style callback; the types omit it.
 type State = PressableStateCallbackType & { hovered?: boolean };
 
 // Home is not a tool, so it stays first. The rail is web only, so Home needs only a web icon.
-const items: {
+const home: {
     label: string;
     title: string;
     href: Href;
     icon: SymbolViewProps['name'];
-}[] = [
-    { label: 'Home', title: 'Home', href: '/', icon: { web: 'home' } },
-    ...arrange(null).filter((tool) => !tool.hidden),
-];
+} = { label: 'Home', title: 'Home', href: '/', icon: { web: 'home' } };
 
 // react-native-web drops the `title` prop, so the tooltip goes on the DOM node.
 const tooltip = (title: string) => (node: unknown) => {
@@ -40,6 +37,9 @@ export function Rail() {
     const theme = useTheme();
     const scheme = useColorScheme();
     const pathname = usePathname();
+    const { tools } = useTools();
+    const items = [home, ...tools.filter((tool) => !tool.hidden)];
+    const settingsActive = pathname.startsWith('/impostazioni');
 
     const isActive = (href: string) =>
         href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -89,6 +89,36 @@ export function Rail() {
             </View>
             <View style={styles.spacer} />
             <View style={styles.actions}>
+                <Link href="/impostazioni" asChild>
+                    <Pressable
+                        ref={tooltip('Impostazioni')}
+                        accessibilityLabel="Impostazioni">
+                        {({ pressed, hovered }: State) => (
+                            <View
+                                style={[
+                                    styles.button,
+                                    settingsActive && {
+                                        backgroundColor: theme.accent,
+                                    },
+                                    !settingsActive &&
+                                        hovered && {
+                                            backgroundColor: theme.background,
+                                        },
+                                    pressed && styles.pressed,
+                                ]}>
+                                <SymbolView
+                                    name={{ web: 'settings' }}
+                                    tintColor={
+                                        settingsActive
+                                            ? theme.onAccent
+                                            : theme.textMuted
+                                    }
+                                    size={24}
+                                />
+                            </View>
+                        )}
+                    </Pressable>
+                </Link>
                 <Pressable
                     ref={tooltip(
                         scheme === 'dark' ? 'Tema chiaro' : 'Tema scuro'

@@ -9,11 +9,12 @@ import { ThemedView } from '@/components/themed-view';
 import { ToolButton } from '@/components/tool-button';
 import { Spacing } from '@/constants/theme';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
-import { arrange } from '@/tools';
+import { useTools } from '@/hooks/use-tools';
 
 export default function CommandCenter() {
     // The auth guard sees the session end and replaces this screen with login.
     const signOut = () => authClient.signOut();
+    const visible = useTools().tools.filter((tool) => !tool.hidden);
 
     // On desktop the rail holds the tools.
     if (useIsDesktop()) return <Redirect href="/" />;
@@ -21,18 +22,34 @@ export default function CommandCenter() {
     return (
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.container}>
-                <ScreenHeader title="Command center" backTo="/" />
+                <ScreenHeader
+                    title="Command center"
+                    backTo="/"
+                    link={{
+                        label: 'Impostazioni',
+                        href: '/impostazioni',
+                        icon: {
+                            ios: 'gearshape',
+                            android: 'settings',
+                            web: 'settings',
+                        },
+                    }}
+                />
                 <View style={styles.grid}>
-                    {arrange(null)
-                        .filter((tool) => !tool.hidden)
-                        .map((tool) => (
-                            <ToolButton
-                                key={tool.key}
-                                title={tool.title}
-                                href={tool.href}
-                                icon={tool.icon}
-                            />
-                        ))}
+                    {visible.map((tool) => (
+                        <ToolButton
+                            key={tool.key}
+                            title={tool.title}
+                            href={tool.href}
+                            icon={tool.icon}
+                        />
+                    ))}
+                    {visible.length === 0 && (
+                        <ThemedText themeColor="textMuted">
+                            Nessuno strumento visibile. Li riaccendi dalle
+                            impostazioni.
+                        </ThemedText>
+                    )}
                 </View>
                 <View style={styles.spacer} />
                 <Pressable

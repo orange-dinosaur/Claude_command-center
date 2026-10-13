@@ -1,5 +1,5 @@
 import { useRouter, type Href } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
+import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from './themed-text';
@@ -15,7 +15,8 @@ interface ScreenHeaderProps {
     link?: HeaderLink | HeaderLink[];
 }
 
-type HeaderLink = { label: string } & (
+/** With `icon`, the link shows the icon and `label` is read out. */
+type HeaderLink = { label: string; icon?: SymbolViewProps['name'] } & (
     { href: Href } | { onPress: () => void }
 );
 
@@ -66,11 +67,20 @@ export function ScreenHeader({ title, backTo, link }: ScreenHeaderProps) {
                                 'href' in l ? router.push(l.href) : l.onPress()
                             }
                             accessibilityRole={'href' in l ? 'link' : 'button'}
+                            accessibilityLabel={l.label}
                             hitSlop={Spacing.two}
                             style={({ pressed }) => pressed && styles.pressed}>
-                            <ThemedText style={{ color: theme.accent }}>
-                                {l.label}
-                            </ThemedText>
+                            {l.icon ? (
+                                <SymbolView
+                                    name={l.icon}
+                                    tintColor={theme.accent}
+                                    size={28}
+                                />
+                            ) : (
+                                <ThemedText style={{ color: theme.accent }}>
+                                    {l.label}
+                                </ThemedText>
+                            )}
                         </Pressable>
                     ))}
                 </View>
