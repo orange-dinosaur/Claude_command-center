@@ -12,6 +12,8 @@ const t = (id: string, fields: Partial<Title> = {}): Title => ({
     language: null,
     format: null,
     season: null,
+    episodes: null,
+    watched: 0,
     status: 'todo',
     startDate: null,
     endDate: null,

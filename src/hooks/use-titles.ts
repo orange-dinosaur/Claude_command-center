@@ -3,8 +3,12 @@
  * API gives them.
  */
 
+import { useRef } from 'react';
+
 import { apiFetch } from '@/auth/client';
+import { todayDay } from '@/dates';
 import { useOnFocus } from '@/hooks/use-on-focus';
+import { tapEpisode } from '@/media/episodes';
 import { place } from '@/media/order';
 
 export type Kind = 'book' | 'film' | 'series';
@@ -18,6 +22,9 @@ export interface Title {
     language: string | null;
     format: string | null;
     season: number | null;
+    episodes: number | null;
+    /** Episodes watched, counted from the first. */
+    watched: number;
     status: Status;
     startDate: string | null;
     endDate: string | null;
@@ -36,7 +43,9 @@ const empty = (): Sections => ({ doing: [], todo: [], done: [] });
 const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 export function useTitles() {
-    const { data, setData, error, reload } = useOnFocus<Record<Kind, Sections>>(
+    const { data, setData, error, setError, reload } = useOnFocus<
+        Record<Kind, Sections>
+    >(
         () =>
             Promise.all(
                 KINDS.map((kind) =>
@@ -77,5 +86,35 @@ export function useTitles() {
                 }
         );
 
-    return { titles, error, reload, drop, put };
+    // Taps on one title go out one after another, so they reach the server in
+    // order.
+    const pending = useRef(new Map<string, Promise<unknown>>());
+
+    /** Marks episodes watched up to `episode`, as a tap on its dot does. */
+    const watch = async (title: Title, episode: number) => {
+        const changes = tapEpisode(title, episode, todayDay());
+        setError(null);
+        put({ ...title, ...changes });
+        const request = (pending.current.get(title.id) ?? Promise.resolve())
+            .catch(() => {})
+            .then(() =>
+                apiFetch(`/api/titles/${title.id}`, {
+                    method: 'PATCH',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify(changes),
+                })
+            )
+            .then((res) => {
+                if (!res.ok) throw new Error();
+            });
+        pending.current.set(title.id, request);
+        try {
+            await request;
+        } catch {
+            put(title);
+            setError('Non riesco a salvare l’episodio.');
+        }
+    };
+
+    return { titles, error, reload, drop, put, watch };
 }

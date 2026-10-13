@@ -71,6 +71,7 @@ export function TitleForm({
     const [newLanguage, setNewLanguage] = useState(false);
     const [format, setFormat] = useState<Format | null>(null);
     const [season, setSeason] = useState('');
+    const [episodes, setEpisodes] = useState('');
     const [status, setStatus] = useState<Status>('todo');
     const [startDate, setStartDate] = useState<string | null>(null);
     const [endDate, setEndDate] = useState<string | null>(null);
@@ -102,6 +103,7 @@ export function TitleForm({
                     setLanguage(found.language ?? '');
                     setFormat(found.format as Format | null);
                     setSeason(found.season ? String(found.season) : '');
+                    setEpisodes(found.episodes ? String(found.episodes) : '');
                     setStatus(found.status);
                     setStartDate(found.startDate);
                     setEndDate(found.endDate);
@@ -136,6 +138,18 @@ export function TitleForm({
             setError('Scrivi il numero della stagione.');
             return;
         }
+        const episodeCount = episodes.trim() ? Number(episodes.trim()) : null;
+        if (
+            episodeCount !== null &&
+            !(
+                Number.isInteger(episodeCount) &&
+                episodeCount >= 1 &&
+                episodeCount <= 999
+            )
+        ) {
+            setError('Gli episodi vanno da 1 a 999.');
+            return;
+        }
         setBusy(true);
         setError(null);
         try {
@@ -149,7 +163,10 @@ export function TitleForm({
                         name,
                         ...(kind === 'book' && { author, format }),
                         ...(kind !== 'series' && { language }),
-                        ...(kind === 'series' && { season: seasonNumber }),
+                        ...(kind === 'series' && {
+                            season: seasonNumber,
+                            episodes: episodeCount,
+                        }),
                         status,
                         startDate,
                         endDate,
@@ -272,6 +289,15 @@ export function TitleForm({
                     value={season}
                     onChange={setSeason}
                     placeholder="1"
+                    keyboardType="number-pad"
+                />
+            )}
+            {kind === 'series' && (
+                <TextField
+                    label="Episodi"
+                    value={episodes}
+                    onChange={setEpisodes}
+                    placeholder="10"
                     keyboardType="number-pad"
                 />
             )}
