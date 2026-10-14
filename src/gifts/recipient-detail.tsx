@@ -1,6 +1,7 @@
 /**
  * One gift recipient: ideas on top with a field to add one, then the gifts
- * already given by year. "Modifica" renames or deletes the recipient.
+ * already given by year. The circle of an idea marks it given, a tap on a
+ * gift opens its form, and "Modifica" renames or deletes the recipient.
  */
 
 import { useState } from 'react';
@@ -18,6 +19,7 @@ import { ScreenHeader } from '@/components/screen-header';
 import { Sheet } from '@/components/sheet';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
+import { GiftSheet, GiveSheet } from '@/gifts/gift-sheet';
 import { giftDetail, groupByYear } from '@/gifts/list';
 import { useFocusRing } from '@/hooks/use-focus-ring';
 import { type Gift, useRecipient } from '@/hooks/use-recipient';
@@ -33,13 +35,27 @@ export function RecipientDetail({
     onRemoved: () => void;
 }) {
     const theme = useTheme();
-    const { recipient, error, addIdea, rename, remove } = useRecipient(
-        id,
-        onChanged
-    );
+    const { recipient, error, add, update, removeGift, rename, remove } =
+        useRecipient(id, onChanged);
     const [editing, setEditing] = useState(false);
+    const [sheet, setSheet] = useState<
+        | { kind: 'edit' | 'give'; gift: Gift }
+        | { kind: 'new'; given: boolean }
+        | null
+    >(null);
+    const closeSheet = () => setSheet(null);
 
-    const ideas = recipient?.gifts.filter((g) => g.givenOn === null) ?? [];
+    const ideas = (recipient?.gifts ?? [])
+        .filter((g) => g.givenOn === null)
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    const row = (g: Gift) => (
+        <GiftRow
+            key={g.id}
+            gift={g}
+            onOpen={() => setSheet({ kind: 'edit', gift: g })}
+            onGive={() => setSheet({ kind: 'give', gift: g })}
+        />
+    );
     const years = groupByYear(recipient?.gifts ?? []);
 
     const body =
@@ -54,14 +70,23 @@ export function RecipientDetail({
                 contentContainerStyle={styles.body}
                 keyboardShouldPersistTaps="handled">
                 <ThemedText type="subtitle">Idee</ThemedText>
-                {ideas.map((g) => (
-                    <GiftRow key={g.id} gift={g} />
-                ))}
-                <AddField onAdd={addIdea} />
+                {ideas.map(row)}
+                <AddField onAdd={(name) => add({ name })} />
 
-                <ThemedText type="subtitle" style={styles.section}>
-                    Fatti
-                </ThemedText>
+                <View style={styles.sectionRow}>
+                    <ThemedText type="subtitle" style={styles.grow}>
+                        Fatti
+                    </ThemedText>
+                    <Pressable
+                        onPress={() => setSheet({ kind: 'new', given: true })}
+                        accessibilityRole="button"
+                        hitSlop={Spacing.two}
+                        style={({ pressed }) => pressed && styles.pressed}>
+                        <ThemedText themeColor="accent">
+                            + Aggiungi regalo fatto
+                        </ThemedText>
+                    </Pressable>
+                </View>
                 {years.length === 0 && (
                     <ThemedText themeColor="textMuted">
                         Ancora nessun regalo fatto.
@@ -72,9 +97,7 @@ export function RecipientDetail({
                         <ThemedText type="small" themeColor="textMuted">
                             {year}
                         </ThemedText>
-                        {gifts.map((g) => (
-                            <GiftRow key={g.id} gift={g} />
-                        ))}
+                        {gifts.map(row)}
                     </View>
                 ))}
                 {error && !editing && (
@@ -108,11 +131,41 @@ export function RecipientDetail({
                     onClose={() => setEditing(false)}
                 />
             )}
+            {sheet?.kind === 'new' && (
+                <GiftSheet
+                    given={sheet.given}
+                    onSave={add}
+                    onClose={closeSheet}
+                />
+            )}
+            {sheet?.kind === 'edit' && (
+                <GiftSheet
+                    gift={sheet.gift}
+                    onSave={(changes) => update(sheet.gift, changes)}
+                    onRemove={() => removeGift(sheet.gift)}
+                    onClose={closeSheet}
+                />
+            )}
+            {sheet?.kind === 'give' && (
+                <GiveSheet
+                    gift={sheet.gift}
+                    onGive={(changes) => update(sheet.gift, changes)}
+                    onClose={closeSheet}
+                />
+            )}
         </>
     );
 }
 
-function GiftRow({ gift }: { gift: Gift }) {
+function GiftRow({
+    gift,
+    onOpen,
+    onGive,
+}: {
+    gift: Gift;
+    onOpen: () => void;
+    onGive: () => void;
+}) {
     const theme = useTheme();
     const given = gift.givenOn !== null;
     const detail = giftDetail(gift);
@@ -120,21 +173,37 @@ function GiftRow({ gift }: { gift: Gift }) {
     return (
         <View
             style={[styles.row, { backgroundColor: theme.backgroundElement }]}>
-            <View
-                style={[
-                    styles.circle,
-                    { borderColor: theme.accent },
-                    given && { backgroundColor: theme.accent },
-                ]}
-            />
-            <View style={styles.rowMain}>
+            <Pressable
+                onPress={onGive}
+                disabled={given}
+                accessibilityRole="checkbox"
+                aria-checked={given}
+                accessibilityLabel={`Segna ${gift.name} come regalato`}
+                hitSlop={Spacing.two}
+                style={({ pressed }) => pressed && styles.pressed}>
+                <View
+                    style={[
+                        styles.circle,
+                        { borderColor: theme.accent },
+                        given && { backgroundColor: theme.accent },
+                    ]}
+                />
+            </Pressable>
+            <Pressable
+                onPress={onOpen}
+                accessibilityRole="button"
+                accessibilityHint="Modifica il regalo"
+                style={({ pressed }) => [
+                    styles.rowMain,
+                    pressed && styles.pressed,
+                ]}>
                 <ThemedText>{gift.name}</ThemedText>
                 {detail !== '' && (
                     <ThemedText type="small" themeColor="textMuted">
                         {detail}
                     </ThemedText>
                 )}
-            </View>
+            </Pressable>
             {gift.link && (
                 <Pressable
                     onPress={() => Linking.openURL(gift.link!)}
@@ -290,8 +359,14 @@ const styles = StyleSheet.create({
         padding: Spacing.four,
         gap: Spacing.two,
     },
-    section: {
+    sectionRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.three,
         marginTop: Spacing.three,
+    },
+    grow: {
+        flex: 1,
     },
     year: {
         gap: Spacing.two,

@@ -1,6 +1,6 @@
 /**
- * One gift recipient with all their gifts: adding an idea, renaming the
- * recipient, and deleting them with their gifts.
+ * One gift recipient with all their gifts: adding, changing and deleting
+ * gifts, renaming the recipient, and deleting them with their gifts.
  */
 
 import { apiFetch } from '@/auth/client';
@@ -23,6 +23,8 @@ export interface Recipient {
     gifts: Gift[];
 }
 
+export type GiftChanges = Partial<Omit<Gift, 'id' | 'createdAt'>>;
+
 const json = { 'Content-Type': 'application/json' };
 
 export function useRecipient(id: string, onChanged?: () => void) {
@@ -42,26 +44,70 @@ export function useRecipient(id: string, onChanged?: () => void) {
         id
     );
 
-    const addIdea = async (name: string) => {
+    const setGifts = (change: (gifts: Gift[]) => Gift[]) =>
+        setRecipient((current) =>
+            current ? { ...current, gifts: change(current.gifts) } : current
+        );
+
+    const add = async (fields: GiftChanges & { name: string }) => {
         setError(null);
         try {
             const res = await apiFetch(`/api/recipients/${id}/gifts`, {
                 method: 'POST',
                 headers: json,
-                body: JSON.stringify({ name }),
+                body: JSON.stringify(fields),
             });
             if (!res.ok) throw new Error();
             const created: Gift = await res.json();
-            setRecipient((current) =>
-                current
-                    ? { ...current, gifts: [...current.gifts, created] }
-                    : current
-            );
+            setGifts((gifts) => [...gifts, created]);
             onChanged?.();
             return true;
         } catch {
-            setError("Non riesco ad aggiungere l'idea.");
+            setError('Non riesco ad aggiungere il regalo.');
             return false;
+        }
+    };
+
+    /**
+     * Applies the change at once, then takes the server's copy, which has the
+     * link completed; rolls back if the save fails.
+     */
+    const update = async (gift: Gift, changes: GiftChanges) => {
+        const replace = (next: Gift) =>
+            setGifts((gifts) =>
+                gifts.map((g) => (g.id === gift.id ? next : g))
+            );
+        setError(null);
+        replace({ ...gift, ...changes });
+        try {
+            const res = await apiFetch(`/api/gifts/${gift.id}`, {
+                method: 'PATCH',
+                headers: json,
+                body: JSON.stringify(changes),
+            });
+            if (!res.ok) throw new Error();
+            replace(await res.json());
+            onChanged?.();
+        } catch {
+            replace(gift);
+            setError('Non riesco a salvare il regalo.');
+        }
+    };
+
+    /** Removes at once and puts the gift back if the delete fails. */
+    const removeGift = async (gift: Gift) => {
+        setError(null);
+        setGifts((gifts) => gifts.filter((g) => g.id !== gift.id));
+        try {
+            const res = await apiFetch(`/api/gifts/${gift.id}`, {
+                method: 'DELETE',
+            });
+            if (!res.ok && res.status !== 404) throw new Error();
+            onChanged?.();
+        } catch {
+            // Gifts show sorted, so the end of the list is as good as any.
+            setGifts((gifts) => [...gifts, gift]);
+            setError('Non riesco a eliminare il regalo.');
         }
     };
 
@@ -102,5 +148,5 @@ export function useRecipient(id: string, onChanged?: () => void) {
         }
     };
 
-    return { recipient, error, addIdea, rename, remove };
+    return { recipient, error, add, update, removeGift, rename, remove };
 }
