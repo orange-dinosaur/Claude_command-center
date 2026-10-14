@@ -99,6 +99,13 @@ export const TOOLS: Tool[] = [
         href: '/glimmers',
         icon: { ios: 'sparkles', android: 'auto_awesome', web: 'auto_awesome' },
     },
+    {
+        key: 'regali',
+        title: 'Regali',
+        label: 'Regali',
+        href: '/regali',
+        icon: { ios: 'gift', android: 'redeem', web: 'redeem' },
+    },
 ];
 
 /** A saved list from a request body: known keys, each once, `hidden` a boolean. */
