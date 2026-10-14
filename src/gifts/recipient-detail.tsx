@@ -29,10 +29,13 @@ export function RecipientDetail({
     id,
     onChanged,
     onRemoved,
+    panel,
 }: {
     id: string;
     onChanged?: () => void;
     onRemoved: () => void;
+    /** Drawn in the desktop panel beside the list, without the back header. */
+    panel?: boolean;
 }) {
     const theme = useTheme();
     const { recipient, error, add, update, removeGift, rename, remove } =
@@ -67,8 +70,24 @@ export function RecipientDetail({
             </ThemedText>
         ) : (
             <ScrollView
-                contentContainerStyle={styles.body}
+                contentContainerStyle={panel ? styles.desktopBody : styles.body}
                 keyboardShouldPersistTaps="handled">
+                {panel && (
+                    <View style={styles.titleRow}>
+                        <ThemedText type="title" style={styles.grow}>
+                            {recipient.name}
+                        </ThemedText>
+                        <Pressable
+                            onPress={() => setEditing(true)}
+                            accessibilityRole="link"
+                            hitSlop={Spacing.two}
+                            style={({ pressed }) => pressed && styles.pressed}>
+                            <ThemedText themeColor="accent">
+                                Modifica
+                            </ThemedText>
+                        </Pressable>
+                    </View>
+                )}
                 <ThemedText type="subtitle">Idee</ThemedText>
                 {ideas.map(row)}
                 <AddField onAdd={(name) => add({ name })} />
@@ -110,16 +129,25 @@ export function RecipientDetail({
 
     return (
         <>
-            <ScreenHeader
-                title={recipient?.name ?? ''}
-                backTo="/regali"
-                link={
-                    recipient
-                        ? { label: 'Modifica', onPress: () => setEditing(true) }
-                        : undefined
-                }
-            />
-            {body}
+            {panel ? (
+                <View style={styles.panel}>{body}</View>
+            ) : (
+                <>
+                    <ScreenHeader
+                        title={recipient?.name ?? ''}
+                        backTo="/regali"
+                        link={
+                            recipient
+                                ? {
+                                      label: 'Modifica',
+                                      onPress: () => setEditing(true),
+                                  }
+                                : undefined
+                        }
+                    />
+                    {body}
+                </>
+            )}
             {editing && recipient && (
                 <RecipientSheet
                     name={recipient.name}
@@ -358,6 +386,22 @@ const styles = StyleSheet.create({
     body: {
         padding: Spacing.four,
         gap: Spacing.two,
+    },
+    panel: {
+        flex: 1,
+        paddingTop: 32,
+        paddingHorizontal: 40,
+    },
+    desktopBody: {
+        paddingBottom: 32,
+        gap: Spacing.two,
+        maxWidth: 720,
+    },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.three,
+        marginBottom: Spacing.two,
     },
     sectionRow: {
         flexDirection: 'row',

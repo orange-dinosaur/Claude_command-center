@@ -1,13 +1,20 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedView } from '@/components/themed-view';
 import { RecipientDetail } from '@/gifts/recipient-detail';
+import { useIsDesktop } from '@/hooks/use-is-desktop';
 
 export default function RegaliRecipient() {
     const router = useRouter();
+    const isDesktop = useIsDesktop();
     const { id } = useLocalSearchParams<{ id: string }>();
+
+    // On desktop the recipient lives in the panel beside the list.
+    if (isDesktop) {
+        return <Redirect href={{ pathname: '/regali', params: { id } }} />;
+    }
 
     return (
         <ThemedView style={styles.container}>
