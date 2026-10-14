@@ -715,6 +715,70 @@ export const glimmer = pgTable(
     ]
 );
 
+/** A person the account keeps gifts for. Names are unique per account, ignoring case. */
+export const giftRecipient = pgTable(
+    'gift_recipient',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        name: text('name').notNull(),
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => [
+        uniqueIndex('gift_recipient_user_name_idx').on(
+            table.userId,
+            sql`lower(${table.name})`
+        ),
+        check(
+            'gift_recipient_name_length',
+            sql`char_length(${table.name}) between 1 and 100`
+        ),
+    ]
+);
+
+/** One gift for one recipient. An idea until `givenOn` is set. */
+export const gift = pgTable(
+    'gift',
+    {
+        id: text('id').primaryKey(),
+        recipientId: text('recipient_id')
+            .notNull()
+            .references(() => giftRecipient.id, { onDelete: 'cascade' }),
+        name: text('name').notNull(),
+        /** "Compleanno", "Natale", "Anniversario", or the user's own text. */
+        occasion: text('occasion'),
+        priceCents: integer('price_cents'),
+        link: text('link'),
+        givenOn: date('given_on'),
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => [
+        index('gift_recipient_id_idx').on(table.recipientId),
+        check(
+            'gift_name_length',
+            sql`char_length(${table.name}) between 1 and 200`
+        ),
+        check(
+            'gift_occasion_length',
+            sql`char_length(${table.occasion}) between 1 and 60`
+        ),
+        check(
+            'gift_price_cents',
+            sql`${table.priceCents} between 0 and 10000000`
+        ),
+        check(
+            'gift_link_length',
+            sql`char_length(${table.link}) between 1 and 2000`
+        ),
+    ]
+);
+
 /** One row per account, created on its first save. */
 export const userSettings = pgTable('user_settings', {
     userId: text('user_id')
