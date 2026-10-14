@@ -3,7 +3,7 @@
  * only.
  */
 
-import { gift } from '@/db/schema';
+import { gift, giftRecipient } from '@/db/schema';
 import { parseDate, parseName } from '@/http';
 
 import { MAX_PRICE_CENTS } from './price';
@@ -13,6 +13,22 @@ type Gift = typeof gift.$inferSelect;
 export type GiftFields = Partial<
     Pick<Gift, 'name' | 'occasion' | 'priceCents' | 'link' | 'givenOn'>
 >;
+
+/** What the API returns for a gift. */
+export const giftColumns = {
+    id: gift.id,
+    name: gift.name,
+    occasion: gift.occasion,
+    priceCents: gift.priceCents,
+    link: gift.link,
+    givenOn: gift.givenOn,
+    createdAt: gift.createdAt,
+};
+
+export const recipientColumns = {
+    id: giftRecipient.id,
+    name: giftRecipient.name,
+};
 
 export const parseRecipientName = (value: unknown) => parseName(value, 100);
 
