@@ -779,6 +779,33 @@ export const gift = pgTable(
     ]
 );
 
+/** One Semaforo item. The four colours are fixed in `src/semaforo/colours.ts`. */
+export const semaforoItem = pgTable(
+    'semaforo_item',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        colour: text('colour').notNull(),
+        name: text('name').notNull(),
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => [
+        index('semaforo_item_user_id_idx').on(table.userId),
+        check(
+            'semaforo_item_colour',
+            sql`${table.colour} in ('red', 'orange', 'yellow', 'green')`
+        ),
+        check(
+            'semaforo_item_name_length',
+            sql`char_length(${table.name}) between 1 and 100`
+        ),
+    ]
+);
+
 /** One row per account, created on its first save. */
 export const userSettings = pgTable('user_settings', {
     userId: text('user_id')
