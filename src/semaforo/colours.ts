@@ -1,10 +1,16 @@
+import type { ThemeColor } from '@/constants/theme';
+
 /** Semaforo's four colour lists, in display order. The database checks the same keys. */
 export const COLOURS = [
-    { key: 'red', label: 'nope' },
-    { key: 'orange', label: 'mmmmh' },
-    { key: 'yellow', label: 'sometimes' },
-    { key: 'green', label: 'yes' },
-] as const;
+    { key: 'red', label: 'nope', tone: 'danger' },
+    { key: 'orange', label: 'mmmmh', tone: 'amber' },
+    { key: 'yellow', label: 'sometimes', tone: 'ochre' },
+    { key: 'green', label: 'yes', tone: 'accent' },
+] as const satisfies readonly {
+    key: string;
+    label: string;
+    tone: ThemeColor;
+}[];
 
 export type Colour = (typeof COLOURS)[number]['key'];
 

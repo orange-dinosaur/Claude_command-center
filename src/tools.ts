@@ -106,6 +106,13 @@ export const TOOLS: Tool[] = [
         href: '/regali',
         icon: { ios: 'gift', android: 'redeem', web: 'redeem' },
     },
+    {
+        key: 'semaforo',
+        title: 'Semaforo',
+        label: 'Semaforo',
+        href: '/semaforo',
+        icon: { ios: 'light.beacon.max', android: 'traffic', web: 'traffic' },
+    },
 ];
 
 /** A saved list from a request body: known keys, each once, `hidden` a boolean. */

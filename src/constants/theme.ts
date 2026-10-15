@@ -14,6 +14,8 @@ export const Colors = {
         border: '#DED5C9',
         markEmpty: '#DED5C9',
         onAccent: '#FBF8F4',
+        amber: '#B8693A',
+        ochre: '#B8923A',
     },
     dark: {
         text: '#ECEAE2',
@@ -27,6 +29,8 @@ export const Colors = {
         border: '#343B33',
         markEmpty: '#5A6457',
         onAccent: '#171B17',
+        amber: '#E0A070',
+        ochre: '#D9BE6E',
     },
 } as const;
 
