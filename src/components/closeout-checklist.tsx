@@ -188,7 +188,9 @@ function AddField({
     onClose?: () => void;
 }) {
     const [text, setText] = useState<string | null>(startOpen ? '' : null);
-    const [saving, setSaving] = useState(false);
+    // Saves still in flight. The field stays open for them, so a failed
+    // one has somewhere to put its text back.
+    const [pending, setPending] = useState(0);
 
     if (text === null) {
         return (
@@ -206,14 +208,16 @@ function AddField({
 
     const submit = async () => {
         const value = text.trim();
-        if (!value || saving) return;
-        setSaving(true);
-        if (await onAdd(area, value)) setText('');
-        setSaving(false);
+        if (!value) return;
+        setText('');
+        setPending((n) => n + 1);
+        // Give the item back unless something new was typed meanwhile.
+        if (!(await onAdd(area, value))) setText((current) => current || value);
+        setPending((n) => n - 1);
     };
 
     const close = () => {
-        if (text.trim() || saving) return;
+        if (text.trim() || pending > 0) return;
         setText(null);
         onClose?.();
     };
