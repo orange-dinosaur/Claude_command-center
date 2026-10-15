@@ -36,12 +36,12 @@ export function useOnFocus<T>(
             load()
                 .then((result) => {
                     if (cancelled) return;
+                    const fresh = changes.current === started;
                     setData((current) =>
-                        current === undefined || changes.current === started
-                            ? result
-                            : current
+                        current === undefined || fresh ? result : current
                     );
-                    setError(null);
+                    // A dropped load leaves the page's message alone.
+                    if (fresh) setError(null);
                 })
                 .catch(() => {
                     if (cancelled) return;

@@ -208,14 +208,13 @@ function AddField({ onAdd }: { onAdd: (text: string) => Promise<boolean> }) {
     const theme = useTheme();
     const focus = useFocusRing();
     const [text, setText] = useState('');
-    const [saving, setSaving] = useState(false);
 
     const submit = async () => {
         const value = text.trim();
-        if (!value || saving) return;
-        setSaving(true);
-        if (await onAdd(value)) setText('');
-        setSaving(false);
+        if (!value) return;
+        setText('');
+        // Give the item back unless something new was typed meanwhile.
+        if (!(await onAdd(value))) setText((current) => current || value);
     };
 
     return (

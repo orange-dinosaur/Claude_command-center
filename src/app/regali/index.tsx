@@ -34,7 +34,6 @@ export default function Regali() {
     const focus = useFocusRing();
     const { recipients, error, add, reload } = useRecipients();
     const [name, setName] = useState('');
-    const [saving, setSaving] = useState(false);
 
     // With no recipient in the URL, desktop shows the first one.
     const selected = params.id ?? recipients?.[0]?.id;
@@ -46,10 +45,10 @@ export default function Regali() {
 
     const submit = async () => {
         const value = name.trim();
-        if (!value || saving) return;
-        setSaving(true);
-        if (await add(value)) setName('');
-        setSaving(false);
+        if (!value) return;
+        setName('');
+        // Give the name back unless something new was typed meanwhile.
+        if (!(await add(value))) setName((current) => current || value);
     };
 
     const addField = (
