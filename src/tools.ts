@@ -111,7 +111,7 @@ export const TOOLS: Tool[] = [
         title: 'Semaforo',
         label: 'Semaforo',
         href: '/semaforo',
-        icon: { ios: 'light.beacon.max', android: 'traffic', web: 'traffic' },
+        icon: { ios: 'bag', android: 'shopping_bag', web: 'shopping_bag' },
     },
 ];
 
