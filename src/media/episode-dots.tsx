@@ -4,16 +4,19 @@ import { useTheme } from '@/hooks/use-theme';
 
 /**
  * One dot per episode of a season, filled up to the episodes watched. A tap
- * on a dot calls `onPress` with its episode number, counted from 1.
+ * on a dot calls `onPress` with its episode number, counted from 1. Saga
+ * volumes use the same dots with their own `label`.
  */
 export function EpisodeDots({
     episodes,
     watched,
+    label = 'Episodio',
     onAccent,
     onPress,
 }: {
     episodes: number;
     watched: number;
+    label?: string;
     onAccent?: boolean;
     onPress: (episode: number) => void;
 }) {
@@ -33,7 +36,7 @@ export function EpisodeDots({
                         hitSlop={3}
                         accessibilityRole="checkbox"
                         aria-checked={checked}
-                        accessibilityLabel={`Episodio ${episode}`}
+                        accessibilityLabel={`${label} ${episode}`}
                         style={[
                             styles.dot,
                             { backgroundColor: checked ? full : empty },

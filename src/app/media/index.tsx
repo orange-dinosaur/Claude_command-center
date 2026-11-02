@@ -28,6 +28,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useTitles, type Kind, type Title } from '@/hooks/use-titles';
 import { EpisodeDots } from '@/media/episode-dots';
 import { STATUS_LABELS } from '@/media/labels';
+import { SectionToggle } from '@/media/section-toggle';
 import { TITLE_HEADERS, TitleForm, isKind } from '@/media/title-form';
 
 const TABS = ['Libri', 'Film', 'Serie'] as const;
@@ -138,7 +139,26 @@ export default function Media() {
                             ? [listPage.list, styles.sections]
                             : styles.list
                     }>
-                    {!isDesktop && add}
+                    {!isDesktop && (
+                        <View style={styles.addRow}>
+                            <AddButton
+                                onPress={() => select()}
+                                style={styles.grow}
+                            />
+                            {kind === 'book' && (
+                                <Pressable
+                                    onPress={() => router.push('/media/saghe')}
+                                    accessibilityRole="button"
+                                    style={({ pressed }) => [
+                                        styles.saghe,
+                                        { borderColor: theme.border },
+                                        pressed && styles.pressed,
+                                    ]}>
+                                    <ThemedText>Saghe</ThemedText>
+                                </Pressable>
+                            )}
+                        </View>
+                    )}
                     {sections.doing.length +
                         sections.todo.length +
                         sections.done.length ===
@@ -164,49 +184,17 @@ export default function Media() {
                                         {STATUS_LABELS[kind][status]}
                                     </ThemedText>
                                 ) : (
-                                    <Pressable
+                                    <SectionToggle
+                                        label={STATUS_LABELS[kind][status]}
+                                        count={rows.length}
+                                        open={isOpen}
                                         onPress={() =>
                                             setOpen((o) => ({
                                                 ...o,
                                                 [key]: !isOpen,
                                             }))
                                         }
-                                        accessibilityRole="button"
-                                        accessibilityState={{
-                                            expanded: isOpen,
-                                        }}
-                                        style={({ pressed }) => [
-                                            styles.sectionHeader,
-                                            pressed && styles.pressed,
-                                        ]}>
-                                        <ThemedText
-                                            type="subtitle"
-                                            style={styles.grow}>
-                                            {STATUS_LABELS[kind][status]}
-                                        </ThemedText>
-                                        <ThemedText themeColor="textMuted">
-                                            {rows.length}
-                                        </ThemedText>
-                                        <SymbolView
-                                            name={
-                                                isOpen
-                                                    ? {
-                                                          ios: 'chevron.down',
-                                                          android:
-                                                              'expand_more',
-                                                          web: 'expand_more',
-                                                      }
-                                                    : {
-                                                          ios: 'chevron.right',
-                                                          android:
-                                                              'chevron_right',
-                                                          web: 'chevron_right',
-                                                      }
-                                            }
-                                            tintColor={theme.textMuted}
-                                            size={24}
-                                        />
-                                    </Pressable>
+                                    />
                                 )}
                                 {isOpen &&
                                     rows.map((t) => (
@@ -354,10 +342,15 @@ const styles = StyleSheet.create({
     section: {
         gap: Spacing.two,
     },
-    sectionHeader: {
+    addRow: {
         flexDirection: 'row',
-        alignItems: 'center',
         gap: Spacing.two,
+    },
+    saghe: {
+        justifyContent: 'center',
+        paddingHorizontal: Spacing.three,
+        borderRadius: 14,
+        borderWidth: 1,
     },
     pressed: {
         opacity: 0.6,

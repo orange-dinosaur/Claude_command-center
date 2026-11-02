@@ -15,18 +15,25 @@ export default function SagaPage() {
 
     // On desktop the form lives in the panel beside the list.
     if (isDesktop) {
-        return <Redirect href="/media" />;
+        return (
+            <Redirect
+                href={{
+                    pathname: '/media/saghe',
+                    params: id ? { id } : {},
+                }}
+            />
+        );
     }
 
     const backToList = () =>
-        router.canGoBack() ? router.back() : router.replace('/media');
+        router.canGoBack() ? router.back() : router.replace('/media/saghe');
 
     return (
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.container}>
                 <ScreenHeader
                     title={id ? SAGA_HEADERS.edit : SAGA_HEADERS.add}
-                    backTo="/media"
+                    backTo="/media/saghe"
                 />
                 <SagaForm id={id} onSaved={backToList} onDeleted={backToList} />
             </SafeAreaView>
