@@ -40,12 +40,19 @@ export function useOnFocus<T>(
         setData(value);
     }, []);
     const showingSaved = useRef(false);
+    // Reset during render, so one item's data is never saved under another's
+    // name.
+    const [dataOf, setDataOf] = useState(savedAs);
+    if (dataOf !== savedAs) {
+        setDataOf(savedAs);
+        setData(undefined);
+    }
 
     // After mount, so the first render matches the server's page.
     useLayoutEffect(() => {
         const stored = savedAs ? readSaved<T>(savedAs) : undefined;
+        showingSaved.current = stored !== undefined;
         if (stored === undefined) return;
-        showingSaved.current = true;
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setData((current) => (current === undefined ? stored : current));
     }, [savedAs]);

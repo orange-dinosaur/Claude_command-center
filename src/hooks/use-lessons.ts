@@ -53,7 +53,8 @@ export function useLessonActivity(id: string) {
                 res.status === 404 ? null : json(res)
             ),
         'Non riesco a caricare l’attività.',
-        id
+        id,
+        `lesson-activity.${id}`
     );
     return { activity: data, error, reload };
 }

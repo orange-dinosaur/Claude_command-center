@@ -69,7 +69,8 @@ export function useCycle(id?: string) {
                               : null
                       ),
         FAILURE,
-        id
+        id,
+        `cycle.${id ?? 'latest'}`
     );
     /** Shows the loading state until the next cycle arrives. */
     const clear = () => setData(undefined);

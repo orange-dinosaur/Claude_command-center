@@ -41,7 +41,8 @@ export function useRecipient(id: string, onChanged?: () => void) {
                 return res.ok ? res.json() : Promise.reject();
             }),
         'Non riesco a caricare i regali.',
-        id
+        id,
+        `recipient.${id}`
     );
 
     const setGifts = (change: (gifts: Gift[]) => Gift[]) =>

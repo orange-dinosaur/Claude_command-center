@@ -37,7 +37,8 @@ export function useBucketSeason(id: string, onChanged?: () => void) {
                 return res.ok ? res.json() : Promise.reject();
             }),
         'Non riesco a caricare la stagione.',
-        id
+        id,
+        `bucket-season.${id}`
     );
 
     const setItems = (change: (items: BucketItem[]) => BucketItem[]) =>
