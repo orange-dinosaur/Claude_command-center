@@ -806,6 +806,37 @@ export const semaforoItem = pgTable(
     ]
 );
 
+export const saga = pgTable(
+    'saga',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        name: text('name').notNull(),
+        author: text('author'),
+        volumes: integer('volumes').notNull(),
+        volumesRead: integer('volumes_read').default(0).notNull(),
+        nextRelease: text('next_release'),
+        archivedAt: timestamp('archived_at', { withTimezone: true }),
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => [
+        index('saga_user_id_idx').on(table.userId),
+        check(
+            'saga_name_length',
+            sql`char_length(${table.name}) between 1 and 100`
+        ),
+        check('saga_volumes', sql`${table.volumes} between 1 and 99`),
+        check(
+            'saga_volumes_read',
+            sql`${table.volumesRead} between 0 and ${table.volumes}`
+        ),
+    ]
+);
+
 /** One row per account, created on its first save. */
 export const userSettings = pgTable('user_settings', {
     userId: text('user_id')
