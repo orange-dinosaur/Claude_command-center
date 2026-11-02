@@ -6,6 +6,7 @@ import { saga } from '@/db/schema';
 import { parseTarget } from '@/habits/input';
 import { parseName, parseOptionalText } from '@/http';
 
+import { parseCover } from './covers';
 import { NAME_MAX, RELEASE_MAX, VOLUMES_MAX } from './sagas';
 
 type Saga = typeof saga.$inferSelect;
@@ -31,6 +32,7 @@ export type SagaFields = Partial<
         | 'name'
         | 'author'
         | 'language'
+        | 'coverUrl'
         | 'audiobook'
         | 'volumes'
         | 'volumesRead'
@@ -62,6 +64,11 @@ export function parseSagaFields(
         const language = parseOptionalText(body.language);
         if (language === undefined) return 'Invalid language';
         fields.language = language;
+    }
+    if ('cover' in body) {
+        const cover = parseCover(body.cover);
+        if (cover === undefined) return 'Invalid cover';
+        fields.coverUrl = cover;
     }
     if ('audiobook' in body) {
         if (typeof body.audiobook !== 'boolean') return 'Invalid audiobook';

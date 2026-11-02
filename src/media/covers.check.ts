@@ -1,7 +1,9 @@
 // Run with `bun src/media/covers.check.ts`.
 import assert from 'node:assert/strict';
 
-import { languageCode, searchUrl, toCovers } from './covers';
+import { languageCode, parseCover, searchUrl, toCovers } from './covers';
+import { parseTitleFields } from './input';
+import { parseSagaFields } from './saga-input';
 
 assert.equal(languageCode('Italiano'), 'it');
 assert.equal(languageCode(' INGLESE '), 'en');
@@ -61,5 +63,36 @@ assert.deepEqual(
 );
 assert.deepEqual(toCovers({ totalItems: 0 }), []);
 assert.deepEqual(toCovers(null), []);
+
+const google = 'https://books.google.com/books/content?id=a&zoom=1';
+const photo = '/api/covers/3f0c2b52-9d57-4f6e-8a2c-1c7d9e4b6a10';
+
+assert.equal(parseCover(google), google);
+assert.equal(parseCover(photo), photo);
+assert.equal(parseCover(null), null);
+assert.equal(parseCover('http://books.google.com/x'), undefined);
+assert.equal(parseCover('https://books.google.com.evil.test/x'), undefined);
+assert.equal(parseCover('https://evil.test/books.google.com'), undefined);
+assert.equal(parseCover('/api/covers/../titles'), undefined);
+assert.equal(parseCover('javascript:alert(1)'), undefined);
+assert.equal(parseCover('not a url'), undefined);
+assert.equal(parseCover(`${google}${'x'.repeat(500)}`), undefined);
+assert.equal(parseCover(5), undefined);
+assert.equal(parseCover(undefined), undefined);
+
+assert.deepEqual(parseTitleFields({ cover: google }, 'book'), {
+    coverUrl: google,
+});
+assert.deepEqual(parseTitleFields({ cover: null }, 'book'), { coverUrl: null });
+assert.equal(
+    parseTitleFields({ cover: 'https://evil.test/x' }, 'book'),
+    'Invalid cover'
+);
+assert.equal(
+    parseTitleFields({ cover: google }, 'film'),
+    'Only books have a cover'
+);
+assert.deepEqual(parseSagaFields({ cover: photo }), { coverUrl: photo });
+assert.equal(parseSagaFields({ cover: 'x' }), 'Invalid cover');
 
 console.log('covers ok');

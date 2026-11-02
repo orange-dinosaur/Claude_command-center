@@ -7,6 +7,9 @@ export type Cover = {
 };
 
 const MAX_RESULTS = 25;
+const MAX_URL = 500;
+const GOOGLE_HOST = 'books.google.com';
+const PHOTO_URL = /^\/api\/covers\/[0-9a-f-]{36}$/;
 
 const LANGUAGES: Record<string, string> = {
     italiano: 'it',
@@ -47,6 +50,21 @@ type Volume = {
         imageLinks?: { thumbnail?: unknown };
     };
 };
+
+/**
+ * A cover to store: a Google Books image, an uploaded photo, or null for none.
+ * Anything else is undefined, so a row can never point at an arbitrary site.
+ */
+export function parseCover(value: unknown): string | null | undefined {
+    if (value === null) return null;
+    if (typeof value !== 'string' || value.length > MAX_URL) return undefined;
+    if (PHOTO_URL.test(value)) return value;
+
+    const url = URL.parse(value);
+    return url?.protocol === 'https:' && url.hostname === GOOGLE_HOST
+        ? value
+        : undefined;
+}
 
 /** Reads Google's answer, dropping results with no title or no image. */
 export function toCovers(body: unknown): Cover[] {

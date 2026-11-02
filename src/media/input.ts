@@ -5,6 +5,8 @@
 import { title } from '@/db/schema';
 import { parseDate, parseName, parseOptionalText } from '@/http';
 
+import { parseCover } from './covers';
+
 type Title = typeof title.$inferSelect;
 export type Kind = Title['kind'];
 
@@ -46,6 +48,7 @@ export type TitleFields = Partial<
         | 'name'
         | 'author'
         | 'language'
+        | 'coverUrl'
         | 'format'
         | 'season'
         | 'episodes'
@@ -88,6 +91,14 @@ export function parseTitleFields(
         const language = parseOptionalText(body.language);
         if (language === undefined) return 'Invalid language';
         fields.language = language;
+    }
+    if ('cover' in body) {
+        if (kind !== 'book' && body.cover != null) {
+            return 'Only books have a cover';
+        }
+        const cover = parseCover(body.cover);
+        if (cover === undefined) return 'Invalid cover';
+        fields.coverUrl = cover;
     }
     if ('format' in body) {
         if (kind !== 'book' && body.format != null) {
