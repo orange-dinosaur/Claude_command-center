@@ -15,6 +15,7 @@ export const sagaColumns = {
     id: saga.id,
     name: saga.name,
     author: saga.author,
+    language: saga.language,
     volumes: saga.volumes,
     volumesRead: saga.volumesRead,
     nextRelease: saga.nextRelease,
@@ -27,6 +28,7 @@ export type SagaFields = Partial<
         Saga,
         | 'name'
         | 'author'
+        | 'language'
         | 'volumes'
         | 'volumesRead'
         | 'nextRelease'
@@ -52,6 +54,11 @@ export function parseSagaFields(
         const author = parseOptionalText(body.author);
         if (author === undefined) return 'Invalid author';
         fields.author = author;
+    }
+    if ('language' in body) {
+        const language = parseOptionalText(body.language);
+        if (language === undefined) return 'Invalid language';
+        fields.language = language;
     }
     if ('volumes' in body) {
         const volumes = parseTarget(body.volumes, VOLUMES_MAX);

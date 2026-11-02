@@ -155,6 +155,13 @@
       "when": 1793637475674,
       "tag": "0021_complex_rick_jones",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793639122298,
+      "tag": "0022_nasty_stranger",
+      "breakpoints": true
     }
   ]
 }

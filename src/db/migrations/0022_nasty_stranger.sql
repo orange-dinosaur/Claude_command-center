@@ -1,0 +1,1 @@
+ALTER TABLE "saga" ADD COLUMN "language" text;

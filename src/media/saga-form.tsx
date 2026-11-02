@@ -21,7 +21,9 @@ import { Spacing } from '@/constants/theme';
 import { parseCount } from '@/habits/habit-form';
 import type { Saga } from '@/hooks/use-sagas';
 import { useTheme } from '@/hooks/use-theme';
+import type { Sections } from '@/hooks/use-titles';
 import { NAME_MAX, RELEASE_MAX, VOLUMES_MAX } from '@/media/sagas';
+import { LanguageField } from '@/media/title-form';
 
 export const SAGA_HEADERS = {
     add: 'Aggiungi saga',
@@ -29,6 +31,9 @@ export const SAGA_HEADERS = {
 };
 
 const json = { 'content-type': 'application/json' };
+
+const mergeLanguages = (current: string[], more: (string | null)[]) =>
+    [...new Set([...current, ...more.flatMap((l) => l ?? [])])].sort();
 
 export function SagaForm({
     id,
@@ -53,28 +58,60 @@ export function SagaForm({
     );
     const [name, setName] = useState('');
     const [author, setAuthor] = useState('');
+    const [language, setLanguage] = useState('');
+    // Languages already used on books and sagas, offered as chips.
+    const [languages, setLanguages] = useState<string[]>([]);
     const [volumes, setVolumes] = useState('');
     const [nextRelease, setNextRelease] = useState('');
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!id) return;
+        let cancelled = false;
+        apiFetch('/api/titles?kind=book')
+            .then((res) => (res.ok ? res.json() : Promise.reject()))
+            .then(
+                (books: Sections) =>
+                    !cancelled &&
+                    setLanguages((current) =>
+                        mergeLanguages(
+                            current,
+                            Object.values(books)
+                                .flat()
+                                .map((t) => t.language)
+                        )
+                    )
+            )
+            .catch(() => {});
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    useEffect(() => {
         let cancelled = false;
         apiFetch('/api/sagas')
             .then((res) => (res.ok ? res.json() : Promise.reject()))
             .then((sagas: Saga[]) => {
                 if (cancelled) return;
+                setLanguages((current) =>
+                    mergeLanguages(
+                        current,
+                        sagas.map((s) => s.language)
+                    )
+                );
+                if (!id) return;
                 const found = sagas.find((s) => s.id === id) ?? null;
                 setSaga(found);
                 if (!found) return;
                 setName(found.name);
                 setAuthor(found.author ?? '');
+                setLanguage(found.language ?? '');
                 setVolumes(String(found.volumes));
                 setNextRelease(found.nextRelease ?? '');
             })
             .catch(() => {
-                if (cancelled) return;
+                if (cancelled || !id) return;
                 setSaga(null);
                 setError('Non riesco a caricare la saga.');
             });
@@ -126,6 +163,7 @@ export function SagaForm({
         const fields = {
             name: trimmed,
             author,
+            language,
             volumes: planned,
             nextRelease,
         };
@@ -178,6 +216,11 @@ export function SagaForm({
                 onChange={setAuthor}
                 placeholder="Brandon Sanderson"
             />
+            <LanguageField
+                value={language}
+                onChange={setLanguage}
+                languages={languages}
+            />
             <TextField
                 label="Volumi previsti"
                 value={volumes}
@@ -210,6 +253,7 @@ export function SagaForm({
                 onSave={save}
                 onDelete={saga ? remove : undefined}
                 name={`“${name}”`}
+                compact
                 extra={
                     saga && !saga.archivedAt
                         ? {

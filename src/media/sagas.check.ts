@@ -27,6 +27,7 @@ assert.deepEqual(
     parseSagaFields({
         name: '  Dune ',
         author: ' ',
+        language: ' Inglese ',
         volumes: 6,
         volumesRead: 0,
         nextRelease: ' marzo 2027 ',
@@ -34,6 +35,7 @@ assert.deepEqual(
     {
         name: 'Dune',
         author: null,
+        language: 'Inglese',
         volumes: 6,
         volumesRead: 0,
         nextRelease: 'marzo 2027',
@@ -46,6 +48,7 @@ assert.ok(archived.archivedAt instanceof Date);
 
 assert.equal(parseSagaFields({ name: ' ' }), 'Invalid name');
 assert.equal(parseSagaFields({ name: 'x'.repeat(101) }), 'Invalid name');
+assert.equal(parseSagaFields({ language: 42 }), 'Invalid language');
 assert.equal(parseSagaFields({ volumes: 0 }), 'Invalid volumes');
 assert.equal(parseSagaFields({ volumes: 100 }), 'Invalid volumes');
 assert.equal(parseSagaFields({ volumes: 2.5 }), 'Invalid volumes');

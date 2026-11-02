@@ -168,6 +168,7 @@ function SagaRow({
 }) {
     const details = [
         saga.author,
+        saga.language,
         saga.nextRelease && `esce ${saga.nextRelease}`,
     ].filter(Boolean);
 

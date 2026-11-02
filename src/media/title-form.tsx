@@ -68,7 +68,6 @@ export function TitleForm({
     const [language, setLanguage] = useState('');
     // Languages already used on books, offered as chips.
     const [languages, setLanguages] = useState<string[]>([]);
-    const [newLanguage, setNewLanguage] = useState(false);
     const [format, setFormat] = useState<Format | null>(null);
     const [season, setSeason] = useState('');
     const [episodes, setEpisodes] = useState('');
@@ -236,52 +235,11 @@ export function TitleForm({
                 />
             )}
             {kind !== 'series' && (
-                <Field label="Lingua">
-                    <View style={styles.chips}>
-                        {languages.map((l) => {
-                            const selected = l === language;
-                            return (
-                                <Chip
-                                    key={l}
-                                    label={l}
-                                    selected={selected}
-                                    onPress={() => {
-                                        setLanguage(selected ? '' : l);
-                                        setNewLanguage(false);
-                                    }}
-                                />
-                            );
-                        })}
-                        {!newLanguage && (
-                            <Pressable
-                                onPress={() => {
-                                    setLanguage('');
-                                    setNewLanguage(true);
-                                }}
-                                accessibilityRole="button"
-                                style={[
-                                    styles.chip,
-                                    {
-                                        borderColor: theme.accent,
-                                        borderWidth: 1,
-                                    },
-                                ]}>
-                                <ThemedText style={{ color: theme.accent }}>
-                                    + Nuova lingua
-                                </ThemedText>
-                            </Pressable>
-                        )}
-                    </View>
-                    {newLanguage && (
-                        <TextField
-                            label="Nuova lingua"
-                            value={language}
-                            onChange={setLanguage}
-                            placeholder="Inglese"
-                            autoFocus
-                        />
-                    )}
-                </Field>
+                <LanguageField
+                    value={language}
+                    onChange={setLanguage}
+                    languages={languages}
+                />
             )}
             {kind === 'series' && (
                 <View style={styles.pair}>
@@ -372,6 +330,69 @@ export function TitleForm({
                 compact
             />
         </ScrollView>
+    );
+}
+
+/** Picks one of `languages`, or takes a new one in a text field. */
+export function LanguageField({
+    value,
+    onChange,
+    languages,
+}: {
+    value: string;
+    onChange: (language: string) => void;
+    languages: string[];
+}) {
+    const theme = useTheme();
+    const [isNew, setIsNew] = useState(false);
+
+    return (
+        <Field label="Lingua">
+            <View style={styles.chips}>
+                {languages.map((l) => {
+                    const selected = l === value;
+                    return (
+                        <Chip
+                            key={l}
+                            label={l}
+                            selected={selected}
+                            onPress={() => {
+                                onChange(selected ? '' : l);
+                                setIsNew(false);
+                            }}
+                        />
+                    );
+                })}
+                {!isNew && (
+                    <Pressable
+                        onPress={() => {
+                            onChange('');
+                            setIsNew(true);
+                        }}
+                        accessibilityRole="button"
+                        style={[
+                            styles.chip,
+                            {
+                                borderColor: theme.accent,
+                                borderWidth: 1,
+                            },
+                        ]}>
+                        <ThemedText style={{ color: theme.accent }}>
+                            + Nuova lingua
+                        </ThemedText>
+                    </Pressable>
+                )}
+            </View>
+            {isNew && (
+                <TextField
+                    label="Nuova lingua"
+                    value={value}
+                    onChange={onChange}
+                    placeholder="Inglese"
+                    autoFocus
+                />
+            )}
+        </Field>
     );
 }
 

@@ -815,6 +815,7 @@ export const saga = pgTable(
             .references(() => user.id, { onDelete: 'cascade' }),
         name: text('name').notNull(),
         author: text('author'),
+        language: text('language'),
         volumes: integer('volumes').notNull(),
         volumesRead: integer('volumes_read').default(0).notNull(),
         nextRelease: text('next_release'),
