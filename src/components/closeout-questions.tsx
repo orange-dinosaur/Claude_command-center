@@ -111,6 +111,15 @@ function AnswerField({
     const queue = useRef(Promise.resolve());
     const saveRef = useRef(() => {});
 
+    // Saved rows can arrive first, so the field follows the server until there
+    // is typing left to save.
+    useEffect(() => {
+        if (latest.current !== saved.current) return;
+        latest.current = initial;
+        saved.current = initial;
+        setText(initial);
+    }, [initial]);
+
     const save = () => {
         clearTimeout(timer.current);
         queue.current = queue.current.then(async () => {

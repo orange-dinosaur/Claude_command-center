@@ -37,7 +37,8 @@ export function useCloseoutMonth(id: string) {
                 return res.ok ? res.json() : Promise.reject();
             }),
         'Non riesco a caricare il mese.',
-        id
+        id,
+        `closeout-month.${id}`
     );
     const [busy, setBusy] = useState(false);
     const [itemError, setItemError] = useState<string | null>(null);
