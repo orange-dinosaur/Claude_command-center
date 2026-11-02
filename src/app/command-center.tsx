@@ -14,7 +14,8 @@ import { useTools } from '@/hooks/use-tools';
 export default function CommandCenter() {
     // The auth guard sees the session end and replaces this screen with login.
     const signOut = () => authClient.signOut();
-    const visible = useTools().tools.filter((tool) => !tool.hidden);
+    const { tools, ready } = useTools();
+    const visible = tools.filter((tool) => !tool.hidden);
 
     // On desktop the rail holds the tools.
     if (useIsDesktop()) return <Redirect href="/" />;
@@ -44,7 +45,7 @@ export default function CommandCenter() {
                             icon={tool.icon}
                         />
                     ))}
-                    {visible.length === 0 && (
+                    {ready && visible.length === 0 && (
                         <ThemedText themeColor="textMuted">
                             Nessuno strumento visibile. Li riaccendi dalle
                             impostazioni.
