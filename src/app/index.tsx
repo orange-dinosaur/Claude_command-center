@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DateBlock } from '@/components/date-block';
+import { OpeningLine } from '@/components/opening-line';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { VisionBoard } from '@/components/vision-board';
@@ -52,6 +53,7 @@ export default function Home() {
                         </Pressable>
                     </Link>
                 </View>
+                <OpeningLine />
                 <VisionBoard />
             </SafeAreaView>
         </ThemedView>
