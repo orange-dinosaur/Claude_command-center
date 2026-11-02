@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 
 import type { Sections, Title } from '@/hooks/use-titles';
-import { place } from '@/media/order';
+import { byKind, place } from '@/media/order';
 
 const t = (id: string, fields: Partial<Title> = {}): Title => ({
     id,
@@ -65,5 +65,21 @@ assert.deepEqual(
     ),
     ['hhhh', 'a', 'bb']
 );
+
+// A flat list splits by kind and status, each list in its own order.
+const grouped = byKind([
+    t('dd'),
+    t('c'),
+    t('i', { kind: 'film' }),
+    t('bb', { status: 'doing', startDate: null }),
+    t('a', { status: 'doing', startDate: '2026-09-10' }),
+    t('e', { status: 'done', endDate: '2026-08-01' }),
+    t('jj', { status: 'done', endDate: '2026-09-01' }),
+]);
+assert.deepEqual(ids(grouped.book.todo), ['c', 'dd']);
+assert.deepEqual(ids(grouped.book.doing), ['a', 'bb']);
+assert.deepEqual(ids(grouped.book.done), ['jj', 'e']);
+assert.deepEqual(ids(grouped.film.todo), ['i']);
+assert.deepEqual(ids(grouped.series.todo), []);
 
 console.log('order ok');

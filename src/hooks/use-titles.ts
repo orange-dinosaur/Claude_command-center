@@ -1,6 +1,5 @@
 /**
- * The signed-in user's titles of every kind, split by status in the order the
- * API gives them.
+ * The signed-in user's titles of every kind, split by status.
  */
 
 import { useRef } from 'react';
@@ -9,7 +8,7 @@ import { apiFetch } from '@/auth/client';
 import { todayDay } from '@/dates';
 import { useOnFocus } from '@/hooks/use-on-focus';
 import { tapEpisode } from '@/media/episodes';
-import { place } from '@/media/order';
+import { byKind, place } from '@/media/order';
 
 export type Kind = 'book' | 'film' | 'series';
 export type Status = 'doing' | 'todo' | 'done';
@@ -36,8 +35,6 @@ export interface Title {
 
 export type Sections = Record<Status, Title[]>;
 
-const KINDS: Kind[] = ['book', 'film', 'series'];
-
 const empty = (): Sections => ({ doing: [], todo: [], done: [] });
 
 const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
@@ -46,12 +43,7 @@ export function useTitles() {
     const { data, setData, error, setError, reload } = useOnFocus<
         Record<Kind, Sections>
     >(
-        () =>
-            Promise.all(
-                KINDS.map((kind) =>
-                    apiFetch(`/api/titles?kind=${kind}`).then(json)
-                )
-            ).then(([book, film, series]) => ({ book, film, series })),
+        () => apiFetch('/api/titles').then(json).then(byKind),
         'Non riesco a caricare i dati.'
     );
     // undefined while loading the first time; a failed first load is empty.

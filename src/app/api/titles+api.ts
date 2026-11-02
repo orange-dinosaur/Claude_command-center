@@ -1,7 +1,8 @@
 /**
- * The signed-in user's titles of one kind (`?kind=book|film|series`). `GET`
- * returns `{ doing, todo, done }`: in progress newest start first, to do in
- * the order they were added, done newest end first. `POST` adds one.
+ * The signed-in user's titles. `GET` with `?kind=book|film|series` returns
+ * `{ doing, todo, done }`: in progress newest start first, to do in the order
+ * they were added, done newest end first. Without `kind` it returns every title
+ * as one unsorted list. `POST` adds one.
  */
 
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
@@ -22,6 +23,13 @@ export async function GET(request: Request): Promise<Response> {
     if (!account) return unauthorized();
 
     const kind = new URL(request.url).searchParams.get('kind');
+    if (kind === null) {
+        const rows = await db
+            .select(titleColumns)
+            .from(title)
+            .where(eq(title.userId, account.id));
+        return Response.json(rows);
+    }
     if (!isKind(kind)) return badRequest('Invalid kind');
 
     const inStatus = (status: 'todo' | 'doing' | 'done') =>
