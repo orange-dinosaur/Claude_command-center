@@ -24,6 +24,7 @@ import { parseCount } from '@/habits/habit-form';
 import type { Saga } from '@/hooks/use-sagas';
 import { useTheme } from '@/hooks/use-theme';
 import type { Sections } from '@/hooks/use-titles';
+import { CoverField } from '@/media/cover-picker';
 import { NAME_MAX, RELEASE_MAX, VOLUMES_MAX } from '@/media/sagas';
 import { LanguageField } from '@/media/title-form';
 
@@ -61,6 +62,7 @@ export function SagaForm({
     const [name, setName] = useState('');
     const [author, setAuthor] = useState('');
     const [language, setLanguage] = useState('');
+    const [cover, setCover] = useState<string | null>(null);
     // Languages already used on books and sagas, offered as chips.
     const [languages, setLanguages] = useState<string[]>([]);
     const [audiobook, setAudiobook] = useState(false);
@@ -110,6 +112,7 @@ export function SagaForm({
                 setName(found.name);
                 setAuthor(found.author ?? '');
                 setLanguage(found.language ?? '');
+                setCover(found.coverUrl);
                 setAudiobook(found.audiobook);
                 setVolumes(String(found.volumes));
                 setNextRelease(found.nextRelease ?? '');
@@ -168,6 +171,7 @@ export function SagaForm({
             name: trimmed,
             author,
             language,
+            cover,
             audiobook,
             volumes: planned,
             nextRelease,
@@ -209,18 +213,28 @@ export function SagaForm({
     return (
         <ScrollView contentContainerStyle={[styles.body, style]}>
             {title && <ThemedText type="title">{title}</ThemedText>}
-            <TextField
-                label="Nome"
-                value={name}
-                onChange={setName}
-                placeholder="Stormlight"
-            />
-            <TextField
-                label="Autore"
-                value={author}
-                onChange={setAuthor}
-                placeholder="Brandon Sanderson"
-            />
+            <View style={styles.cover}>
+                <CoverField
+                    value={cover}
+                    onChange={setCover}
+                    query={`${name} ${author}`.trim()}
+                    language={language}
+                />
+                <View style={styles.names}>
+                    <TextField
+                        label="Nome"
+                        value={name}
+                        onChange={setName}
+                        placeholder="Stormlight"
+                    />
+                    <TextField
+                        label="Autore"
+                        value={author}
+                        onChange={setAuthor}
+                        placeholder="Brandon Sanderson"
+                    />
+                </View>
+            </View>
             <LanguageField
                 value={language}
                 onChange={setLanguage}
@@ -292,6 +306,15 @@ const styles = StyleSheet.create({
     body: {
         flexGrow: 1,
         padding: Spacing.four,
+        gap: Spacing.three,
+    },
+    cover: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.three,
+    },
+    names: {
+        flex: 1,
         gap: Spacing.three,
     },
     audiobook: {
