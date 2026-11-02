@@ -284,22 +284,26 @@ export function TitleForm({
                 </Field>
             )}
             {kind === 'series' && (
-                <TextField
-                    label="Stagione"
-                    value={season}
-                    onChange={setSeason}
-                    placeholder="1"
-                    keyboardType="number-pad"
-                />
-            )}
-            {kind === 'series' && (
-                <TextField
-                    label="Episodi"
-                    value={episodes}
-                    onChange={setEpisodes}
-                    placeholder="10"
-                    keyboardType="number-pad"
-                />
+                <View style={styles.pair}>
+                    <View style={styles.half}>
+                        <TextField
+                            label="Stagione"
+                            value={season}
+                            onChange={setSeason}
+                            placeholder="1"
+                            keyboardType="number-pad"
+                        />
+                    </View>
+                    <View style={styles.half}>
+                        <TextField
+                            label="Episodi"
+                            value={episodes}
+                            onChange={setEpisodes}
+                            placeholder="10"
+                            keyboardType="number-pad"
+                        />
+                    </View>
+                </View>
             )}
             {kind === 'book' && (
                 <Field label="Formato">
@@ -332,19 +336,32 @@ export function TitleForm({
                     style={styles.status}
                 />
             </Field>
-            <Field label="Inizio">
-                <DateField
-                    value={startDate}
-                    onChange={setStartDate}
-                    label="Inizio"
-                />
-            </Field>
-            <Field label="Fine">
-                <DateField value={endDate} onChange={setEndDate} label="Fine" />
-            </Field>
-            <Field label="Voto">
+            <View style={styles.pair}>
+                <View style={styles.half}>
+                    <Field label="Inizio">
+                        <DateField
+                            value={startDate}
+                            onChange={setStartDate}
+                            label="Inizio"
+                        />
+                    </Field>
+                </View>
+                <View style={styles.half}>
+                    <Field label="Fine">
+                        <DateField
+                            value={endDate}
+                            onChange={setEndDate}
+                            label="Fine"
+                        />
+                    </Field>
+                </View>
+            </View>
+            <View style={styles.rating}>
+                <ThemedText type="small" themeColor="textMuted">
+                    Voto
+                </ThemedText>
                 <Stars rating={rating} onChange={setRating} size={36} />
-            </Field>
+            </View>
 
             <FormActions
                 error={error}
@@ -405,11 +422,24 @@ const styles = StyleSheet.create({
     },
     body: {
         flexGrow: 1,
-        padding: Spacing.four,
-        gap: Spacing.three,
+        paddingHorizontal: Spacing.four,
+        paddingVertical: Spacing.two,
+        gap: Spacing.two,
     },
     fieldGroup: {
         gap: Spacing.one,
+    },
+    pair: {
+        flexDirection: 'row',
+        gap: Spacing.two,
+    },
+    half: {
+        flex: 1,
+    },
+    rating: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.three,
     },
     chips: {
         flexDirection: 'row',
