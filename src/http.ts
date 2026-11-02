@@ -4,6 +4,7 @@
  */
 
 const MAX_TEXT = 200;
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export const notFound = () =>
     Response.json({ error: 'Not found' }, { status: 404 });
@@ -25,6 +26,47 @@ export async function readBody(
     } catch {
         return null;
     }
+}
+
+/** Reads a base64 image. Returns it, or the error response to send. */
+export function parseImage(
+    body: Record<string, unknown>,
+    maxBytes: number
+): { data: string; contentType: string } | Response {
+    const { data, contentType } = body;
+
+    if (typeof data !== 'string' || !data) {
+        return badRequest('An image is required');
+    }
+    if (typeof contentType !== 'string' || !IMAGE_TYPES.includes(contentType)) {
+        return badRequest('That kind of image is not supported');
+    }
+    // Base64 carries four characters for every three bytes.
+    if (Math.ceil((data.length * 3) / 4) > maxBytes) {
+        return Response.json(
+            { error: 'That image is too big' },
+            { status: 413 }
+        );
+    }
+    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(data)) {
+        return badRequest('That image is not readable');
+    }
+
+    return { data, contentType };
+}
+
+/** Serves stored base64 from a URL whose random id changes with the image. */
+export function imageResponse(data: string, contentType: string): Response {
+    const bytes = Buffer.from(data, 'base64');
+
+    return new Response(bytes, {
+        headers: {
+            'content-type': contentType,
+            'content-length': String(bytes.byteLength),
+            // The id changes with the image, so this never goes stale.
+            'cache-control': 'public, max-age=31536000, immutable',
+        },
+    });
 }
 
 /** Required text: trimmed, not empty, capped. */

@@ -10,7 +10,7 @@ import { eq } from 'drizzle-orm';
 
 import { db } from '@/db';
 import { visionBoard } from '@/db/schema';
-import { notFound } from '@/http';
+import { imageResponse, notFound } from '@/http';
 
 export async function GET(
     request: Request,
@@ -25,16 +25,5 @@ export async function GET(
         .where(eq(visionBoard.id, id))
         .limit(1);
 
-    if (!board) return notFound();
-
-    const bytes = Buffer.from(board.data, 'base64');
-
-    return new Response(bytes, {
-        headers: {
-            'content-type': board.contentType,
-            'content-length': String(bytes.byteLength),
-            // The id changes with the image, so this never goes stale.
-            'cache-control': 'public, max-age=31536000, immutable',
-        },
-    });
+    return board ? imageResponse(board.data, board.contentType) : notFound();
 }

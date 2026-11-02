@@ -13,6 +13,9 @@ const MAX_URL = 500;
 const GOOGLE_HOST = 'books.google.com';
 const PHOTO_URL = /^\/api\/covers\/[0-9a-f-]{36}$/;
 
+/** An uploaded photo's URL is this followed by its id. */
+export const PHOTO_PATH = '/api/covers/';
+
 const LANGUAGES: Record<string, string> = {
     italiano: 'it',
     italian: 'it',

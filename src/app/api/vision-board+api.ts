@@ -13,11 +13,9 @@ import { eq } from 'drizzle-orm';
 import { getSessionUser, unauthorized } from '@/auth/session';
 import { db } from '@/db';
 import { visionBoard } from '@/db/schema';
-import { badRequest, readBody } from '@/http';
+import { badRequest, parseImage, readBody } from '@/http';
 
 const MAX_BYTES = 1_000_000;
-
-const TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 const imagePath = (id: string) => `/api/vision-board/${id}`;
 
@@ -41,25 +39,10 @@ export async function POST(request: Request): Promise<Response> {
     const body = await readBody(request);
     if (!body) return badRequest('Invalid body');
 
-    const { data, contentType } = body;
+    const image = parseImage(body, MAX_BYTES);
+    if (image instanceof Response) return image;
 
-    if (typeof data !== 'string' || !data) {
-        return badRequest('An image is required');
-    }
-    if (typeof contentType !== 'string' || !TYPES.includes(contentType)) {
-        return badRequest('That kind of image is not supported');
-    }
-    // Base64 carries four characters for every three bytes.
-    if (Math.ceil((data.length * 3) / 4) > MAX_BYTES) {
-        return Response.json(
-            { error: 'That image is too big' },
-            { status: 413 }
-        );
-    }
-    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(data)) {
-        return badRequest('That image is not readable');
-    }
-
+    const { data, contentType } = image;
     const id = crypto.randomUUID();
 
     await db
