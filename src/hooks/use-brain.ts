@@ -17,7 +17,9 @@ const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 export function useBrain() {
     const { data, setData, error, setError } = useOnFocus<Entry[]>(
         () => apiFetch('/api/brain').then(json),
-        'Non riesco a caricare il brain dump.'
+        'Non riesco a caricare il brain dump.',
+        undefined,
+        'brain'
     );
 
     /** False when the save failed, so the page can give the text back. */

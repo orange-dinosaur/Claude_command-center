@@ -22,7 +22,9 @@ const oldestFirst = (a: Item, b: Item) =>
 export function useSemaforo() {
     const { data, setData, error, setError } = useOnFocus<Item[]>(
         () => apiFetch('/api/semaforo').then(json),
-        'Non riesco a caricare il semaforo.'
+        'Non riesco a caricare il semaforo.',
+        undefined,
+        'semaforo'
     );
 
     /** False when the save failed, so the page can give the name back. */

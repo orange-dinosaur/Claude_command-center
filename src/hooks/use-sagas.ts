@@ -29,7 +29,9 @@ const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 export function useSagas() {
     const { data, setData, error, setError, reload } = useOnFocus<Saga[]>(
         () => apiFetch('/api/sagas').then(json),
-        'Non riesco a caricare le saghe.'
+        'Non riesco a caricare le saghe.',
+        undefined,
+        'sagas'
     );
 
     /** Takes a deleted saga off the list before the reload. */

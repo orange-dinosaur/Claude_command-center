@@ -25,7 +25,9 @@ const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 export function useWorkouts() {
     const { data, setData, error, reload } = useOnFocus<Workout[]>(
         () => apiFetch('/api/workouts').then(json),
-        'Non riesco a caricare i dati.'
+        'Non riesco a caricare i dati.',
+        undefined,
+        'workouts'
     );
     // undefined while loading the first time; a failed first load is empty.
     const workouts = data === null ? [] : data;
@@ -61,7 +63,9 @@ export interface WorkoutType {
 export function useWorkoutTypes() {
     const { data, setData, error } = useOnFocus<WorkoutType[]>(
         () => apiFetch('/api/workout-types').then(json),
-        'Non riesco a caricare i tipi.'
+        'Non riesco a caricare i tipi.',
+        undefined,
+        'workout-types'
     );
     // undefined while loading the first time; a failed first load is empty.
     const types = data === null ? [] : data;

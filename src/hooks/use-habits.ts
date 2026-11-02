@@ -44,7 +44,9 @@ function putDay(days: Day[], date: string, entry: Day | undefined): Day[] {
 export function useHabits() {
     const { data, setData, error, setError, reload } = useOnFocus<Habit[]>(
         () => apiFetch('/api/habits').then(json),
-        'Non riesco a caricare le abitudini.'
+        'Non riesco a caricare le abitudini.',
+        undefined,
+        'habits'
     );
 
     const setDay = (id: string, date: string, entry: Day | undefined) =>

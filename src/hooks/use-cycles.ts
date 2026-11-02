@@ -103,7 +103,9 @@ export function useCycle(id?: string) {
 export function useCycles() {
     const { data, error, reload } = useOnFocus<Cycle[]>(
         () => apiFetch('/api/cycles').then(json),
-        FAILURE
+        FAILURE,
+        undefined,
+        'cycles'
     );
     return { cycles: data, error, reload };
 }

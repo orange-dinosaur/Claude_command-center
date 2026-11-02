@@ -23,7 +23,9 @@ export function useCloseoutMonths() {
             apiFetch('/api/closeout')
                 .then((res) => (res.ok ? res.json() : Promise.reject()))
                 .then((body: { months: MonthSummary[] }) => body.months),
-        'Non riesco a caricare i mesi.'
+        'Non riesco a caricare i mesi.',
+        undefined,
+        'closeout-months'
     );
     // undefined while loading the first time; a failed first load is empty.
     const months = data === null ? [] : data;

@@ -20,7 +20,9 @@ const newestFirst = (list: Glimmer[]) =>
 export function useGlimmers() {
     const { data, setData, error, setError } = useOnFocus<Glimmer[]>(
         () => apiFetch('/api/glimmers').then(json),
-        'Non riesco a caricare i glimmer.'
+        'Non riesco a caricare i glimmer.',
+        undefined,
+        'glimmers'
     );
 
     /**

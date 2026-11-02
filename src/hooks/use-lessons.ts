@@ -35,7 +35,9 @@ const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 export function useLessonActivities() {
     const { data, setData, error } = useOnFocus<LessonActivity[]>(
         () => apiFetch('/api/lesson-activities').then(json),
-        'Non riesco a caricare i pagamenti.'
+        'Non riesco a caricare i pagamenti.',
+        undefined,
+        'lesson-activities'
     );
     return {
         activities: data === null ? [] : data,

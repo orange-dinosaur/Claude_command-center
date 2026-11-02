@@ -25,7 +25,9 @@ export function useBucketSeasons() {
             apiFetch(`/api/bucket?today=${todayDay()}`)
                 .then((res) => (res.ok ? res.json() : Promise.reject()))
                 .then((body: { seasons: SeasonSummary[] }) => body.seasons),
-        'Non riesco a caricare le stagioni.'
+        'Non riesco a caricare le stagioni.',
+        undefined,
+        'bucket-seasons'
     );
     // undefined while loading the first time; a failed first load is empty.
     const seasons = data === null ? [] : data;

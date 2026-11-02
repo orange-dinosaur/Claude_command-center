@@ -24,7 +24,9 @@ export function useRecipients() {
             apiFetch('/api/recipients').then((res) =>
                 res.ok ? res.json() : Promise.reject()
             ),
-        'Non riesco a caricare le persone.'
+        'Non riesco a caricare le persone.',
+        undefined,
+        'recipients'
     );
     // undefined while loading the first time; a failed first load is empty.
     const recipients = data === null ? [] : data;
