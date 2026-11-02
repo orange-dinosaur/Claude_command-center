@@ -10,6 +10,7 @@ import { useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 
 import { authClient } from '@/auth/client';
+import { keepSavedFor } from '@/saved-data';
 
 export function useAuthGuard() {
     const { data: session, isPending } = authClient.useSession();
@@ -22,6 +23,8 @@ export function useAuthGuard() {
         // The session is read asynchronously. Acting while it is pending
         // would send a signed-in user to the login screen on every launch.
         if (isPending) return;
+
+        keepSavedFor(session?.user.id ?? null);
 
         if (!session && !inAuthGroup) router.replace('/login');
         if (session && inAuthGroup) router.replace('/');

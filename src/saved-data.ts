@@ -4,8 +4,10 @@
  * either way the page only waits for the server as it would without this.
  */
 
+const NAMESPACE = 'saved.';
+const OWNER = `${NAMESPACE}owner`;
 // Raise the number when the shape of anything saved changes.
-const PREFIX = 'saved.1.';
+const PREFIX = `${NAMESPACE}1.`;
 
 export function readSaved<T>(name: string): T | undefined {
     try {
@@ -25,5 +27,22 @@ export function writeSaved(name: string, value: unknown) {
 export function removeSaved(name: string) {
     try {
         localStorage.removeItem(PREFIX + name);
+    } catch {}
+}
+
+/**
+ * Removes everything saved unless it belongs to this user. Null means signed
+ * out, which always removes it.
+ */
+export function keepSavedFor(userId: string | null) {
+    try {
+        if (userId !== null && localStorage.getItem(OWNER) === userId) return;
+        const keys = Array.from({ length: localStorage.length }, (_, i) =>
+            localStorage.key(i)
+        );
+        for (const key of keys) {
+            if (key?.startsWith(NAMESPACE)) localStorage.removeItem(key);
+        }
+        if (userId !== null) localStorage.setItem(OWNER, userId);
     } catch {}
 }
