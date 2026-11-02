@@ -18,6 +18,7 @@ import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useSagas, type Saga } from '@/hooks/use-sagas';
 import { useTheme } from '@/hooks/use-theme';
 import { AudiobookIcon } from '@/media/audiobook-icon';
+import { Cover } from '@/media/cover';
 import { EpisodeDots } from '@/media/episode-dots';
 import { SAGA_HEADERS, SagaForm } from '@/media/saga-form';
 import { orderSagas } from '@/media/sagas';
@@ -175,6 +176,7 @@ function SagaRow({
 
     return (
         <ListRow selected={selected} onPress={onPress}>
+            <Cover url={saga.coverUrl} />
             <View style={styles.grow}>
                 <ThemedText themeColor={selected ? 'onAccent' : 'text'}>
                     {saga.name}

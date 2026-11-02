@@ -61,6 +61,27 @@ assert.deepEqual(
         },
     ]
 );
+assert.deepEqual(
+    toCovers({
+        items: [
+            {
+                volumeInfo: {
+                    title: 'Curl',
+                    imageLinks: {
+                        thumbnail: `${thumbnail}&edge=curl&source=x`,
+                    },
+                },
+            },
+        ],
+    }),
+    [
+        {
+            url: 'https://books.google.com/books/content?id=a&zoom=1&source=x',
+            name: 'Curl',
+            author: null,
+        },
+    ]
+);
 assert.deepEqual(toCovers({ totalItems: 0 }), []);
 assert.deepEqual(toCovers(null), []);
 

@@ -79,8 +79,11 @@ export function toCovers(body: unknown): Cover[] {
         }
         const author = Array.isArray(info.authors) ? info.authors[0] : null;
         return {
-            // Google answers with http links, which a secure page blocks.
-            url: thumbnail.replace(/^http:/, 'https:'),
+            // Google answers with http links, which a secure page blocks, and
+            // `edge=curl` draws a page curl on the image.
+            url: thumbnail
+                .replace(/^http:/, 'https:')
+                .replace('&edge=curl', ''),
             name: info.title,
             author: typeof author === 'string' ? author : null,
         };

@@ -26,6 +26,7 @@ import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
 import { useTitles, type Kind, type Title } from '@/hooks/use-titles';
 import { AudiobookIcon } from '@/media/audiobook-icon';
+import { Cover } from '@/media/cover';
 import { EpisodeDots } from '@/media/episode-dots';
 import { STATUS_LABELS } from '@/media/labels';
 import { SectionToggle } from '@/media/section-toggle';
@@ -274,6 +275,7 @@ function TitleRow({
 }) {
     return (
         <ListRow selected={selected} onPress={onPress}>
+            {title.kind === 'book' && <Cover url={title.coverUrl} />}
             <View style={styles.grow}>
                 <ThemedText themeColor={selected ? 'onAccent' : 'text'}>
                     {title.kind === 'series'
