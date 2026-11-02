@@ -18,6 +18,8 @@ interface FormActionsProps {
     name: string;
     /** Another destructive action above "Elimina", confirmed the same way. */
     extra?: { label: string; question: string; onConfirm: () => void };
+    /** On the phone, one row and less space above it, for a form that must fit the screen. */
+    compact?: boolean;
 }
 
 /**
@@ -32,9 +34,11 @@ export function FormActions({
     onDelete,
     name,
     extra,
+    compact = false,
 }: FormActionsProps) {
     const theme = useTheme();
     const isDesktop = useIsDesktop();
+    const phoneRow = compact && !isDesktop;
     const [confirming, setConfirming] = useState<'delete' | 'extra' | null>(
         null
     );
@@ -53,7 +57,11 @@ export function FormActions({
 
     return (
         <>
-            {!isDesktop && <View style={styles.spacer} />}
+            {!isDesktop && (
+                <View
+                    style={[styles.spacer, phoneRow && styles.spacerCompact]}
+                />
+            )}
 
             {error && (
                 <ThemedText
@@ -63,7 +71,14 @@ export function FormActions({
                     {error}
                 </ThemedText>
             )}
-            <View style={isDesktop ? styles.row : styles.column}>
+            <View
+                style={
+                    isDesktop
+                        ? styles.row
+                        : phoneRow
+                          ? styles.phoneRow
+                          : styles.column
+                }>
                 <Pressable
                     onPress={onSave}
                     disabled={busy}
@@ -71,6 +86,7 @@ export function FormActions({
                     style={({ pressed }) => [
                         styles.saveButton,
                         isDesktop && styles.saveDesktop,
+                        phoneRow && styles.grow,
                         { backgroundColor: theme.accent },
                         pressed && styles.pressed,
                     ]}>
@@ -150,6 +166,9 @@ const styles = StyleSheet.create({
         flex: 1,
         minHeight: Spacing.six,
     },
+    spacerCompact: {
+        minHeight: Spacing.two,
+    },
     center: {
         textAlign: 'center',
     },
@@ -180,6 +199,14 @@ const styles = StyleSheet.create({
     },
     saveDesktop: {
         paddingHorizontal: 48,
+    },
+    phoneRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.two,
+    },
+    grow: {
+        flex: 1,
     },
     link: {
         padding: 0,

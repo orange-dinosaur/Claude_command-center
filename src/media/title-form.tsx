@@ -352,6 +352,7 @@ export function TitleForm({
                 onSave={save}
                 onDelete={id ? remove : undefined}
                 name={name}
+                compact
             />
         </ScrollView>
     );
