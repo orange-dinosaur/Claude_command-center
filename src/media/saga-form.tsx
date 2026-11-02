@@ -137,7 +137,11 @@ export function SagaForm({
 
     const archive = async (archived: boolean) => {
         const res = await send(`/api/sagas/${saga!.id}`, 'PATCH', { archived });
-        if (res) onSaved(await res.json());
+        if (!res) return;
+        // On desktop the form stays open beside the list.
+        const saved = await res.json();
+        setSaga(saved);
+        onSaved(saved);
     };
 
     const remove = async () => {

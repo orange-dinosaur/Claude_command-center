@@ -114,7 +114,23 @@ export default function Media() {
         />
     );
 
-    const add = <AddButton onPress={() => select()} />;
+    const add = (
+        <View style={styles.addRow}>
+            <AddButton onPress={() => select()} style={styles.grow} />
+            {kind === 'book' && (
+                <Pressable
+                    onPress={() => router.push('/media/saghe')}
+                    accessibilityRole="button"
+                    style={({ pressed }) => [
+                        styles.saghe,
+                        { borderColor: theme.border },
+                        pressed && styles.pressed,
+                    ]}>
+                    <ThemedText>Saghe</ThemedText>
+                </Pressable>
+            )}
+        </View>
+    );
 
     const list = (
         <>
@@ -139,26 +155,7 @@ export default function Media() {
                             ? [listPage.list, styles.sections]
                             : styles.list
                     }>
-                    {!isDesktop && (
-                        <View style={styles.addRow}>
-                            <AddButton
-                                onPress={() => select()}
-                                style={styles.grow}
-                            />
-                            {kind === 'book' && (
-                                <Pressable
-                                    onPress={() => router.push('/media/saghe')}
-                                    accessibilityRole="button"
-                                    style={({ pressed }) => [
-                                        styles.saghe,
-                                        { borderColor: theme.border },
-                                        pressed && styles.pressed,
-                                    ]}>
-                                    <ThemedText>Saghe</ThemedText>
-                                </Pressable>
-                            )}
-                        </View>
-                    )}
+                    {!isDesktop && add}
                     {sections.doing.length +
                         sections.todo.length +
                         sections.done.length ===
