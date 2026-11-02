@@ -5,36 +5,35 @@
  * and 1080 px wide is a phone screen's width.
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { apiFetch } from '@/auth/client';
+import { useOnFocus } from '@/hooks/use-on-focus';
 import { chooseImage, encodeImage } from '@/pick-image';
 
 const WIDTH = 1080;
 
+async function loadImage() {
+    const res = await apiFetch('/api/vision-board');
+    if (!res.ok) throw new Error();
+    const body: { image: string | null } = await res.json();
+    return body.image;
+}
+
 export function useVisionBoard() {
     // undefined while loading, null when there is no image.
-    const [image, setImage] = useState<string | null | undefined>(undefined);
+    const {
+        data: image,
+        setData: setImage,
+        error: loadError,
+    } = useOnFocus(
+        loadImage,
+        'Non riesco a caricare la vision board.',
+        undefined,
+        'vision-board'
+    );
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        let cancelled = false;
-        apiFetch('/api/vision-board')
-            .then((res) => (res.ok ? res.json() : Promise.reject()))
-            .then((body: { image: string | null }) => {
-                if (!cancelled) setImage(body.image);
-            })
-            .catch(() => {
-                if (!cancelled) {
-                    setImage(null);
-                    setError('Non riesco a caricare la vision board.');
-                }
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, []);
 
     const choose = async () => {
         if (busy) return;
@@ -97,5 +96,12 @@ export function useVisionBoard() {
         setImage(null);
     };
 
-    return { image, busy, error, choose, remove };
+    // A failed check leaves the saved image up, and that needs no message.
+    return {
+        image,
+        busy,
+        error: error ?? (image ? null : loadError),
+        choose,
+        remove,
+    };
 }
