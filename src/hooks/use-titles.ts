@@ -45,7 +45,9 @@ export function useTitles() {
         Record<Kind, Sections>
     >(
         () => apiFetch('/api/titles').then(json).then(byKind),
-        'Non riesco a caricare i dati.'
+        'Non riesco a caricare i dati.',
+        undefined,
+        'titles'
     );
     // undefined while loading the first time; a failed first load is empty.
     const titles =

@@ -4,18 +4,29 @@
  */
 
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from 'react';
 import { AppState } from 'react-native';
+
+import { readSaved, removeSaved, writeSaved } from '@/saved-data';
 
 /**
  * `data` is undefined while loading the first time and null when there is
  * none or the first load failed. `key` says when `load` asks for something
- * else; `failure` is the message shown when loading fails.
+ * else; `failure` is the message shown when loading fails. With `savedAs` the
+ * page opens on what it showed last time on this device, until the server
+ * answers.
  */
 export function useOnFocus<T>(
     load: () => Promise<T | null>,
     failure: string,
-    key?: string
+    key?: string,
+    savedAs?: string
 ) {
     const [data, setData] = useState<T | null | undefined>(undefined);
     const [error, setError] = useState<string | null>(null);
@@ -28,6 +39,22 @@ export function useOnFocus<T>(
         changes.current++;
         setData(value);
     }, []);
+    const showingSaved = useRef(false);
+
+    // After mount, so the first render matches the server's page.
+    useLayoutEffect(() => {
+        const stored = savedAs ? readSaved<T>(savedAs) : undefined;
+        if (stored === undefined) return;
+        showingSaved.current = true;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setData((current) => (current === undefined ? stored : current));
+    }, [savedAs]);
+
+    useEffect(() => {
+        if (!savedAs || data === undefined) return;
+        if (data === null) removeSaved(savedAs);
+        else writeSaved(savedAs, data);
+    }, [savedAs, data]);
 
     useFocusEffect(
         useCallback(() => {
@@ -42,6 +69,11 @@ export function useOnFocus<T>(
                     );
                     // A dropped load leaves the page's message alone.
                     if (fresh) setError(null);
+                    // A tap on saved rows dropped this load, so the rest of the
+                    // page is still old. ponytail: if the tap's save has not
+                    // landed, this load can undo it on screen until next focus.
+                    else if (showingSaved.current) setVersion((v) => v + 1);
+                    showingSaved.current = false;
                 })
                 .catch(() => {
                     if (cancelled) return;
