@@ -16,6 +16,7 @@ export const sagaColumns = {
     name: saga.name,
     author: saga.author,
     language: saga.language,
+    audiobook: saga.audiobook,
     volumes: saga.volumes,
     volumesRead: saga.volumesRead,
     nextRelease: saga.nextRelease,
@@ -29,6 +30,7 @@ export type SagaFields = Partial<
         | 'name'
         | 'author'
         | 'language'
+        | 'audiobook'
         | 'volumes'
         | 'volumesRead'
         | 'nextRelease'
@@ -59,6 +61,10 @@ export function parseSagaFields(
         const language = parseOptionalText(body.language);
         if (language === undefined) return 'Invalid language';
         fields.language = language;
+    }
+    if ('audiobook' in body) {
+        if (typeof body.audiobook !== 'boolean') return 'Invalid audiobook';
+        fields.audiobook = body.audiobook;
     }
     if ('volumes' in body) {
         const volumes = parseTarget(body.volumes, VOLUMES_MAX);

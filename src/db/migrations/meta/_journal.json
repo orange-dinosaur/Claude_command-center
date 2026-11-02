@@ -162,6 +162,13 @@
       "when": 1793639122298,
       "tag": "0022_nasty_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793640236470,
+      "tag": "0023_goofy_talon",
+      "breakpoints": true
     }
   ]
 }

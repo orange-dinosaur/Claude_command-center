@@ -816,6 +816,7 @@ export const saga = pgTable(
         name: text('name').notNull(),
         author: text('author'),
         language: text('language'),
+        audiobook: boolean('audiobook').default(false).notNull(),
         volumes: integer('volumes').notNull(),
         volumesRead: integer('volumes_read').default(0).notNull(),
         nextRelease: text('next_release'),

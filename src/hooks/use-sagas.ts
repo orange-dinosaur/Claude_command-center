@@ -13,6 +13,7 @@ export interface Saga {
     name: string;
     author: string | null;
     language: string | null;
+    audiobook: boolean;
     volumes: number;
     /** Volumes read, counted from the first. */
     volumesRead: number;

@@ -10,11 +10,13 @@ import {
     ScrollView,
     StyleSheet,
     type StyleProp,
+    View,
     type ViewStyle,
 } from 'react-native';
 
 import { apiFetch } from '@/auth/client';
 import { FormActions } from '@/components/form-actions';
+import { Switch } from '@/components/switch';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
@@ -61,6 +63,7 @@ export function SagaForm({
     const [language, setLanguage] = useState('');
     // Languages already used on books and sagas, offered as chips.
     const [languages, setLanguages] = useState<string[]>([]);
+    const [audiobook, setAudiobook] = useState(false);
     const [volumes, setVolumes] = useState('');
     const [nextRelease, setNextRelease] = useState('');
     const [busy, setBusy] = useState(false);
@@ -107,6 +110,7 @@ export function SagaForm({
                 setName(found.name);
                 setAuthor(found.author ?? '');
                 setLanguage(found.language ?? '');
+                setAudiobook(found.audiobook);
                 setVolumes(String(found.volumes));
                 setNextRelease(found.nextRelease ?? '');
             })
@@ -164,6 +168,7 @@ export function SagaForm({
             name: trimmed,
             author,
             language,
+            audiobook,
             volumes: planned,
             nextRelease,
         };
@@ -221,6 +226,14 @@ export function SagaForm({
                 onChange={setLanguage}
                 languages={languages}
             />
+            <View style={styles.audiobook}>
+                <ThemedText>Audiolibro</ThemedText>
+                <Switch
+                    value={audiobook}
+                    onValueChange={setAudiobook}
+                    accessibilityLabel="Audiolibro"
+                />
+            </View>
             <TextField
                 label="Volumi previsti"
                 value={volumes}
@@ -280,6 +293,11 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         padding: Spacing.four,
         gap: Spacing.three,
+    },
+    audiobook: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
     link: {
         paddingHorizontal: Spacing.three,

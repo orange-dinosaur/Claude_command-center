@@ -1,0 +1,1 @@
+ALTER TABLE "saga" ADD COLUMN "audiobook" boolean DEFAULT false NOT NULL;

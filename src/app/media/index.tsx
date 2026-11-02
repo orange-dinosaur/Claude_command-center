@@ -1,4 +1,3 @@
-import { SymbolView } from 'expo-symbols';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -26,6 +25,7 @@ import { Spacing } from '@/constants/theme';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
 import { useTitles, type Kind, type Title } from '@/hooks/use-titles';
+import { AudiobookIcon } from '@/media/audiobook-icon';
 import { EpisodeDots } from '@/media/episode-dots';
 import { STATUS_LABELS } from '@/media/labels';
 import { SectionToggle } from '@/media/section-toggle';
@@ -272,7 +272,6 @@ function TitleRow({
     onPress: () => void;
     onWatch: (title: Title, episode: number) => void;
 }) {
-    const theme = useTheme();
     return (
         <ListRow selected={selected} onPress={onPress}>
             <View style={styles.grow}>
@@ -298,17 +297,7 @@ function TitleRow({
                 )}
             </View>
             {title.format === 'audiolibro' && (
-                <View accessibilityRole="image" accessibilityLabel="Audiolibro">
-                    <SymbolView
-                        name={{
-                            ios: 'headphones',
-                            android: 'headphones',
-                            web: 'headphones',
-                        }}
-                        tintColor={selected ? theme.onAccent : theme.textMuted}
-                        size={18}
-                    />
-                </View>
+                <AudiobookIcon selected={selected} />
             )}
             {title.rating !== null && (
                 <Stars rating={title.rating} onAccent={selected} />
