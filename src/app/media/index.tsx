@@ -287,6 +287,7 @@ function TitleRow({
     onPress: () => void;
     onWatch: (title: Title, episode: number) => void;
 }) {
+    const theme = useTheme();
     return (
         <ListRow selected={selected} onPress={onPress}>
             <View style={styles.grow}>
@@ -311,6 +312,19 @@ function TitleRow({
                     />
                 )}
             </View>
+            {title.format === 'audiolibro' && (
+                <View accessibilityRole="image" accessibilityLabel="Audiolibro">
+                    <SymbolView
+                        name={{
+                            ios: 'headphones',
+                            android: 'headphones',
+                            web: 'headphones',
+                        }}
+                        tintColor={selected ? theme.onAccent : theme.textMuted}
+                        size={18}
+                    />
+                </View>
+            )}
             {title.rating !== null && (
                 <Stars rating={title.rating} onAccent={selected} />
             )}
