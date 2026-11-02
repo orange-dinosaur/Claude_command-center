@@ -19,10 +19,8 @@ import {
 } from '@/media/input';
 
 export async function GET(request: Request): Promise<Response> {
-    const started = performance.now();
     const account = await getSessionUser(request);
     if (!account) return unauthorized();
-    const sessionDone = performance.now();
 
     const kind = new URL(request.url).searchParams.get('kind');
     if (kind === null) {
@@ -30,13 +28,7 @@ export async function GET(request: Request): Promise<Response> {
             .select(titleColumns)
             .from(title)
             .where(eq(title.userId, account.id));
-        const session = (sessionDone - started).toFixed(0);
-        const data = (performance.now() - sessionDone).toFixed(0);
-        return Response.json(rows, {
-            headers: {
-                'Server-Timing': `session;dur=${session}, data;dur=${data}`,
-            },
-        });
+        return Response.json(rows);
     }
     if (!isKind(kind)) return badRequest('Invalid kind');
 
