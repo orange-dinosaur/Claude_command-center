@@ -9,6 +9,9 @@ const OWNER = `${NAMESPACE}owner`;
 // Raise the number when the shape of anything saved changes.
 const PREFIX = `${NAMESPACE}1.`;
 
+// What the server has confirmed since the app started.
+const checked = new Set<string>();
+
 export function readSaved<T>(name: string): T | undefined {
     try {
         const stored = localStorage.getItem(PREFIX + name);
@@ -16,6 +19,15 @@ export function readSaved<T>(name: string): T | undefined {
     } catch {
         return undefined;
     }
+}
+
+export function markChecked(name: string) {
+    checked.add(name);
+}
+
+/** Saved data, only once the server has answered for it in this visit. */
+export function readChecked<T>(name: string): T | undefined {
+    return checked.has(name) ? readSaved<T>(name) : undefined;
 }
 
 export function writeSaved(name: string, value: unknown) {
@@ -37,6 +49,7 @@ export function removeSaved(name: string) {
 export function keepSavedFor(userId: string | null) {
     try {
         if (userId !== null && localStorage.getItem(OWNER) === userId) return;
+        checked.clear();
         const keys = Array.from({ length: localStorage.length }, (_, i) =>
             localStorage.key(i)
         );

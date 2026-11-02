@@ -23,10 +23,11 @@ import { Spacing } from '@/constants/theme';
 import { parseCount } from '@/habits/habit-form';
 import type { Saga } from '@/hooks/use-sagas';
 import { useTheme } from '@/hooks/use-theme';
-import type { Sections } from '@/hooks/use-titles';
+import type { Kind, Sections } from '@/hooks/use-titles';
 import { CoverField } from '@/media/cover-picker';
 import { NAME_MAX, RELEASE_MAX, VOLUMES_MAX } from '@/media/sagas';
 import { LanguageField } from '@/media/title-form';
+import { readChecked } from '@/saved-data';
 
 export const SAGA_HEADERS = {
     add: 'Aggiungi saga',
@@ -73,10 +74,15 @@ export function SagaForm({
 
     useEffect(() => {
         let cancelled = false;
-        apiFetch('/api/titles?kind=book')
-            .then((res) => (res.ok ? res.json() : Promise.reject()))
+        const saved = readChecked<Record<Kind, Sections>>('titles')?.book;
+        const request: Promise<Sections> = saved
+            ? Promise.resolve(saved)
+            : apiFetch('/api/titles?kind=book').then((res) =>
+                  res.ok ? res.json() : Promise.reject()
+              );
+        request
             .then(
-                (books: Sections) =>
+                (books) =>
                     !cancelled &&
                     setLanguages((current) =>
                         mergeLanguages(
@@ -95,9 +101,15 @@ export function SagaForm({
 
     useEffect(() => {
         let cancelled = false;
-        apiFetch('/api/sagas')
-            .then((res) => (res.ok ? res.json() : Promise.reject()))
-            .then((sagas: Saga[]) => {
+        const saved = readChecked<Saga[]>('sagas');
+        const request: Promise<Saga[]> =
+            saved && (!id || saved.some((s) => s.id === id))
+                ? Promise.resolve(saved)
+                : apiFetch('/api/sagas').then((res) =>
+                      res.ok ? res.json() : Promise.reject()
+                  );
+        request
+            .then((sagas) => {
                 if (cancelled) return;
                 setLanguages((current) =>
                     mergeLanguages(

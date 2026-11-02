@@ -21,6 +21,7 @@ import { useTheme } from '@/hooks/use-theme';
 import type { Kind, Sections, Status, Title } from '@/hooks/use-titles';
 import { CoverField } from '@/media/cover-picker';
 import { STATUS_LABELS } from '@/media/labels';
+import { readChecked } from '@/saved-data';
 
 const FORMATS = [
     'rigida',
@@ -84,9 +85,20 @@ export function TitleForm({
     useEffect(() => {
         if (!id && kind === 'series') return;
         let cancelled = false;
-        apiFetch(`/api/titles?kind=${kind}`)
-            .then((res) => (res.ok ? res.json() : Promise.reject()))
-            .then((sections: Sections) => {
+        const saved = readChecked<Record<Kind, Sections>>('titles')?.[kind];
+        const usable =
+            saved &&
+            (!id ||
+                Object.values(saved)
+                    .flat()
+                    .some((t) => t.id === id));
+        const request: Promise<Sections> = usable
+            ? Promise.resolve(saved)
+            : apiFetch(`/api/titles?kind=${kind}`).then((res) =>
+                  res.ok ? res.json() : Promise.reject()
+              );
+        request
+            .then((sections) => {
                 if (cancelled) return;
                 const all = [
                     ...sections.doing,

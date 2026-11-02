@@ -13,7 +13,7 @@ import {
 } from 'react';
 import { AppState } from 'react-native';
 
-import { readSaved, removeSaved, writeSaved } from '@/saved-data';
+import { markChecked, readSaved, removeSaved, writeSaved } from '@/saved-data';
 
 /**
  * `data` is undefined while loading the first time and null when there is
@@ -74,12 +74,15 @@ export function useOnFocus<T>(
                     setData((current) =>
                         current === undefined || fresh ? result : current
                     );
-                    // A dropped load leaves the page's message alone.
-                    if (fresh) setError(null);
-                    // A tap on saved rows dropped this load, so the rest of the
-                    // page is still old. ponytail: if the tap's save has not
-                    // landed, this load can undo it on screen until next focus.
-                    else if (showingSaved.current) setVersion((v) => v + 1);
+                    if (fresh) {
+                        // A dropped load leaves the page's message alone.
+                        setError(null);
+                        if (savedAs) markChecked(savedAs);
+                        // A tap on saved rows dropped this load, so the rest of
+                        // the page is still old. ponytail: if the tap's save
+                        // has not landed, this load can undo it on screen until
+                        // next focus.
+                    } else if (showingSaved.current) setVersion((v) => v + 1);
                     showingSaved.current = false;
                 })
                 .catch(() => {

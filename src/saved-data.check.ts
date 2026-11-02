@@ -1,7 +1,14 @@
 // bun src/saved-data.check.ts
 import assert from 'node:assert/strict';
 
-import { keepSavedFor, readSaved, removeSaved, writeSaved } from '@/saved-data';
+import {
+    keepSavedFor,
+    markChecked,
+    readChecked,
+    readSaved,
+    removeSaved,
+    writeSaved,
+} from '@/saved-data';
 
 // No localStorage, as on the server page.
 assert.equal(readSaved('titles'), undefined);
@@ -69,5 +76,14 @@ assert.deepEqual([...stored.keys()], ['tools.saved']);
 writeSaved('titles', ['old']);
 keepSavedFor(null);
 assert.equal(readSaved('titles'), undefined);
+
+// Saved data counts as checked only after the server answered, per account.
+writeSaved('titles', ['ann']);
+assert.equal(readChecked('titles'), undefined);
+markChecked('titles');
+assert.deepEqual(readChecked('titles'), ['ann']);
+keepSavedFor('cal');
+writeSaved('titles', ['cal']);
+assert.equal(readChecked('titles'), undefined);
 
 console.log('saved-data ok');
