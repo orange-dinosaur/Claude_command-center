@@ -19,6 +19,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { Kind, Sections, Status, Title } from '@/hooks/use-titles';
+import { CoverField } from '@/media/cover-picker';
 import { STATUS_LABELS } from '@/media/labels';
 
 const FORMATS = [
@@ -66,6 +67,7 @@ export function TitleForm({
     const [name, setName] = useState('');
     const [author, setAuthor] = useState('');
     const [language, setLanguage] = useState('');
+    const [cover, setCover] = useState<string | null>(null);
     // Languages already used on books, offered as chips.
     const [languages, setLanguages] = useState<string[]>([]);
     const [format, setFormat] = useState<Format | null>(null);
@@ -100,6 +102,7 @@ export function TitleForm({
                     setName(found.name);
                     setAuthor(found.author ?? '');
                     setLanguage(found.language ?? '');
+                    setCover(found.coverUrl);
                     setFormat(found.format as Format | null);
                     setSeason(found.season ? String(found.season) : '');
                     setEpisodes(found.episodes ? String(found.episodes) : '');
@@ -160,7 +163,7 @@ export function TitleForm({
                     body: JSON.stringify({
                         ...(id ? {} : { kind }),
                         name,
-                        ...(kind === 'book' && { author, format }),
+                        ...(kind === 'book' && { author, format, cover }),
                         ...(kind !== 'series' && { language }),
                         ...(kind === 'series' && {
                             season: seasonNumber,
@@ -211,28 +214,44 @@ export function TitleForm({
         );
     }
 
+    const nameField = (
+        <TextField
+            label="Titolo"
+            value={name}
+            onChange={setName}
+            placeholder={
+                kind === 'book'
+                    ? 'Il nome della rosa'
+                    : kind === 'film'
+                      ? 'Heat'
+                      : 'The Bear'
+            }
+        />
+    );
+
     return (
         <ScrollView contentContainerStyle={[styles.body, style]}>
             {title && <ThemedText type="title">{title}</ThemedText>}
-            <TextField
-                label="Titolo"
-                value={name}
-                onChange={setName}
-                placeholder={
-                    kind === 'book'
-                        ? 'Il nome della rosa'
-                        : kind === 'film'
-                          ? 'Heat'
-                          : 'The Bear'
-                }
-            />
-            {kind === 'book' && (
-                <TextField
-                    label="Autore"
-                    value={author}
-                    onChange={setAuthor}
-                    placeholder="Umberto Eco"
-                />
+            {kind === 'book' ? (
+                <View style={styles.cover}>
+                    <CoverField
+                        value={cover}
+                        onChange={setCover}
+                        query={`${name} ${author}`.trim()}
+                        language={language}
+                    />
+                    <View style={styles.names}>
+                        {nameField}
+                        <TextField
+                            label="Autore"
+                            value={author}
+                            onChange={setAuthor}
+                            placeholder="Umberto Eco"
+                        />
+                    </View>
+                </View>
+            ) : (
+                nameField
             )}
             {kind !== 'series' && (
                 <LanguageField
@@ -449,6 +468,15 @@ const styles = StyleSheet.create({
     },
     fieldGroup: {
         gap: Spacing.one,
+    },
+    cover: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.three,
+    },
+    names: {
+        flex: 1,
+        gap: Spacing.two,
     },
     pair: {
         flexDirection: 'row',

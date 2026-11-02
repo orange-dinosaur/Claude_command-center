@@ -33,6 +33,7 @@ assert.deepEqual(
                     title: 'Il nome della rosa',
                     authors: ['Umberto Eco', 'Altri'],
                     imageLinks: { thumbnail },
+                    infoLink: 'http://books.google.it/books?id=a',
                 },
             },
             { volumeInfo: { title: 'Senza immagine' } },
@@ -53,11 +54,13 @@ assert.deepEqual(
             url: 'https://books.google.com/books/content?id=a&zoom=1',
             name: 'Il nome della rosa',
             author: 'Umberto Eco',
+            link: 'https://books.google.it/books?id=a',
         },
         {
             url: 'https://books.google.com/books/content?id=a&zoom=1',
             name: 'Senza autore',
             author: null,
+            link: null,
         },
     ]
 );
@@ -70,6 +73,7 @@ assert.deepEqual(
                     imageLinks: {
                         thumbnail: `${thumbnail}&edge=curl&source=x`,
                     },
+                    infoLink: 'javascript:alert(1)',
                 },
             },
         ],
@@ -79,6 +83,7 @@ assert.deepEqual(
             url: 'https://books.google.com/books/content?id=a&zoom=1&source=x',
             name: 'Curl',
             author: null,
+            link: null,
         },
     ]
 );

@@ -4,6 +4,8 @@ export type Cover = {
     url: string;
     name: string;
     author: string | null;
+    /** The book's Google Books page, which Google asks results to link to. */
+    link: string | null;
 };
 
 const MAX_RESULTS = 25;
@@ -48,8 +50,12 @@ type Volume = {
         title?: unknown;
         authors?: unknown;
         imageLinks?: { thumbnail?: unknown };
+        infoLink?: unknown;
     };
 };
+
+// Google answers with http links, which a secure page blocks.
+const secure = (url: string) => url.replace(/^http:/, 'https:');
 
 /**
  * A cover to store: a Google Books image, an uploaded photo, or null for none.
@@ -78,14 +84,14 @@ export function toCovers(body: unknown): Cover[] {
             return [];
         }
         const author = Array.isArray(info.authors) ? info.authors[0] : null;
+        const link =
+            typeof info.infoLink === 'string' ? secure(info.infoLink) : '';
         return {
-            // Google answers with http links, which a secure page blocks, and
             // `edge=curl` draws a page curl on the image.
-            url: thumbnail
-                .replace(/^http:/, 'https:')
-                .replace('&edge=curl', ''),
+            url: secure(thumbnail).replace('&edge=curl', ''),
             name: info.title,
             author: typeof author === 'string' ? author : null,
+            link: link.startsWith('https://') ? link : null,
         };
     });
 }
