@@ -32,7 +32,7 @@ const MODES: { mode: Habit['mode']; label: string }[] = [
 ];
 
 /** A whole number from 1 to `max`, or null. */
-function parseCount(value: string, max: number): number | null {
+export function parseCount(value: string, max: number): number | null {
     const n = /^\d+$/.test(value.trim()) ? Number(value) : NaN;
     return n >= 1 && n <= max ? n : null;
 }
