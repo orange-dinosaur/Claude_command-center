@@ -1,15 +1,14 @@
 /**
  * The signed-in user's vision board: reading it, replacing it, removing it.
  *
- * The image is resized before upload. A phone photo is several megabytes, the
- * route refuses anything over 1 MB, and 1080 px wide is a phone screen's width.
+ * The image is resized before upload: the route refuses anything over 1 MB,
+ * and 1080 px wide is a phone screen's width.
  */
 
-import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
-import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 
 import { apiFetch } from '@/auth/client';
+import { chooseImage, encodeImage } from '@/pick-image';
 
 const WIDTH = 1080;
 
@@ -41,23 +40,12 @@ export function useVisionBoard() {
         if (busy) return;
         setError(null);
 
-        const picked = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
-        });
-        if (picked.canceled) return;
+        const asset = await chooseImage();
+        if (!asset) return;
 
         setBusy(true);
         try {
-            const asset = picked.assets[0];
-            const context = ImageManipulator.manipulate(asset.uri);
-            // Never upscale a narrower image.
-            if (asset.width > WIDTH) context.resize({ width: WIDTH });
-            const rendered = await context.renderAsync();
-            const { base64 } = await rendered.saveAsync({
-                compress: 0.8,
-                format: SaveFormat.JPEG,
-                base64: true,
-            });
+            const base64 = await encodeImage(asset, WIDTH);
 
             if (!base64) {
                 setError('Non riesco a leggere questa immagine.');

@@ -20,6 +20,9 @@ import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
 import { Cover } from '@/media/cover';
 import type { Cover as Result } from '@/media/covers';
+import { chooseImage, encodeImage } from '@/pick-image';
+
+const PHOTO_WIDTH = 400;
 
 type Choice = {
     /** The cover in the form, not yet saved. */
@@ -107,11 +110,49 @@ function Picker({
     const theme = useTheme();
     const isDesktop = useIsDesktop();
     const [text, setText] = useState(query);
+    const [uploading, setUploading] = useState(false);
+    const [photoError, setPhotoError] = useState<string | null>(null);
     const { covers, state, search } = useCoverSearch(query, language);
 
     const pick = (cover: string | null) => {
         onChange(cover);
         onClose();
+    };
+
+    const upload = async () => {
+        setPhotoError(null);
+        const asset = await chooseImage();
+        if (!asset) return;
+
+        setUploading(true);
+        try {
+            const data = await encodeImage(asset, PHOTO_WIDTH);
+            if (!data) {
+                setPhotoError('Non riesco a leggere questa immagine.');
+                return;
+            }
+
+            const res = await apiFetch('/api/covers', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ data, contentType: 'image/jpeg' }),
+            });
+            if (!res.ok) {
+                setPhotoError(
+                    res.status === 413
+                        ? 'Questa immagine è troppo grande.'
+                        : 'Non riesco a salvare questa immagine.'
+                );
+                return;
+            }
+
+            const body: { url: string } = await res.json();
+            pick(body.url);
+        } catch {
+            setPhotoError('Non riesco a salvare questa immagine.');
+        } finally {
+            setUploading(false);
+        }
     };
     const typed = text.trim();
 
@@ -210,16 +251,35 @@ function Picker({
                             )}
                         </ScrollView>
 
-                        {value && (
+                        {photoError && (
+                            <ThemedText
+                                type="small"
+                                themeColor="textMuted"
+                                style={styles.center}>
+                                {photoError}
+                            </ThemedText>
+                        )}
+                        <View style={styles.actions}>
                             <Pressable
-                                onPress={() => pick(null)}
+                                onPress={upload}
+                                disabled={uploading}
                                 accessibilityRole="button"
-                                style={styles.remove}>
-                                <ThemedText themeColor="textMuted">
-                                    Rimuovi copertina
+                                hitSlop={8}>
+                                <ThemedText>
+                                    {uploading ? 'Carico…' : 'Carica foto'}
                                 </ThemedText>
                             </Pressable>
-                        )}
+                            {value && (
+                                <Pressable
+                                    onPress={() => pick(null)}
+                                    accessibilityRole="button"
+                                    hitSlop={8}>
+                                    <ThemedText themeColor="textMuted">
+                                        Rimuovi copertina
+                                    </ThemedText>
+                                </Pressable>
+                            )}
+                        </View>
                     </SafeAreaView>
                 </ThemedView>
             </View>
@@ -362,8 +422,9 @@ const styles = StyleSheet.create({
     link: {
         textDecorationLine: 'underline',
     },
-    remove: {
-        alignItems: 'center',
+    actions: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
         padding: Spacing.three,
     },
 });
