@@ -129,6 +129,26 @@ export const visionBoard = pgTable('vision_board', {
 });
 
 /**
+ * A photo uploaded as a book or saga cover. As with the vision board, the
+ * random `id` in the image URL is the only thing guarding the bytes.
+ */
+export const coverImage = pgTable(
+    'cover_image',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        data: text('data').notNull(),
+        contentType: text('content_type').notNull(),
+        createdAt: timestamp('created_at', { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => [index('cover_image_user_id_idx').on(table.userId)]
+);
+
+/**
  * One month of the monthly closeout. `answers` maps a question key to its
  * text; the questions themselves live in code, so rewording one never touches
  * what was written.
@@ -252,6 +272,7 @@ export const title = pgTable(
         name: text('name').notNull(),
         author: text('author'),
         language: text('language'),
+        coverUrl: text('cover_url'),
         format: text('format').$type<
             'rigida' | 'flessibile' | 'ebook' | 'audiolibro' | 'biblioteca'
         >(),
@@ -816,6 +837,7 @@ export const saga = pgTable(
         name: text('name').notNull(),
         author: text('author'),
         language: text('language'),
+        coverUrl: text('cover_url'),
         audiobook: boolean('audiobook').default(false).notNull(),
         volumes: integer('volumes').notNull(),
         volumesRead: integer('volumes_read').default(0).notNull(),

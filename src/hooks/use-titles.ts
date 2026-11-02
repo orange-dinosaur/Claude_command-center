@@ -19,6 +19,7 @@ export interface Title {
     name: string;
     author: string | null;
     language: string | null;
+    coverUrl: string | null;
     format: string | null;
     season: number | null;
     episodes: number | null;

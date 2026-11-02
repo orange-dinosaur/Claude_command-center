@@ -16,6 +16,7 @@ export const sagaColumns = {
     name: saga.name,
     author: saga.author,
     language: saga.language,
+    coverUrl: saga.coverUrl,
     audiobook: saga.audiobook,
     volumes: saga.volumes,
     volumesRead: saga.volumesRead,

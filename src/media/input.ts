@@ -25,6 +25,7 @@ export const titleColumns = {
     name: title.name,
     author: title.author,
     language: title.language,
+    coverUrl: title.coverUrl,
     format: title.format,
     season: title.season,
     episodes: title.episodes,

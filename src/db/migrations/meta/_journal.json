@@ -169,6 +169,13 @@
       "when": 1793640236470,
       "tag": "0023_goofy_talon",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793651229109,
+      "tag": "0024_outgoing_phantom_reporter",
+      "breakpoints": true
     }
   ]
 }
