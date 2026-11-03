@@ -43,6 +43,3 @@ export function seasonLabel({ year, season }: Season): string {
     if (season !== 'inverno') return label;
     return `${label}/${String((year + 1) % 100).padStart(2, '0')}`;
 }
-
-export const isSeasonName = (value: unknown): value is SeasonName =>
-    SEASONS.includes(value as SeasonName);
