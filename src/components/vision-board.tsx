@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import {
     ActivityIndicator,
     Platform,
@@ -16,7 +16,6 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing, type ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useVisionBoard } from '@/hooks/use-vision-board';
-import { markOpening } from '@/open-timing';
 
 /**
  * Safari shows its own save/share menu on a long-pressed image. Both
@@ -38,12 +37,6 @@ export function VisionBoard({ aside }: { aside?: ReactNode }) {
     );
 
     const close = () => setMenu('closed');
-
-    useEffect(() => {
-        if (image === undefined) return;
-        markOpening('data');
-        if (image === null) markOpening('noImage');
-    }, [image]);
 
     if (image === undefined) {
         return (
@@ -67,7 +60,6 @@ export function VisionBoard({ aside }: { aside?: ReactNode }) {
                     <Image
                         source={{ uri: apiUrl(image) }}
                         contentFit="contain"
-                        onLoad={() => markOpening('image')}
                         style={[styles.fill, !!aside && styles.rounded]}
                         accessibilityIgnoresInvertColors
                     />
