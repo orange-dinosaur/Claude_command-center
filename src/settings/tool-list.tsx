@@ -1,14 +1,6 @@
 import { SymbolView } from 'expo-symbols';
-import { useLayoutEffect, useState } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
-    type SharedValue,
-} from 'react-native-reanimated';
-import { scheduleOnRN } from 'react-native-worklets';
+import { useRef, useState } from 'react';
+import { Platform, StyleSheet, View, type PointerEvent } from 'react-native';
 
 import { Switch } from '@/components/switch';
 import { ThemedText } from '@/components/themed-text';
@@ -28,9 +20,11 @@ const pressDelay = () =>
         ? 0
         : 200;
 
+// A finger that travels this far before the press delay is scrolling.
+const SLOP = 10;
+
 /** The slot a dragged row would land in. */
 function target(from: number, offset: number, step: number, count: number) {
-    'worklet';
     const to = Math.round(from + offset / (step || 1));
     return Math.min(Math.max(to, 0), count - 1);
 }
@@ -42,17 +36,16 @@ function target(from: number, offset: number, step: number, count: number) {
 export function ToolList() {
     const { tools, save, move } = useTools();
     const [error, setError] = useState(false);
-    // Index of the dragged row, or -1.
-    const active = useSharedValue(-1);
-    const offset = useSharedValue(0);
+    const [drag, setDrag] = useState<{ from: number; offset: number }>();
     // Row height plus the gap, measured.
-    const step = useSharedValue(0);
+    const [step, setStep] = useState(0);
 
     // The rows render in their new order before the drag offsets go.
-    useLayoutEffect(() => {
-        active.set(-1);
-        offset.set(0);
-    }, [tools, active, offset]);
+    const [dragOf, setDragOf] = useState(tools);
+    if (dragOf !== tools) {
+        setDragOf(tools);
+        setDrag(undefined);
+    }
 
     const report = async (saving: Promise<boolean>) => {
         setError(false);
@@ -69,35 +62,46 @@ export function ToolList() {
             )
         );
 
-    // Reads nothing from this render: a gesture can hold an older copy.
-    const drop = (from: number, to: number) => {
-        if (from === to) {
-            active.set(-1);
-            offset.set(0);
-            return;
-        }
-        report(move(from, to));
+    const drop = () => {
+        if (!drag) return;
+        const to = target(drag.from, drag.offset, step, tools.length);
+        if (to === drag.from) setDrag(undefined);
+        else report(move(drag.from, to));
     };
+
+    const to = drag && target(drag.from, drag.offset, step, tools.length);
 
     return (
         <View style={styles.list}>
             <ThemedText type="subtitle">Strumenti</ThemedText>
             <View style={styles.list}>
-                {tools.map((tool, index) => (
-                    <Row
-                        // The gesture keeps the callbacks it was first given,
-                        // so a row that changes place is mounted afresh.
-                        key={`${tool.key}:${index}`}
-                        tool={tool}
-                        index={index}
-                        count={tools.length}
-                        active={active}
-                        offset={offset}
-                        step={step}
-                        onToggle={toggle}
-                        onDrop={drop}
-                    />
-                ))}
+                {tools.map((tool, index) => {
+                    // The rows between the dragged row and its slot make room.
+                    let shift = 0;
+                    if (drag && to !== undefined) {
+                        if (drag.from === index) shift = drag.offset;
+                        else if (drag.from < index && index <= to)
+                            shift = -step;
+                        else if (to <= index && index < drag.from) shift = step;
+                    }
+                    return (
+                        <Row
+                            // A row that changes place is mounted afresh, so it
+                            // does not slide back from its old offset.
+                            key={`${tool.key}:${index}`}
+                            tool={tool}
+                            shift={shift}
+                            lifted={drag?.from === index}
+                            onMeasure={setStep}
+                            onToggle={toggle}
+                            onStart={() => setDrag({ from: index, offset: 0 })}
+                            onMove={(offset) =>
+                                setDrag({ from: index, offset })
+                            }
+                            onEnd={drop}
+                        />
+                    );
+                })}
             </View>
             {error && (
                 <ThemedText themeColor="danger">
@@ -110,93 +114,98 @@ export function ToolList() {
 
 function Row({
     tool,
-    index,
-    count,
-    active,
-    offset,
-    step,
+    shift,
+    lifted,
+    onMeasure,
     onToggle,
-    onDrop,
+    onStart,
+    onMove,
+    onEnd,
 }: {
     tool: Tool & { hidden: boolean };
-    index: number;
-    count: number;
-    active: SharedValue<number>;
-    offset: SharedValue<number>;
-    step: SharedValue<number>;
+    shift: number;
+    lifted: boolean;
+    onMeasure: (step: number) => void;
     onToggle: (key: string, visible: boolean) => void;
-    onDrop: (from: number, to: number) => void;
+    onStart: () => void;
+    onMove: (offset: number) => void;
+    onEnd: () => void;
 }) {
     const theme = useTheme();
+    const press = useRef<{
+        y: number;
+        live: boolean;
+        timer?: ReturnType<typeof setTimeout>;
+    }>(null);
 
-    const pan = Gesture.Pan()
-        .activateAfterLongPress(pressDelay())
-        .onStart(() => {
-            active.set(index);
-            offset.set(0);
-        })
-        .onUpdate((event) => {
-            offset.set(event.translationY);
-        })
-        .onEnd(() => {
-            scheduleOnRN(
-                onDrop,
-                index,
-                target(index, offset.get(), step.get(), count)
-            );
-        });
-
-    const moved = useAnimatedStyle(() => {
-        const from = active.get();
-        if (from === -1) {
-            return { transform: [{ translateY: 0 }, { scale: 1 }], zIndex: 0 };
-        }
-        if (from === index) {
-            return {
-                transform: [{ translateY: offset.get() }, { scale: 1.02 }],
-                zIndex: 1,
-            };
-        }
-        // The rows between the dragged row and its slot make room.
-        const to = target(from, offset.get(), step.get(), count);
-        let shift = 0;
-        if (from < index && index <= to) shift = -step.get();
-        if (to <= index && index < from) shift = step.get();
-        return {
-            transform: [
-                { translateY: withTiming(shift, { duration: 150 }) },
-                { scale: 1 },
-            ],
-            zIndex: 0,
+    const down = (event: PointerEvent) => {
+        const handle = event.currentTarget as unknown as Element;
+        handle.setPointerCapture(event.nativeEvent.pointerId);
+        const current = { y: event.nativeEvent.clientY, live: false };
+        press.current = current;
+        const start = () => {
+            if (press.current !== current) return;
+            current.live = true;
+            onStart();
         };
-    });
+        const delay = pressDelay();
+        if (delay) press.current.timer = setTimeout(start, delay);
+        else start();
+    };
+
+    const moved = (event: PointerEvent) => {
+        const current = press.current;
+        if (!current) return;
+        const offset = event.nativeEvent.clientY - current.y;
+        if (current.live) onMove(offset);
+        else if (Math.abs(offset) > SLOP) {
+            clearTimeout(current.timer);
+            press.current = null;
+        }
+    };
+
+    const up = () => {
+        const current = press.current;
+        press.current = null;
+        if (!current) return;
+        clearTimeout(current.timer);
+        if (current.live) onEnd();
+    };
 
     return (
-        <Animated.View
-            onLayout={(event) => {
-                step.set(event.nativeEvent.layout.height + GAP);
-            }}
+        <View
+            onLayout={(event) =>
+                onMeasure(event.nativeEvent.layout.height + GAP)
+            }
             style={[
                 styles.row,
                 { backgroundColor: theme.backgroundElement },
-                moved,
+                lifted ? styles.lifted : styles.sliding,
+                {
+                    transform: [
+                        { translateY: shift },
+                        { scale: lifted ? 1.02 : 1 },
+                    ],
+                },
             ]}>
             <View style={[styles.content, tool.hidden && styles.faded]}>
-                <GestureDetector gesture={pan}>
-                    <View
-                        accessibilityLabel={`Sposta ${tool.title}`}
-                        style={styles.handle}>
-                        <SymbolView
-                            name={{
-                                ios: 'line.3.horizontal',
-                                android: 'drag_handle',
-                                web: 'drag_handle',
-                            }}
-                            tintColor={theme.textMuted}
-                            size={22}
-                        />
-                    </View>
-                </GestureDetector>
+                <View
+                    accessibilityLabel={`Sposta ${tool.title}`}
+                    onPointerDown={down}
+                    onPointerMove={moved}
+                    onPointerUp={up}
+                    onPointerCancel={up}
+                    style={styles.handle}>
+                    <SymbolView
+                        name={{
+                            ios: 'line.3.horizontal',
+                            android: 'drag_handle',
+                            web: 'drag_handle',
+                        }}
+                        tintColor={theme.textMuted}
+                        size={22}
+                    />
+                </View>
                 <SymbolView
                     name={tool.icon}
                     tintColor={theme.accent}
@@ -209,7 +218,7 @@ function Row({
                 onValueChange={(visible) => onToggle(tool.key, visible)}
                 accessibilityLabel={tool.title}
             />
-        </Animated.View>
+        </View>
     );
 }
 
@@ -225,6 +234,13 @@ const styles = StyleSheet.create({
         paddingVertical: Spacing.three,
         borderRadius: 14,
     },
+    lifted: {
+        zIndex: 1,
+    },
+    sliding: {
+        transitionProperty: 'transform' as never,
+        transitionDuration: '150ms' as never,
+    },
     content: {
         flex: 1,
         flexDirection: 'row',
@@ -236,6 +252,10 @@ const styles = StyleSheet.create({
         padding: Spacing.two,
         margin: -Spacing.two,
         cursor: 'grab' as never,
+        // The page does not scroll under a finger on the handle, and a mouse
+        // drag selects no text.
+        touchAction: 'none' as never,
+        userSelect: 'none',
     },
     faded: {
         opacity: 0.4,
