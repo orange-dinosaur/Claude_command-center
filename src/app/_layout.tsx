@@ -15,7 +15,6 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { Rail } from '@/components/rail';
 import { Colors } from '@/constants/theme';
@@ -83,16 +82,14 @@ export default function RootLayout() {
     // The Stack keeps the same place in the tree at every width, so crossing
     // the breakpoint does not remount the navigation.
     return (
-        <GestureHandlerRootView style={styles.main}>
-            <ThemeProvider value={navigationTheme(colorScheme)}>
-                <View style={styles.row}>
-                    {isDesktop && segments[0] !== '(auth)' && <Rail />}
-                    <View style={styles.main}>
-                        <Stack screenOptions={{ headerShown: false }} />
-                    </View>
+        <ThemeProvider value={navigationTheme(colorScheme)}>
+            <View style={styles.row}>
+                {isDesktop && segments[0] !== '(auth)' && <Rail />}
+                <View style={styles.main}>
+                    <Stack screenOptions={{ headerShown: false }} />
                 </View>
-            </ThemeProvider>
-        </GestureHandlerRootView>
+            </View>
+        </ThemeProvider>
     );
 }
 
