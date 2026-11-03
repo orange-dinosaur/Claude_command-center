@@ -55,6 +55,15 @@ export function useBucketSeason(id: string, onChanged?: () => void) {
                 body: JSON.stringify({ text }),
             });
             if (!res.ok) throw new Error();
+            const { id: itemId }: { id: string } = await res.json();
+            // Last of the open items, where the server puts it too. The
+            // author's initial comes with the reload.
+            setItems((items) => {
+                const done = items.findIndex((i) => i.doneOn);
+                const at = done === -1 ? items.length : done;
+                const item = { id: itemId, text, doneOn: null, addedBy: null };
+                return [...items.slice(0, at), item, ...items.slice(at)];
+            });
             reload();
             onChanged?.();
             return true;
