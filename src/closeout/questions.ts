@@ -81,6 +81,10 @@ export const PREPARE: Section[] = [
                 text: 'Citazione, mantra o affermazione che mi guidi nel nuovo mese',
                 keys: ['prepare.quote'],
             },
+            {
+                text: 'Descrivi in tre parole come vorresti che questo mese sia per te',
+                keys: [1, 2, 3].map((n) => `prepare.words${n}`),
+            },
         ],
     },
     {
@@ -114,6 +118,35 @@ export const PREPARE: Section[] = [
             {
                 text: 'Ci sono azioni che posso fissare in calendario per il mese?',
                 keys: ['prepare.mini.calendar'],
+            },
+        ],
+    },
+    {
+        title: 'Il mese che voglio vivere',
+        questions: [
+            {
+                text: 'Elenca tre cose che vorresti accadessero questo mese',
+                keys: [1, 2, 3].map((n) => `prepare.life.wish${n}`),
+            },
+            {
+                text: 'Una buona abitudine che vorresti continuare a fare questo mese',
+                keys: ['prepare.life.habit'],
+            },
+            {
+                text: 'Le persone che vorresti rivedere questo mese o ritagliare di più del tempo per stare insieme',
+                keys: ['prepare.life.people'],
+            },
+            {
+                text: 'Qualcosa di cui sei grato/a già adesso e che sai illumina le tue giornate più dure',
+                keys: ['prepare.life.grateful'],
+            },
+            {
+                text: 'Una cosa che farai ogni settimana questo mese solo per te stesso/a, la tua gioia e il tuo piacere senza alcun fine particolare',
+                keys: ['prepare.life.weekly'],
+            },
+            {
+                text: 'Una o due pietanze che vorresti provare a cucinare questo mese',
+                keys: [1, 2].map((n) => `prepare.life.dish${n}`),
             },
         ],
     },
