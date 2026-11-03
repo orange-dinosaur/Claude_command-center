@@ -30,7 +30,12 @@ import { Cover } from '@/media/cover';
 import { EpisodeDots } from '@/media/episode-dots';
 import { STATUS_LABELS } from '@/media/labels';
 import { SectionToggle } from '@/media/section-toggle';
-import { TITLE_HEADERS, TitleForm, isKind } from '@/media/title-form';
+import {
+    TITLE_HEADERS,
+    TitleForm,
+    isKind,
+    languagesOf,
+} from '@/media/title-form';
 
 const TABS = ['Libri', 'Film', 'Serie'] as const;
 
@@ -236,6 +241,7 @@ export default function Media() {
                                 ? TITLE_HEADERS[kind].edit
                                 : TITLE_HEADERS[kind].add
                         }
+                        knownLanguages={sections ? languagesOf(sections) : []}
                         onSaved={(title) => {
                             put(title);
                             saved(title.id);

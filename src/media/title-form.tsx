@@ -44,11 +44,22 @@ export const TITLE_HEADERS: Record<Kind, { add: string; edit: string }> = {
 export const isKind = (value: unknown): value is Kind =>
     value === 'book' || value === 'film' || value === 'series';
 
+/** The languages used on these titles, sorted. */
+export const languagesOf = (sections: Sections) =>
+    [
+        ...new Set(
+            [...sections.doing, ...sections.todo, ...sections.done].flatMap(
+                (t) => t.language ?? []
+            )
+        ),
+    ].sort();
+
 /** Adds a title of `kind`, or edits the one with `id`. */
 export function TitleForm({
     kind,
     id,
     title,
+    knownLanguages,
     onSaved,
     onDeleted,
     style,
@@ -58,6 +69,11 @@ export function TitleForm({
     id?: string;
     /** Shown above the fields when the page has no header of its own. */
     title?: string;
+    /**
+     * From a page that already loads the titles, so a new one needs nothing
+     * loaded here.
+     */
+    knownLanguages?: string[];
     onSaved: (saved: Title) => void;
     onDeleted: () => void;
     style?: StyleProp<ViewStyle>;
@@ -82,8 +98,9 @@ export function TitleForm({
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const listed = knownLanguages !== undefined;
     useEffect(() => {
-        if (!id && kind === 'series') return;
+        if (!id && (kind === 'series' || listed)) return;
         let cancelled = false;
         const saved = readChecked<Record<Kind, Sections>>('titles')?.[kind];
         const usable =
@@ -105,9 +122,7 @@ export function TitleForm({
                     ...sections.todo,
                     ...sections.done,
                 ];
-                setLanguages(
-                    [...new Set(all.flatMap((t) => t.language ?? []))].sort()
-                );
+                setLanguages(languagesOf(sections));
                 if (!id) return;
                 const found = all.find((t) => t.id === id);
                 if (found) {
@@ -137,7 +152,7 @@ export function TitleForm({
         return () => {
             cancelled = true;
         };
-    }, [id, kind]);
+    }, [id, kind, listed]);
 
     const save = async () => {
         if (!name.trim()) {
@@ -269,7 +284,7 @@ export function TitleForm({
                 <LanguageField
                     value={language}
                     onChange={setLanguage}
-                    languages={languages}
+                    languages={knownLanguages ?? languages}
                 />
             )}
             {kind === 'series' && (
