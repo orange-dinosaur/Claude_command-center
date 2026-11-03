@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import {
     ActivityIndicator,
     Pressable,
@@ -39,6 +39,20 @@ import {
 
 const TABS = ['Libri', 'Film', 'Serie'] as const;
 
+// Kept on the device and not wiped on sign-out, like the colour scheme.
+const VIEW_KEY = 'media-books-view';
+
+type BookView = 'list' | 'libreria';
+
+function storedView(): BookView {
+    try {
+        if (localStorage.getItem(VIEW_KEY) === 'libreria') return 'libreria';
+    } catch {}
+    return 'list';
+}
+
+const noop = () => () => {};
+
 type Tab = (typeof TABS)[number];
 
 const KIND: Record<Tab, Kind> = {
@@ -63,7 +77,20 @@ export default function Media() {
     const [open, setOpen] = useState<Record<string, boolean>>({});
     // Bumped when a dot tap on the open title is saved, so its form reloads.
     const [formVersion, setFormVersion] = useState(0);
-    const [view, setView] = useState<'list' | 'libreria'>('list');
+    // The server renders the list, so the stored view waits for hydration.
+    const hydrated = useSyncExternalStore(
+        noop,
+        () => true,
+        () => false
+    );
+    const [chosen, setChosen] = useState<BookView | null>(null);
+    const view = chosen ?? (hydrated ? storedView() : 'list');
+    const chooseView = (next: BookView) => {
+        setChosen(next);
+        try {
+            localStorage.setItem(VIEW_KEY, next);
+        } catch {}
+    };
     const watchEpisode = async (t: Title, episode: number) => {
         if ((await watch(t, episode)) && t.id === params.id) {
             setFormVersion((v) => v + 1);
@@ -79,7 +106,7 @@ export default function Media() {
         kind === 'book'
             ? {
                   label: libreria ? 'Lista' : 'Libreria',
-                  onPress: () => setView(libreria ? 'list' : 'libreria'),
+                  onPress: () => chooseView(libreria ? 'list' : 'libreria'),
               }
             : undefined;
 
