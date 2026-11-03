@@ -63,6 +63,7 @@ export default function Media() {
     const [open, setOpen] = useState<Record<string, boolean>>({});
     // Bumped when a dot tap on the open title is saved, so its form reloads.
     const [formVersion, setFormVersion] = useState(0);
+    const [view, setView] = useState<'list' | 'libreria'>('list');
     const watchEpisode = async (t: Title, episode: number) => {
         if ((await watch(t, episode)) && t.id === params.id) {
             setFormVersion((v) => v + 1);
@@ -72,6 +73,15 @@ export default function Media() {
     const kind: Kind = isKind(params.kind) ? params.kind : 'book';
     const tab = TABS.find((t) => KIND[t] === kind) ?? 'Libri';
     const sections = titles?.[kind];
+    const libreria = kind === 'book' && view === 'libreria';
+    // Only books have covers, so only the Libri tab can switch.
+    const viewLink =
+        kind === 'book'
+            ? {
+                  label: libreria ? 'Lista' : 'Libreria',
+                  onPress: () => setView(libreria ? 'list' : 'libreria'),
+              }
+            : undefined;
 
     // A section holding the selected title opens, and stays open after the
     // title is deleted, unless it was closed by hand.
@@ -199,7 +209,38 @@ export default function Media() {
                                         }
                                     />
                                 )}
+                                {isOpen && libreria && (
+                                    <View style={styles.grid}>
+                                        {rows.map((t) => (
+                                            <Pressable
+                                                key={t.id}
+                                                onPress={() => select(t.id)}
+                                                accessibilityRole="button"
+                                                accessibilityLabel={t.name}
+                                                style={({ pressed }) => [
+                                                    styles.tile,
+                                                    pressed && styles.pressed,
+                                                ]}>
+                                                <View
+                                                    style={[
+                                                        styles.outline,
+                                                        t.id === params.id && {
+                                                            borderColor:
+                                                                theme.accent,
+                                                        },
+                                                    ]}>
+                                                    <Cover
+                                                        url={t.coverUrl}
+                                                        name={t.name}
+                                                        fill
+                                                    />
+                                                </View>
+                                            </Pressable>
+                                        ))}
+                                    </View>
+                                )}
                                 {isOpen &&
+                                    !libreria &&
                                     rows.map((t) => (
                                         <TitleRow
                                             key={t.id}
@@ -222,6 +263,7 @@ export default function Media() {
             <ThemedView style={listPage.page}>
                 <ListColumn
                     title="Media"
+                    link={viewLink}
                     header={
                         <>
                             {tabBar}
@@ -260,7 +302,11 @@ export default function Media() {
     return (
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.container}>
-                <ScreenHeader title="Media" backTo="/command-center" />
+                <ScreenHeader
+                    title="Media"
+                    backTo="/command-center"
+                    link={viewLink}
+                />
                 {tabBar}
                 {list}
             </SafeAreaView>
@@ -348,6 +394,22 @@ const styles = StyleSheet.create({
     },
     pressed: {
         opacity: 0.6,
+    },
+    // Three covers per row: each tile pads by `one`, and the grid takes that
+    // back at its edges.
+    grid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        marginHorizontal: -Spacing.one,
+    },
+    tile: {
+        width: '33.333%',
+        padding: Spacing.one,
+    },
+    outline: {
+        borderWidth: 2,
+        borderRadius: 6,
+        borderColor: 'transparent',
     },
     grow: {
         flex: 1,
