@@ -23,7 +23,8 @@ const timeFormatter = new Intl.DateTimeFormat('it-IT', {
     minute: '2-digit',
 });
 
-function monthTitle(date: Date, today: string): string {
+/** "Ottobre", or "Dicembre 2025" if not this year's. */
+export function monthTitle(date: Date, today: string): string {
     const name = monthFormatter.format(date);
     const title = name[0].toUpperCase() + name.slice(1);
     const year = date.getFullYear();

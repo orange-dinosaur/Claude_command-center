@@ -22,6 +22,7 @@ import { TabBar } from '@/components/tab-bar';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { todayDay } from '@/dates';
 import { useIsDesktop } from '@/hooks/use-is-desktop';
 import { useTheme } from '@/hooks/use-theme';
 import { useTitles, type Kind, type Title } from '@/hooks/use-titles';
@@ -29,6 +30,7 @@ import { AudiobookIcon } from '@/media/audiobook-icon';
 import { Cover } from '@/media/cover';
 import { EpisodeDots } from '@/media/episode-dots';
 import { STATUS_LABELS } from '@/media/labels';
+import { groupByEndMonth } from '@/media/months';
 import { SectionToggle } from '@/media/section-toggle';
 import {
     TITLE_HEADERS,
@@ -175,6 +177,44 @@ export default function Media() {
         </View>
     );
 
+    // Titles as covers in the Libreria, as rows otherwise.
+    const show = (rows: Title[]) =>
+        libreria ? (
+            <View style={styles.grid}>
+                {rows.map((t) => (
+                    <Pressable
+                        key={t.id}
+                        onPress={() => select(t.id)}
+                        accessibilityRole="button"
+                        accessibilityLabel={t.name}
+                        style={({ pressed }) => [
+                            styles.tile,
+                            pressed && styles.pressed,
+                        ]}>
+                        <View
+                            style={[
+                                styles.outline,
+                                t.id === params.id && {
+                                    borderColor: theme.accent,
+                                },
+                            ]}>
+                            <Cover url={t.coverUrl} name={t.name} fill />
+                        </View>
+                    </Pressable>
+                ))}
+            </View>
+        ) : (
+            rows.map((t) => (
+                <TitleRow
+                    key={t.id}
+                    title={t}
+                    selected={t.id === params.id}
+                    onPress={() => select(t.id)}
+                    onWatch={watchEpisode}
+                />
+            ))
+        );
+
     const list = (
         <>
             {error && (
@@ -236,47 +276,23 @@ export default function Media() {
                                         }
                                     />
                                 )}
-                                {isOpen && libreria && (
-                                    <View style={styles.grid}>
-                                        {rows.map((t) => (
-                                            <Pressable
-                                                key={t.id}
-                                                onPress={() => select(t.id)}
-                                                accessibilityRole="button"
-                                                accessibilityLabel={t.name}
-                                                style={({ pressed }) => [
-                                                    styles.tile,
-                                                    pressed && styles.pressed,
-                                                ]}>
-                                                <View
-                                                    style={[
-                                                        styles.outline,
-                                                        t.id === params.id && {
-                                                            borderColor:
-                                                                theme.accent,
-                                                        },
-                                                    ]}>
-                                                    <Cover
-                                                        url={t.coverUrl}
-                                                        name={t.name}
-                                                        fill
-                                                    />
-                                                </View>
-                                            </Pressable>
-                                        ))}
-                                    </View>
-                                )}
                                 {isOpen &&
-                                    !libreria &&
-                                    rows.map((t) => (
-                                        <TitleRow
-                                            key={t.id}
-                                            title={t}
-                                            selected={t.id === params.id}
-                                            onPress={() => select(t.id)}
-                                            onWatch={watchEpisode}
-                                        />
-                                    ))}
+                                    (kind === 'book' && status === 'done'
+                                        ? groupByEndMonth(rows, todayDay()).map(
+                                              (group) => (
+                                                  <View
+                                                      key={group.title}
+                                                      style={styles.section}>
+                                                      <ThemedText
+                                                          type="small"
+                                                          themeColor="textMuted">
+                                                          {group.title}
+                                                      </ThemedText>
+                                                      {show(group.titles)}
+                                                  </View>
+                                              )
+                                          )
+                                        : show(rows))}
                             </View>
                         );
                     })}
