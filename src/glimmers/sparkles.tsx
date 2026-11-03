@@ -3,19 +3,23 @@
  * title that fade in and out. The stars hold still with reduced motion on.
  */
 
-import { useEffect } from 'react';
-import { StyleSheet, View, type ViewStyle } from 'react-native';
-import Animated, {
-    Easing,
-    useAnimatedStyle,
-    useReducedMotion,
-    useSharedValue,
-    withDelay,
-    withRepeat,
-    withTiming,
-} from 'react-native-reanimated';
+import { useEffect, useState } from 'react';
+import {
+    AccessibilityInfo,
+    StyleSheet,
+    Text,
+    View,
+    type TextStyle,
+    type ViewStyle,
+} from 'react-native';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+
+// The scale follows the opacity, as 0.7 + opacity * 0.3.
+const TWINKLE = {
+    '0%': { opacity: 0.35, transform: 'scale(0.805)' },
+    '100%': { opacity: 1, transform: 'scale(1)' },
+};
 
 const COLORS = {
     light: {
@@ -48,6 +52,12 @@ const STARS = [
 export function Sparkles() {
     const scheme = useColorScheme();
     const colors = COLORS[scheme];
+    const [still, setStill] = useState(false);
+
+    useEffect(() => {
+        AccessibilityInfo.isReduceMotionEnabled().then(setStill);
+    }, []);
+
     return (
         <View
             pointerEvents="none"
@@ -58,7 +68,7 @@ export function Sparkles() {
             ]}>
             <View style={styles.band}>
                 {STARS.map((star, i) => (
-                    <Star key={i} {...star} color={colors.star} />
+                    <Star key={i} {...star} color={colors.star} still={still} />
                 ))}
             </View>
         </View>
@@ -72,30 +82,20 @@ function Star({
     duration,
     delay,
     color,
-}: (typeof STARS)[number] & { color: string }) {
-    const still = useReducedMotion();
-    const opacity = useSharedValue(still ? 0.8 : 0.35);
-
-    useEffect(() => {
-        if (still) return;
-        opacity.value = withDelay(
-            delay,
-            withRepeat(
-                withTiming(1, { duration, easing: Easing.inOut(Easing.sin) }),
-                -1,
-                true
-            )
-        );
-    }, [still, delay, duration, opacity]);
-
-    const animated = useAnimatedStyle(() => ({
-        opacity: opacity.value,
-        transform: [{ scale: 0.7 + opacity.value * 0.3 }],
-    }));
-
+    still,
+}: (typeof STARS)[number] & { color: string; still: boolean }) {
     return (
-        <Animated.Text
+        <Text
             style={[
+                still
+                    ? styles.still
+                    : [
+                          styles.twinkle,
+                          {
+                              animationDuration: `${duration}ms`,
+                              animationDelay: `${delay}ms`,
+                          } as TextStyle,
+                      ],
                 styles.star,
                 {
                     left: `${left}%`,
@@ -104,10 +104,9 @@ function Star({
                     lineHeight: size,
                     color,
                 },
-                animated,
             ]}>
             ✦
-        </Animated.Text>
+        </Text>
     );
 }
 
@@ -118,4 +117,16 @@ const styles = StyleSheet.create({
     star: {
         position: 'absolute',
     },
+    still: {
+        opacity: 0.8,
+        transform: [{ scale: 0.94 }],
+    },
+    // react-native-web compiles keyframes only from a StyleSheet.
+    twinkle: {
+        animationKeyframes: TWINKLE,
+        animationDirection: 'alternate',
+        animationIterationCount: 'infinite',
+        animationTimingFunction: 'cubic-bezier(0.37, 0, 0.63, 1)',
+        animationFillMode: 'backwards',
+    } as TextStyle,
 });
