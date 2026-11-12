@@ -10,6 +10,15 @@
     },
     "routes": [
         {
+            "src": "/.*",
+            "headers": {
+                "x-content-type-options": "nosniff",
+                "content-security-policy": "frame-ancestors 'none'",
+                "referrer-policy": "strict-origin-when-cross-origin"
+            },
+            "continue": true
+        },
+        {
             "src": "/(_expo/static|assets)/.*",
             "headers": {
                 "cache-control": "public, max-age=31536000, immutable"
