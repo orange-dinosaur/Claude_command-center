@@ -5,6 +5,7 @@
 
 import { useRef } from 'react';
 
+import { json } from '@/api';
 import { apiFetch } from '@/auth/client';
 import { dayOf, type Tracked } from '@/habits/stats';
 import { useOnFocus } from '@/hooks/use-on-focus';
@@ -20,8 +21,6 @@ export interface Habit extends Tracked {
 }
 
 type Day = Habit['days'][number];
-
-const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 const send = (path: string, method: string, body?: object) =>
     apiFetch(path, {

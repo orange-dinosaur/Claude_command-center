@@ -2,6 +2,7 @@
  * The signed-in user's creativity cycles.
  */
 
+import { json } from '@/api';
 import { apiFetch } from '@/auth/client';
 import { weeksBegun } from '@/creativity/cycle';
 import { useOnFocus } from '@/hooks/use-on-focus';
@@ -48,8 +49,6 @@ export interface Week {
 }
 
 export type CycleWithWeeks = Cycle & { weeks: Week[] };
-
-const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 const FAILURE = 'Non riesco a caricare i dati.';
 

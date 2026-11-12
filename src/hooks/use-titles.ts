@@ -4,6 +4,7 @@
 
 import { useRef } from 'react';
 
+import { json } from '@/api';
 import { apiFetch } from '@/auth/client';
 import { todayDay } from '@/dates';
 import { useOnFocus } from '@/hooks/use-on-focus';
@@ -37,8 +38,6 @@ export interface Title {
 export type Sections = Record<Status, Title[]>;
 
 const empty = (): Sections => ({ doing: [], todo: [], done: [] });
-
-const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 export function useTitles() {
     const { data, setData, error, setError, reload } = useOnFocus<

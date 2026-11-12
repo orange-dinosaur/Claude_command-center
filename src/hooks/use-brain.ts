@@ -3,6 +3,7 @@
  * and is undone if the save fails.
  */
 
+import { json } from '@/api';
 import { apiFetch } from '@/auth/client';
 import { useOnFocus } from '@/hooks/use-on-focus';
 
@@ -11,8 +12,6 @@ export interface Entry {
     text: string;
     createdAt: string;
 }
-
-const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 export function useBrain() {
     const { data, setData, error, setError } = useOnFocus<Entry[]>(

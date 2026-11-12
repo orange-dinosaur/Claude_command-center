@@ -2,6 +2,7 @@
  * The signed-in user's workouts and workout types.
  */
 
+import { json } from '@/api';
 import { apiFetch } from '@/auth/client';
 import { useOnFocus } from '@/hooks/use-on-focus';
 import { desc, upsert } from '@/order';
@@ -19,8 +20,6 @@ export interface Workout {
     /** ISO timestamp, only for ordering. */
     createdAt: string;
 }
-
-const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 export function useWorkouts() {
     const { data, setData, error, reload } = useOnFocus<Workout[]>(

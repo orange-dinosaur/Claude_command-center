@@ -47,15 +47,19 @@ export function apiUrl(path: string): string {
 
 /**
  * Calls an API route as the signed-in user. Native has no cookie jar, so the
- * session cookie the Expo plugin stored is attached by hand.
+ * session cookie the Expo plugin stored is attached by hand. A 401 means the
+ * session is gone, so the session is read again and the guard shows the login
+ * screen.
  */
 export async function apiFetch(
     path: string,
     init?: RequestInit
 ): Promise<Response> {
     const cookie = await authClient.getCookie();
-    return fetch(apiUrl(path), {
+    const res = await fetch(apiUrl(path), {
         ...init,
         headers: { ...init?.headers, cookie },
     });
+    if (res.status === 401) authClient.$store.notify('$sessionSignal');
+    return res;
 }

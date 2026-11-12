@@ -3,6 +3,7 @@
  * lessons.
  */
 
+import { json } from '@/api';
 import { apiFetch } from '@/auth/client';
 import { useOnFocus } from '@/hooks/use-on-focus';
 
@@ -29,8 +30,6 @@ export interface LessonActivityDetail extends LessonActivity {
     /** The workouts of the type marked as lessons. */
     lessons: { id: string; date: string; createdAt: string }[];
 }
-
-const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 export function useLessonActivities() {
     const { data, setData, error } = useOnFocus<LessonActivity[]>(

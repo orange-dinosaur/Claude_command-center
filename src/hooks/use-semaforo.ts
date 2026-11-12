@@ -3,6 +3,7 @@
  * once and is undone if the save fails.
  */
 
+import { json } from '@/api';
 import { apiFetch } from '@/auth/client';
 import { useOnFocus } from '@/hooks/use-on-focus';
 import type { Colour } from '@/semaforo/colours';
@@ -13,8 +14,6 @@ export interface Item {
     name: string;
     createdAt: string;
 }
-
-const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 const oldestFirst = (a: Item, b: Item) =>
     a.createdAt.localeCompare(b.createdAt);

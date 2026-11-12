@@ -21,7 +21,15 @@ export function apiUrl(path: string): string {
     return path;
 }
 
-/** The browser attaches the session cookie itself. */
-export function apiFetch(path: string, init?: RequestInit): Promise<Response> {
-    return fetch(path, init);
+/**
+ * The browser attaches the session cookie itself. A 401 means the session is
+ * gone, so the session is read again and the guard shows the login screen.
+ */
+export async function apiFetch(
+    path: string,
+    init?: RequestInit
+): Promise<Response> {
+    const res = await fetch(path, init);
+    if (res.status === 401) authClient.$store.notify('$sessionSignal');
+    return res;
 }

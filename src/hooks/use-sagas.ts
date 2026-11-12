@@ -4,6 +4,7 @@
 
 import { useRef } from 'react';
 
+import { json } from '@/api';
 import { apiFetch } from '@/auth/client';
 import { useOnFocus } from '@/hooks/use-on-focus';
 import { tapVolume } from '@/media/sagas';
@@ -23,8 +24,6 @@ export interface Saga {
     archivedAt: string | null;
     createdAt: string;
 }
-
-const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 export function useSagas() {
     const { data, setData, error, setError, reload } = useOnFocus<Saga[]>(

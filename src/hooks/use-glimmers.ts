@@ -3,6 +3,7 @@
  * once and is undone if the save fails.
  */
 
+import { json } from '@/api';
 import { apiFetch } from '@/auth/client';
 import { useOnFocus } from '@/hooks/use-on-focus';
 
@@ -11,8 +12,6 @@ export interface Glimmer {
     text: string;
     happenedAt: string;
 }
-
-const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 const newestFirst = (list: Glimmer[]) =>
     list.sort((a, b) => b.happenedAt.localeCompare(a.happenedAt));

@@ -3,6 +3,7 @@
  * them.
  */
 
+import { json } from '@/api';
 import { apiFetch } from '@/auth/client';
 import { todayDay } from '@/dates';
 import { placeCheckup, placeMedicine } from '@/health/order';
@@ -29,8 +30,6 @@ export interface Health {
     ongoing: Medicine[];
     ended: Medicine[];
 }
-
-const json = (res: Response) => (res.ok ? res.json() : Promise.reject());
 
 export function useHealth() {
     const { data, setData, error, reload } = useOnFocus<Health>(
