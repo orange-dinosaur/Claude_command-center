@@ -15,6 +15,9 @@ import { useTheme } from '@/hooks/use-theme';
 import { useUnsaved } from '@/hooks/use-unsaved';
 
 const SAVE_DELAY = 800;
+const RETRY_DELAY = 5000;
+// The server's limit for one answer.
+const MAX_LENGTH = 5000;
 const SAVED_VISIBLE = 1500;
 const MIN_HEIGHT = 88;
 
@@ -110,6 +113,7 @@ function AnswerField({
     // Saves run one after another, so an older value never lands last.
     const queue = useRef(Promise.resolve());
     const saveRef = useRef(() => {});
+    const mounted = useRef(false);
 
     // Saved rows can arrive first, so the field follows the server until there
     // is typing left to save.
@@ -137,6 +141,13 @@ function AnswerField({
             } else {
                 setStatus('failed');
                 mark(answerKey, true);
+                // Tries again while the field is on screen.
+                if (mounted.current) {
+                    timer.current = setTimeout(
+                        () => saveRef.current(),
+                        RETRY_DELAY
+                    );
+                }
             }
         });
     };
@@ -147,10 +158,12 @@ function AnswerField({
 
     // Flush when the app is backgrounded and when the field unmounts.
     useEffect(() => {
+        mounted.current = true;
         const sub = AppState.addEventListener('change', (state) => {
             if (state !== 'active') saveRef.current();
         });
         return () => {
+            mounted.current = false;
             sub.remove();
             clearTimeout(savedTimer.current);
             saveRef.current();
@@ -175,6 +188,7 @@ function AnswerField({
                     save();
                 }}
                 multiline={multiline}
+                maxLength={MAX_LENGTH}
                 onContentSizeChange={(e) =>
                     setHeight(
                         Math.max(MIN_HEIGHT, e.nativeEvent.contentSize.height)

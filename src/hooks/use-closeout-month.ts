@@ -77,6 +77,8 @@ export function useCloseoutMonth(id: string) {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ key, value }),
+                // Lets a save sent as the app goes to the background finish.
+                keepalive: true,
             });
             return res.ok;
         } catch {
