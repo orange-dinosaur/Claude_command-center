@@ -32,11 +32,14 @@ export function Sheet({ visible, onClose, style, children }: SheetProps) {
             transparent
             animationType="fade"
             onRequestClose={onClose}>
+            {/* Neither is a control, so both stay out of the tab order. */}
             <Pressable
+                tabIndex={-1}
                 style={[styles.backdrop, isDesktop && styles.centred]}
                 onPress={onClose}>
                 {/* Taps inside the sheet must not close it. */}
                 <Pressable
+                    tabIndex={-1}
                     style={[
                         styles.sheet,
                         isDesktop && styles.dialog,
