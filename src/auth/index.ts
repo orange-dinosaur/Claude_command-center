@@ -63,6 +63,7 @@ export const auth = betterAuth({
             });
         },
     },
+    rateLimit: { storage: 'database' },
     plugins: [expo()],
     trustedOrigins: ['mycommandcenter://'],
 });

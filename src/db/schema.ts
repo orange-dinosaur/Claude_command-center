@@ -7,6 +7,7 @@
 
 import { sql } from 'drizzle-orm';
 import {
+    bigint,
     boolean,
     check,
     date,
@@ -108,6 +109,18 @@ export const verification = pgTable(
     },
     (table) => [index('verification_identifier_idx').on(table.identifier)]
 );
+
+/**
+ * Better Auth's request counts per client and path. In the database so the
+ * sign-in limit holds across server instances, each of which would otherwise
+ * count on its own.
+ */
+export const rateLimit = pgTable('rate_limit', {
+    id: text('id').primaryKey(),
+    key: text('key').notNull().unique(),
+    count: integer('count').notNull(),
+    lastRequest: bigint('last_request', { mode: 'number' }).notNull(),
+});
 
 /**
  * One image per user, shown on Home. `id` is what the image URL carries and
