@@ -18,41 +18,18 @@ const AUTH_SCREENS = [
     '/forgot-password',
     '/reset-password',
 ];
-const APP_SCREENS = [
-    '/',
-    '/command-center',
-    '/monthly-closeout',
-    '/salute',
-    '/media',
-    '/creativita',
-];
 
 /**
- * Route groups stay in the URL as an optional segment, so `/(auth)/login`
- * serves the same screen as `/login` and has to be matched as well.
+ * Every screen, so a new one is guarded without being listed: any path that
+ * is not an API route, a bundler path or a file. `/(auth)/login` serves the
+ * same screen as `/login` and matches too.
  */
-const GROUPED = /^\/\(auth\)\//;
-
-const MONTH_PAGE = /^\/monthly-closeout\/[^/]+$/;
-
-const HEALTH_PAGE = /^\/salute\/.+$/;
-
-const MEDIA_PAGE = /^\/media\/.+$/;
-
-const CREATIVITY_PAGE = /^\/creativita\/.+$/;
+const SCREEN = /^\/(?!(?:api|_expo|assets)\/|health$)[^.]*$/;
 
 export const unstable_settings: MiddlewareSettings = {
     matcher: {
         methods: ['GET'],
-        patterns: [
-            ...AUTH_SCREENS,
-            ...APP_SCREENS,
-            GROUPED,
-            MONTH_PAGE,
-            HEALTH_PAGE,
-            MEDIA_PAGE,
-            CREATIVITY_PAGE,
-        ],
+        patterns: [SCREEN],
     },
 };
 
