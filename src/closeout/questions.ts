@@ -133,7 +133,7 @@ export const PREPARE: Section[] = [
                 keys: ['prepare.life.habit'],
             },
             {
-                text: 'Le persone che vorresti rivedere questo mese o ritagliare di più del tempo per stare insieme',
+                text: 'Le persone che vorresti rivedere questo mese o con cui vorresti passare più tempo',
                 keys: ['prepare.life.people'],
             },
             {
