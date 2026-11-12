@@ -8,6 +8,7 @@ const messages: Record<string, string> = {
     USER_ALREADY_EXISTS: 'Esiste già un account con questa email.',
     USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
         'Esiste già un account con questa email.',
+    SIGNUP_CLOSED: 'La registrazione è chiusa.',
     INVALID_TOKEN: 'Il link non è valido o è scaduto. Chiedine uno nuovo.',
 };
 

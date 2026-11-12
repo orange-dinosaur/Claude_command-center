@@ -3,15 +3,41 @@
  */
 
 import { expo } from '@better-auth/expo';
-import { betterAuth } from 'better-auth';
+import { APIError, betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 
 import { db } from '@/db';
 import * as schema from '@/db/schema';
 import { sendEmail } from '@/email';
 
+/**
+ * Who may create an account: the comma-separated emails in `SIGNUP_EMAILS`.
+ * Without it nobody can. Accounts that exist already are not affected.
+ */
+const signupEmails = (process.env.SIGNUP_EMAILS ?? '')
+    .toLowerCase()
+    .split(',')
+    .map((email) => email.trim())
+    .filter(Boolean);
+
 export const auth = betterAuth({
     database: drizzleAdapter(db, { provider: 'pg', schema }),
+    databaseHooks: {
+        user: {
+            create: {
+                before: async (user) => {
+                    if (!signupEmails.includes(user.email.toLowerCase())) {
+                        // Not a 403: with email verification on, sign-up
+                        // answers one with the same success as a new account.
+                        throw new APIError('UNPROCESSABLE_ENTITY', {
+                            code: 'SIGNUP_CLOSED',
+                            message: 'Sign-up is closed',
+                        });
+                    }
+                },
+            },
+        },
+    },
     emailAndPassword: {
         enabled: true,
         requireEmailVerification: true,
