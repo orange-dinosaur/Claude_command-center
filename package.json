@@ -51,6 +51,7 @@
         "db:generate": "drizzle-kit generate",
         "db:migrate": "drizzle-kit migrate",
         "lint": "expo lint",
+        "check": "tsc --noEmit && expo lint && git ls-files -co --exclude-standard '*.check.ts' | xargs -n1 bun",
         "format": "prettier --write \"**/*.{js,mjs,ts,tsx,md,json,css}\""
     },
     "private": true
