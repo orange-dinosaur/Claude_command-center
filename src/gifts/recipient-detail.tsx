@@ -196,7 +196,7 @@ function GiftRow({
 }) {
     const theme = useTheme();
     const given = gift.givenOn !== null;
-    const detail = giftDetail(gift);
+    const detail = giftDetail({ ...gift, bought: !given && gift.bought });
 
     return (
         <View

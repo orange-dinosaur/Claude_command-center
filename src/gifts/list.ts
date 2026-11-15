@@ -5,6 +5,7 @@ export const OCCASIONS = ['Compleanno', 'Natale', 'Anniversario'];
 export interface GiftLine {
     occasion: string | null;
     priceCents: number | null;
+    bought?: boolean;
 }
 
 export interface Given {
@@ -12,14 +13,18 @@ export interface Given {
     createdAt: string;
 }
 
-export function ideasLabel(count: number): string {
+/** "3 idee", or "3 idee · 1 comprata" when some are bought. */
+export function ideasLabel(count: number, bought = 0): string {
     if (count === 0) return 'nessuna idea';
-    return count === 1 ? '1 idea' : `${count} idee`;
+    const ideas = count === 1 ? '1 idea' : `${count} idee`;
+    if (bought === 0) return ideas;
+    return `${ideas} · ${bought} ${bought === 1 ? 'comprata' : 'comprate'}`;
 }
 
-/** "Natale · 35 €", "Altro: Laurea", or "" with neither. */
-export function giftDetail({ occasion, priceCents }: GiftLine): string {
+/** "Comprato · Natale · 35 €", "Altro: Laurea", or "" with nothing to say. */
+export function giftDetail({ occasion, priceCents, bought }: GiftLine): string {
     const parts: string[] = [];
+    if (bought) parts.push('Comprato');
     if (occasion) {
         parts.push(
             OCCASIONS.includes(occasion) ? occasion : `Altro: ${occasion}`

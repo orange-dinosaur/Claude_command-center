@@ -13,6 +13,8 @@ export interface Gift {
     occasion: string | null;
     priceCents: number | null;
     link: string | null;
+    /** Bought but not yet given; ignored once given. */
+    bought: boolean;
     /** null while it is an idea. */
     givenOn: string | null;
     createdAt: string;

@@ -6,6 +6,18 @@ import { giftDetail, groupByYear, ideasLabel } from './list';
 assert.equal(ideasLabel(0), 'nessuna idea');
 assert.equal(ideasLabel(1), '1 idea');
 assert.equal(ideasLabel(3), '3 idee');
+assert.equal(ideasLabel(3, 0), '3 idee');
+assert.equal(ideasLabel(3, 1), '3 idee · 1 comprata');
+assert.equal(ideasLabel(1, 1), '1 idea · 1 comprata');
+assert.equal(ideasLabel(3, 2), '3 idee · 2 comprate');
+assert.equal(
+    giftDetail({ occasion: 'Natale', priceCents: 3500, bought: true }),
+    'Comprato · Natale · 35 €'
+);
+assert.equal(
+    giftDetail({ occasion: null, priceCents: null, bought: true }),
+    'Comprato'
+);
 
 assert.equal(
     giftDetail({ occasion: 'Natale', priceCents: 3500 }),

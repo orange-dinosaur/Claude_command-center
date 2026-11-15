@@ -100,7 +100,7 @@ export default function Regali() {
                             {r.name}
                         </ThemedText>
                         <Secondary selected={isSelected}>
-                            {ideasLabel(r.ideas)}
+                            {ideasLabel(r.ideas, r.bought)}
                         </Secondary>
                     </ListRow>
                 );

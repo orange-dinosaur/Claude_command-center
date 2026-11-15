@@ -8,6 +8,7 @@ import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { DateField } from '@/components/date-field';
 import { Sheet } from '@/components/sheet';
+import { Switch } from '@/components/switch';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { formatDay, todayDay } from '@/dates';
@@ -46,6 +47,7 @@ export function GiftSheet({
     const [occasion, setOccasion] = useState(gift?.occasion ?? null);
     const [price, setPrice] = useState(priceText(gift?.priceCents ?? null));
     const [link, setLink] = useState(gift?.link ?? '');
+    const [bought, setBought] = useState(gift?.bought ?? false);
     const [givenOn, setGivenOn] = useState(
         gift ? gift.givenOn : startsGiven ? todayDay() : null
     );
@@ -62,6 +64,7 @@ export function GiftSheet({
             occasion: occasionOf(occasion),
             priceCents,
             link: link.trim() || null,
+            bought,
             givenOn,
         });
         onClose();
@@ -105,10 +108,19 @@ export function GiftSheet({
                     maxLength={2000}
                 />
             </Field>
-            {givenOn && (
+            {givenOn ? (
                 <Field label="Regalato il">
                     <DayField value={givenOn} onChange={setGivenOn} />
                 </Field>
+            ) : (
+                <View style={styles.bought}>
+                    <ThemedText>Comprato</ThemedText>
+                    <Switch
+                        value={bought}
+                        onValueChange={setBought}
+                        accessibilityLabel="Comprato"
+                    />
+                </View>
             )}
 
             <Pressable
@@ -403,6 +415,11 @@ const styles = StyleSheet.create({
         fontFamily: 'Karla_600SemiBold',
         fontSize: 18,
         lineHeight: 24,
+    },
+    bought: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
     links: {
         flexDirection: 'row',

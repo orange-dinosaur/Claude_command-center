@@ -9,6 +9,8 @@ export interface RecipientSummary {
     id: string;
     name: string;
     ideas: number;
+    /** Ideas already bought. */
+    bought: number;
 }
 
 export const NAME_IN_USE = 'Hai già una persona con questo nome.';
