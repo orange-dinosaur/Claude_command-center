@@ -285,6 +285,8 @@ export const title = pgTable(
         name: text('name').notNull(),
         author: text('author'),
         language: text('language'),
+        /** Where a film or series was watched, such as "Netflix". */
+        whereWatched: text('where_watched'),
         coverUrl: text('cover_url'),
         format: text('format').$type<
             'rigida' | 'flessibile' | 'ebook' | 'audiolibro' | 'biblioteca'

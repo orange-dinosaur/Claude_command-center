@@ -27,6 +27,7 @@ export const titleColumns = {
     name: title.name,
     author: title.author,
     language: title.language,
+    whereWatched: title.whereWatched,
     coverUrl: title.coverUrl,
     format: title.format,
     season: title.season,
@@ -48,6 +49,7 @@ export type TitleFields = Partial<
         | 'name'
         | 'author'
         | 'language'
+        | 'whereWatched'
         | 'coverUrl'
         | 'format'
         | 'season'
@@ -62,7 +64,8 @@ export type TitleFields = Partial<
 
 /**
  * Reads the fields present in `body` for a title of `kind`. Author and format
- * belong to books, language to books and films, season to series. Returns the
+ * belong to books, language to books and films, the place watched to films and
+ * series, season to series. Returns the
  * fields, or the error message for a 400.
  */
 export function parseTitleFields(
@@ -91,6 +94,14 @@ export function parseTitleFields(
         const language = parseOptionalText(body.language);
         if (language === undefined) return 'Invalid language';
         fields.language = language;
+    }
+    if ('whereWatched' in body) {
+        if (kind === 'book' && body.whereWatched != null) {
+            return 'Only films and series have a place';
+        }
+        const place = parseOptionalText(body.whereWatched);
+        if (place === undefined) return 'Invalid place';
+        fields.whereWatched = place;
     }
     if ('cover' in body) {
         if (kind !== 'book' && body.cover != null) {
