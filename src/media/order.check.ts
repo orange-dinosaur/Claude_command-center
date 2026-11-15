@@ -10,6 +10,7 @@ const t = (id: string, fields: Partial<Title> = {}): Title => ({
     name: id,
     author: null,
     language: null,
+    whereWatched: null,
     coverUrl: null,
     format: null,
     season: null,

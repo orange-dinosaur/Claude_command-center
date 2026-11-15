@@ -44,22 +44,29 @@ export const TITLE_HEADERS: Record<Kind, { add: string; edit: string }> = {
 export const isKind = (value: unknown): value is Kind =>
     value === 'book' || value === 'film' || value === 'series';
 
-/** The languages used on these titles, sorted. */
-export const languagesOf = (sections: Sections) =>
-    [
-        ...new Set(
-            [...sections.doing, ...sections.todo, ...sections.done].flatMap(
-                (t) => t.language ?? []
-            )
-        ),
-    ].sort();
+/** The languages or places used on these titles, sorted. */
+const usedOn = (
+    sections: Sections | null | undefined,
+    key: 'language' | 'whereWatched'
+) =>
+    sections
+        ? [
+              ...new Set(
+                  [
+                      ...sections.doing,
+                      ...sections.todo,
+                      ...sections.done,
+                  ].flatMap((t) => t[key] ?? [])
+              ),
+          ].sort()
+        : [];
 
 /** Adds a title of `kind`, or edits the one with `id`. */
 export function TitleForm({
     kind,
     id,
     title,
-    knownLanguages,
+    knownSections,
     onSaved,
     onDeleted,
     style,
@@ -71,9 +78,9 @@ export function TitleForm({
     title?: string;
     /**
      * From a page that already loads the titles, so a new one needs nothing
-     * loaded here.
+     * loaded here. `null` while that page is still loading.
      */
-    knownLanguages?: string[];
+    knownSections?: Sections | null;
     onSaved: (saved: Title) => void;
     onDeleted: () => void;
     style?: StyleProp<ViewStyle>;
@@ -84,9 +91,10 @@ export function TitleForm({
     const [name, setName] = useState('');
     const [author, setAuthor] = useState('');
     const [language, setLanguage] = useState('');
+    const [whereWatched, setWhereWatched] = useState('');
     const [cover, setCover] = useState<string | null>(null);
-    // Languages already used on books, offered as chips.
-    const [languages, setLanguages] = useState<string[]>([]);
+    // This tab's titles, for the languages and places offered as chips.
+    const [loaded, setLoaded] = useState<Sections | null>(null);
     const [format, setFormat] = useState<Format | null>(null);
     const [season, setSeason] = useState('');
     const [episodes, setEpisodes] = useState('');
@@ -98,9 +106,10 @@ export function TitleForm({
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const listed = knownLanguages !== undefined;
+    const listed = knownSections !== undefined;
+    const chipSource = listed ? knownSections : loaded;
     useEffect(() => {
-        if (!id && (kind === 'series' || listed)) return;
+        if (!id && listed) return;
         let cancelled = false;
         const saved = readChecked<Record<Kind, Sections>>('titles')?.[kind];
         const usable =
@@ -122,13 +131,14 @@ export function TitleForm({
                     ...sections.todo,
                     ...sections.done,
                 ];
-                setLanguages(languagesOf(sections));
+                setLoaded(sections);
                 if (!id) return;
                 const found = all.find((t) => t.id === id);
                 if (found) {
                     setName(found.name);
                     setAuthor(found.author ?? '');
                     setLanguage(found.language ?? '');
+                    setWhereWatched(found.whereWatched ?? '');
                     setCover(found.coverUrl);
                     setFormat(found.format as Format | null);
                     setSeason(found.season ? String(found.season) : '');
@@ -192,6 +202,7 @@ export function TitleForm({
                         name,
                         ...(kind === 'book' && { author, format, cover }),
                         ...(kind !== 'series' && { language }),
+                        ...(kind !== 'book' && { whereWatched }),
                         ...(kind === 'series' && {
                             season: seasonNumber,
                             episodes: episodeCount,
@@ -281,10 +292,23 @@ export function TitleForm({
                 nameField
             )}
             {kind !== 'series' && (
-                <LanguageField
+                <ChoiceField
+                    label="Lingua"
+                    newLabel="Nuova lingua"
+                    placeholder="Inglese"
                     value={language}
                     onChange={setLanguage}
-                    languages={knownLanguages ?? languages}
+                    choices={usedOn(chipSource, 'language')}
+                />
+            )}
+            {kind !== 'book' && (
+                <ChoiceField
+                    label="Dove"
+                    newLabel="Nuovo posto"
+                    placeholder="Netflix"
+                    value={whereWatched}
+                    onChange={setWhereWatched}
+                    choices={usedOn(chipSource, 'whereWatched')}
                 />
             )}
             {kind === 'series' && (
@@ -379,23 +403,30 @@ export function TitleForm({
     );
 }
 
-/** Picks one of `languages`, or takes a new one in a text field. */
-export function LanguageField({
+/** Picks one of `choices`, or takes a new one in a text field. */
+export function ChoiceField({
+    label,
+    newLabel,
+    placeholder,
     value,
     onChange,
-    languages,
+    choices,
 }: {
+    label: string;
+    /** "Nuova lingua": the button and the text field for a new choice. */
+    newLabel: string;
+    placeholder: string;
     value: string;
-    onChange: (language: string) => void;
-    languages: string[];
+    onChange: (value: string) => void;
+    choices: string[];
 }) {
     const theme = useTheme();
     const [isNew, setIsNew] = useState(false);
 
     return (
-        <Field label="Lingua">
+        <Field label={label}>
             <View style={styles.chips}>
-                {languages.map((l) => {
+                {choices.map((l) => {
                     const selected = l === value;
                     return (
                         <Chip
@@ -424,17 +455,17 @@ export function LanguageField({
                             },
                         ]}>
                         <ThemedText style={{ color: theme.accent }}>
-                            + Nuova lingua
+                            + {newLabel}
                         </ThemedText>
                     </Pressable>
                 )}
             </View>
             {isNew && (
                 <TextField
-                    label="Nuova lingua"
+                    label={newLabel}
                     value={value}
                     onChange={onChange}
-                    placeholder="Inglese"
+                    placeholder={placeholder}
                     autoFocus
                 />
             )}

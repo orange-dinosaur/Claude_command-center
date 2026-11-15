@@ -26,7 +26,7 @@ import { useTheme } from '@/hooks/use-theme';
 import type { Kind, Sections } from '@/hooks/use-titles';
 import { CoverField } from '@/media/cover-picker';
 import { NAME_MAX, RELEASE_MAX, VOLUMES_MAX } from '@/media/sagas';
-import { LanguageField } from '@/media/title-form';
+import { ChoiceField } from '@/media/title-form';
 import { readChecked } from '@/saved-data';
 
 export const SAGA_HEADERS = {
@@ -247,10 +247,13 @@ export function SagaForm({
                     />
                 </View>
             </View>
-            <LanguageField
+            <ChoiceField
+                label="Lingua"
+                newLabel="Nuova lingua"
+                placeholder="Inglese"
                 value={language}
                 onChange={setLanguage}
-                languages={languages}
+                choices={languages}
             />
             <View style={styles.audiobook}>
                 <ThemedText>Audiolibro</ThemedText>
