@@ -37,6 +37,10 @@ assert.deepEqual(
     { occasion: 'Laurea', priceCents: 1250, givenOn: null }
 );
 assert.deepEqual(parseGiftFields({}), {});
+assert.deepEqual(parseGiftFields({ bought: true }), { bought: true });
+assert.deepEqual(parseGiftFields({ bought: false }), { bought: false });
+assert.equal(parseGiftFields({ bought: 'sì' }), 'Invalid bought');
+assert.equal(parseGiftFields({ bought: null }), 'Invalid bought');
 assert.equal(parseGiftFields({ name: '' }), 'Invalid name');
 assert.equal(parseGiftFields({ priceCents: -1 }), 'Invalid price');
 assert.equal(parseGiftFields({ priceCents: 12.5 }), 'Invalid price');

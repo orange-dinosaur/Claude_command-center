@@ -1,0 +1,1 @@
+ALTER TABLE "gift" ADD COLUMN "bought" boolean DEFAULT false NOT NULL;

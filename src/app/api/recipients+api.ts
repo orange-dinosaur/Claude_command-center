@@ -1,6 +1,7 @@
 /**
  * The signed-in user's gift recipients. `GET` returns them in alphabetical
- * order with how many ideas each has; `POST` adds one. A name already used,
+ * order with how many ideas each has, and how many of those are bought; `POST`
+ * adds one. A name already used,
  * in any case, is a 409.
  */
 
@@ -26,6 +27,9 @@ export async function GET(request: Request): Promise<Response> {
         .select({
             ...recipientColumns,
             ideas: sql`count(${gift.id}) filter (where ${gift.givenOn} is null)`.mapWith(
+                Number
+            ),
+            bought: sql`count(${gift.id}) filter (where ${gift.givenOn} is null and ${gift.bought})`.mapWith(
                 Number
             ),
         })

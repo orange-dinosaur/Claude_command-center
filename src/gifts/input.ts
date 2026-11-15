@@ -11,7 +11,10 @@ import { MAX_PRICE_CENTS } from './price';
 type Gift = typeof gift.$inferSelect;
 
 export type GiftFields = Partial<
-    Pick<Gift, 'name' | 'occasion' | 'priceCents' | 'link' | 'givenOn'>
+    Pick<
+        Gift,
+        'name' | 'occasion' | 'priceCents' | 'link' | 'bought' | 'givenOn'
+    >
 >;
 
 /** What the API returns for a gift. */
@@ -21,6 +24,7 @@ export const giftColumns = {
     occasion: gift.occasion,
     priceCents: gift.priceCents,
     link: gift.link,
+    bought: gift.bought,
     givenOn: gift.givenOn,
     createdAt: gift.createdAt,
 };
@@ -83,6 +87,10 @@ export function parseGiftFields(
         const link = parseLink(body.link);
         if (link === undefined) return 'Invalid link';
         fields.link = link;
+    }
+    if ('bought' in body) {
+        if (typeof body.bought !== 'boolean') return 'Invalid bought';
+        fields.bought = body.bought;
     }
     if ('givenOn' in body) {
         const day = parseDate(body.givenOn);

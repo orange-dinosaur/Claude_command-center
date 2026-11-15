@@ -789,6 +789,8 @@ export const gift = pgTable(
         occasion: text('occasion'),
         priceCents: integer('price_cents'),
         link: text('link'),
+        /** Bought but not yet given. Only shown on ideas. */
+        bought: boolean('bought').default(false).notNull(),
         givenOn: date('given_on'),
         createdAt: timestamp('created_at', { withTimezone: true })
             .defaultNow()
